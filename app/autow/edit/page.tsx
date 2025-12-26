@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import type { Booking } from '@/lib/types';
 
-export default function EditBookingPage() {
+function EditBookingContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('id');
@@ -502,3 +502,23 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'not-allowed',
   },
 };
+
+export default function EditBookingPage() {
+  return (
+    <Suspense fallback={
+      <div style={{
+        fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        background: '#000',
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '20px',
+      }}>
+        <div style={{ color: '#30ff37', fontSize: '24px', textAlign: 'center' }}>Loading...</div>
+      </div>
+    }>
+      <EditBookingContent />
+    </Suspense>
+  );
+}

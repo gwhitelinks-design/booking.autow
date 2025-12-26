@@ -5,8 +5,11 @@ import { sendTelegramNotification } from '@/lib/telegram';
 
 export async function POST(request: NextRequest) {
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!verifyToken(token)) {
+    const rawAuth = request.headers.get('authorization');
+	const token = rawAuth ? rawAuth.replace('Bearer ', '') : null;
+
+	if (!verifyToken(token)) {
+
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
