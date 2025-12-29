@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Invoice } from '@/lib/types';
 
-export const dynamic = 'force-dynamic';
 
 export default function ViewInvoicePage() {
   const router = useRouter();
