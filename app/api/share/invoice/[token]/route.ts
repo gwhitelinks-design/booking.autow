@@ -44,26 +44,6 @@ export async function GET(
 
       const invoice = result.rows[0];
 
-      // Record the view
-      const ipAddress = request.headers.get('x-forwarded-for') ||
-                       request.headers.get('x-real-ip') ||
-                       'unknown';
-      const userAgent = request.headers.get('user-agent') || '';
-
-      await client.query(
-        `INSERT INTO document_views (document_type, document_id, ip_address, user_agent)
-         VALUES ('invoice', $1, $2, $3)`,
-        [invoice.id, ipAddress, userAgent]
-      );
-
-      // Update view count and last viewed
-      await client.query(
-        `UPDATE invoices
-         SET view_count = view_count + 1, last_viewed_at = CURRENT_TIMESTAMP
-         WHERE id = $1`,
-        [invoice.id]
-      );
-
       // Get business settings
       const settingsResult = await client.query(
         'SELECT * FROM business_settings WHERE user_id = $1 LIMIT 1',
