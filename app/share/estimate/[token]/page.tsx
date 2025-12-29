@@ -28,11 +28,12 @@ export default function SharedEstimatePage() {
         setEstimate(data.estimate);
         setBusinessSettings(data.business_settings);
       } else {
-        setError('Estimate not found or link has expired');
+        const errorData = await response.json();
+        setError(errorData.error || errorData.details || 'Estimate not found or link has expired');
       }
     } catch (error) {
       console.error('Error:', error);
-      setError('Failed to load estimate');
+      setError(`Failed to load estimate: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }

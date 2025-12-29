@@ -28,11 +28,12 @@ export default function SharedInvoicePage() {
         setInvoice(data.invoice);
         setBusinessSettings(data.business_settings);
       } else {
-        setError('Invoice not found or link has expired');
+        const errorData = await response.json();
+        setError(errorData.error || errorData.details || 'Invoice not found or link has expired');
       }
     } catch (error) {
       console.error('Error:', error);
-      setError('Failed to load invoice');
+      setError(`Failed to load invoice: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
