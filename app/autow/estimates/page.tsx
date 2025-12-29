@@ -197,6 +197,12 @@ export default function EstimatesPage() {
                 >
                   Convert to Invoice
                 </button>
+                <button
+                  onClick={() => deleteEstimate(estimate.id!)}
+                  style={{ ...styles.actionButton, ...styles.deleteButton }}
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))
@@ -276,6 +282,35 @@ export default function EstimatesPage() {
     } catch (error) {
       console.error('Error generating share link:', error);
       alert('Failed to generate share link');
+    }
+  }
+
+  async function deleteEstimate(estimateId: number) {
+    if (!confirm('Are you sure you want to delete this estimate? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/estimate/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: estimateId })
+      });
+
+      if (response.ok) {
+        alert('Estimate deleted successfully');
+        fetchEstimates(); // Refresh the list
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error deleting estimate:', error);
+      alert('Failed to delete estimate');
     }
   }
 }
@@ -439,6 +474,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(255, 193, 7, 0.1)',
     color: '#ffc107',
     borderColor: 'rgba(255, 193, 7, 0.3)',
+  },
+  deleteButton: {
+    background: 'rgba(244, 67, 54, 0.1)',
+    color: '#f44336',
+    borderColor: 'rgba(244, 67, 54, 0.3)',
   },
   emptyState: {
     textAlign: 'center' as const,

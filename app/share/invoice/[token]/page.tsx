@@ -109,7 +109,7 @@ export default function SharedInvoicePage() {
           </div>
           <div style={{ textAlign: 'right' as const }}>
             <img
-              src="https://autow-services.co.uk/logo.png"
+              src="/latest2.png"
               alt="AUTOW"
               style={styles.logo}
             />

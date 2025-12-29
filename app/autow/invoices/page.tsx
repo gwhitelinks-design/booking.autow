@@ -121,6 +121,35 @@ export default function InvoicesPage() {
     }
   };
 
+  const deleteInvoice = async (invoiceId: number) => {
+    if (!confirm('Are you sure you want to delete this invoice? This action cannot be undone.')) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/invoice/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: invoiceId })
+      });
+
+      if (response.ok) {
+        alert('Invoice deleted successfully');
+        fetchInvoices(); // Refresh the list
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error deleting invoice:', error);
+      alert('Failed to delete invoice');
+    }
+  };
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -259,6 +288,12 @@ export default function InvoicesPage() {
                     Mark as Paid
                   </button>
                 )}
+                <button
+                  onClick={() => deleteInvoice(invoice.id!)}
+                  style={{ ...styles.actionButton, ...styles.deleteButton }}
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))
@@ -455,6 +490,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(255, 193, 7, 0.1)',
     color: '#ffc107',
     borderColor: 'rgba(255, 193, 7, 0.3)',
+  },
+  deleteButton: {
+    background: 'rgba(244, 67, 54, 0.1)',
+    color: '#f44336',
+    borderColor: 'rgba(244, 67, 54, 0.3)',
   },
   emptyState: {
     textAlign: 'center' as const,
