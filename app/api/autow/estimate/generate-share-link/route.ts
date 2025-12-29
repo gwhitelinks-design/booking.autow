@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 
+// Force rebuild - 2025-12-29 11:40
 export async function POST(request: NextRequest) {
   try {
     console.log('[Share Link] Starting share link generation');
