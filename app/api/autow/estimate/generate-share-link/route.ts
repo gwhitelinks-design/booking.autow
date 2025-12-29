@@ -12,13 +12,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userData = verifyToken(token);
-    if (!userData) {
+    const isValid = verifyToken(token);
+    if (!isValid) {
       console.log('[Share Link] Invalid token');
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
-
-    console.log('[Share Link] Logged in user:', userData);
 
     const { estimate_id } = await request.json();
     console.log('[Share Link] Request for estimate_id:', estimate_id);

@@ -9,8 +9,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userData = verifyToken(token);
-    if (!userData) {
+    const isValid = verifyToken(token);
+    if (!isValid) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
