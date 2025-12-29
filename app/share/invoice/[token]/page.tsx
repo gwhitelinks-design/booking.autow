@@ -236,14 +236,11 @@ export default function SharedInvoicePage() {
         {/* Footer */}
         <div style={styles.footer}>
           <p>Thank you for your business!</p>
-          <p style={styles.footerSmall}>
-            This is an invoice. Final costs may vary based on actual work performed.
-          </p>
           <div style={styles.disclaimer}>
             <p style={styles.disclaimerText}>
               AUTOW Services provides mobile mechanics and recovery services. All work is guaranteed for 30 days from completion.
               Parts are subject to manufacturer warranty. Payment terms: Parts and/or vehicle collection/recovery required upfront,
-              labour on completion. Unpaid invoices may incur late payment fees. By accepting this estimate, you agree to these terms.
+              labour on completion. Unpaid invoices may incur late payment fees. By accepting this invoice, you agree to these terms.
             </p>
           </div>
         </div>

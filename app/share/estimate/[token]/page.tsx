@@ -237,7 +237,7 @@ export default function SharedEstimatePage() {
         <div style={styles.footer}>
           <p>Thank you for your business!</p>
           <p style={styles.footerSmall}>
-            This is an estimate. Final costs may vary based on actual work performed.
+            This is an estimate. Additional works or parts will incur further costs - you will be notified.
           </p>
           <div style={styles.disclaimer}>
             <p style={styles.disclaimerText}>
