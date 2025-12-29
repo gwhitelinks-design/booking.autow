@@ -212,15 +212,15 @@ export default function SharedInvoicePage() {
             )}
             <div style={styles.totalRow}>
               <span>Subtotal</span>
-              <span>£{invoice.subtotal.toFixed(2)}</span>
+              <span>£{parseFloat(invoice.subtotal.toString()).toFixed(2)}</span>
             </div>
             <div style={styles.totalRow}>
               <span>VAT ({invoice.vat_rate}%)</span>
-              <span>£{invoice.vat_amount.toFixed(2)}</span>
+              <span>£{parseFloat(invoice.vat_amount.toString()).toFixed(2)}</span>
             </div>
             <div style={{ ...styles.totalRow, ...styles.grandTotal }}>
               <span>Total</span>
-              <span>£{invoice.total.toFixed(2)}</span>
+              <span>£{parseFloat(invoice.total.toString()).toFixed(2)}</span>
             </div>
           </div>
         </div>

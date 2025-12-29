@@ -212,15 +212,15 @@ export default function SharedEstimatePage() {
             )}
             <div style={styles.totalRow}>
               <span>Subtotal</span>
-              <span>£{estimate.subtotal.toFixed(2)}</span>
+              <span>£{parseFloat(estimate.subtotal.toString()).toFixed(2)}</span>
             </div>
             <div style={styles.totalRow}>
               <span>VAT ({estimate.vat_rate}%)</span>
-              <span>£{estimate.vat_amount.toFixed(2)}</span>
+              <span>£{parseFloat(estimate.vat_amount.toString()).toFixed(2)}</span>
             </div>
             <div style={{ ...styles.totalRow, ...styles.grandTotal }}>
               <span>Total</span>
-              <span>£{estimate.total.toFixed(2)}</span>
+              <span>£{parseFloat(estimate.total.toString()).toFixed(2)}</span>
             </div>
           </div>
         </div>
