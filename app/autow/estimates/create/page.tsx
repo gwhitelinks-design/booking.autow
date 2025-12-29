@@ -141,6 +141,8 @@ A/N: 20052044
         const estimate = data.estimate;
 
         setFormData({
+          estimate_number: estimate.estimate_number || '',
+          estimate_date: estimate.estimate_date || new Date().toISOString().split('T')[0],
           client_name: estimate.client_name || '',
           client_email: estimate.client_email || '',
           client_address: estimate.client_address || '',

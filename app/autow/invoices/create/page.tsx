@@ -151,7 +151,15 @@ A/N: 20052044
         const data = await response.json();
         const estimate = data.estimate;
 
+        const today = new Date().toISOString().split('T')[0];
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 30);
+        const dueDateStr = dueDate.toISOString().split('T')[0];
+
         setFormData({
+          invoice_number: '',
+          invoice_date: today,
+          due_date: dueDateStr,
           client_name: estimate.client_name || '',
           client_email: estimate.client_email || '',
           client_address: estimate.client_address || '',
@@ -196,6 +204,9 @@ A/N: 20052044
         const invoice = data.invoice;
 
         setFormData({
+          invoice_number: invoice.invoice_number || '',
+          invoice_date: invoice.invoice_date || new Date().toISOString().split('T')[0],
+          due_date: invoice.due_date || new Date(Date.now() + 30*24*60*60*1000).toISOString().split('T')[0],
           client_name: invoice.client_name || '',
           client_email: invoice.client_email || '',
           client_address: invoice.client_address || '',
