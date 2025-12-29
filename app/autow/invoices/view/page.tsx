@@ -307,7 +307,7 @@ export default function ViewInvoicePage() {
         <div style={styles.footer}>
           <p>Thank you for your business!</p>
           <p style={styles.footerSmall}>
-            Payment is due within {invoice.payment_terms || 30} days from the invoice date.
+            Payment is due by {invoice.due_date ? new Date(invoice.due_date).toLocaleDateString('en-GB') : '30 days from invoice date'}.
           </p>
           <div style={styles.disclaimer}>
             <p style={styles.disclaimerText}>

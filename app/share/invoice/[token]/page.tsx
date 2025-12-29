@@ -2,37 +2,37 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { Estimate } from '@/lib/types';
+import { Invoice } from '@/lib/types';
 
-export default function SharedEstimatePage() {
+export default function SharedInvoicePage() {
   const params = useParams();
   const token = params.token as string;
 
   const [loading, setLoading] = useState(true);
-  const [estimate, setEstimate] = useState<Estimate | null>(null);
+  const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [businessSettings, setBusinessSettings] = useState<any>(null);
   const [error, setError] = useState('');
 
   useEffect(() => {
     if (token) {
-      fetchSharedEstimate();
+      fetchSharedInvoice();
     }
   }, [token]);
 
-  const fetchSharedEstimate = async () => {
+  const fetchSharedInvoice = async () => {
     try {
-      const response = await fetch(`/api/share/estimate/${token}`);
+      const response = await fetch(`/api/share/invoice/${token}`);
 
       if (response.ok) {
         const data = await response.json();
-        setEstimate(data.estimate);
+        setInvoice(data.invoice);
         setBusinessSettings(data.business_settings);
       } else {
-        setError('Estimate not found or link has expired');
+        setError('Invoice not found or link has expired');
       }
     } catch (error) {
       console.error('Error:', error);
-      setError('Failed to load estimate');
+      setError('Failed to load invoice');
     } finally {
       setLoading(false);
     }
@@ -45,15 +45,15 @@ export default function SharedEstimatePage() {
   if (loading) {
     return (
       <div style={styles.container}>
-        <div style={styles.loadingText}>Loading estimate...</div>
+        <div style={styles.loadingText}>Loading invoice...</div>
       </div>
     );
   }
 
-  if (error || !estimate) {
+  if (error || !invoice) {
     return (
       <div style={styles.container}>
-        <div style={styles.errorText}>{error || 'Estimate not found'}</div>
+        <div style={styles.errorText}>{error || 'Invoice not found'}</div>
       </div>
     );
   }
@@ -66,7 +66,7 @@ export default function SharedEstimatePage() {
     other: 0
   };
 
-  estimate.line_items?.forEach((item) => {
+  invoice.line_items?.forEach((item) => {
     const amount = parseFloat(item.amount.toString());
     if (item.item_type === 'part') {
       breakdown.parts += amount;
@@ -104,7 +104,7 @@ export default function SharedEstimatePage() {
         <div style={styles.docHeader} className="doc-header">
           <div>
             <h1 style={styles.docTitle}>INVOICE</h1>
-            <p style={styles.docDate}>Date: {new Date(estimate.invoice_date || estimate.estimate_date).toLocaleDateString('en-GB')}</p>
+            <p style={styles.docDate}>Date: {new Date(invoice.invoice_date).toLocaleDateString('en-GB')}</p>
           </div>
           <div style={{ textAlign: 'right' as const }}>
             <img
@@ -130,20 +130,20 @@ export default function SharedEstimatePage() {
 
           <div style={styles.party}>
             <h3 style={styles.partyTitle}>Bill To</h3>
-            <p style={styles.clientName}>{estimate.client_name}</p>
-            {estimate.client_email && <p>{estimate.client_email}</p>}
-            {estimate.client_address && <p>{estimate.client_address}</p>}
-            {estimate.client_phone && <p>Phone: {estimate.client_phone}</p>}
-            {estimate.client_mobile && <p>Mobile: {estimate.client_mobile}</p>}
+            <p style={styles.clientName}>{invoice.client_name}</p>
+            {invoice.client_email && <p>{invoice.client_email}</p>}
+            {invoice.client_address && <p>{invoice.client_address}</p>}
+            {invoice.client_phone && <p>Phone: {invoice.client_phone}</p>}
+            {invoice.client_mobile && <p>Mobile: {invoice.client_mobile}</p>}
           </div>
         </div>
 
         {/* Vehicle Info */}
-        {estimate.vehicle_reg && (
+        {invoice.vehicle_reg && (
           <div style={styles.vehicleInfo}>
-            <strong>Vehicle:</strong> {estimate.vehicle_reg}
-            {estimate.vehicle_make && ` - ${estimate.vehicle_make}`}
-            {estimate.vehicle_model && ` ${estimate.vehicle_model}`}
+            <strong>Vehicle:</strong> {invoice.vehicle_reg}
+            {invoice.vehicle_make && ` - ${invoice.vehicle_make}`}
+            {invoice.vehicle_model && ` ${invoice.vehicle_model}`}
           </div>
         )}
 
@@ -159,7 +159,7 @@ export default function SharedEstimatePage() {
               </tr>
             </thead>
             <tbody>
-              {estimate.line_items && estimate.line_items.map((item, index) => (
+              {invoice.line_items && invoice.line_items.map((item, index) => (
                 <tr key={index}>
                   <td style={styles.td}>
                     {item.description}
@@ -211,24 +211,24 @@ export default function SharedEstimatePage() {
             )}
             <div style={styles.totalRow}>
               <span>Subtotal</span>
-              <span>£{estimate.subtotal.toFixed(2)}</span>
+              <span>£{invoice.subtotal.toFixed(2)}</span>
             </div>
             <div style={styles.totalRow}>
-              <span>VAT ({estimate.vat_rate}%)</span>
-              <span>£{estimate.vat_amount.toFixed(2)}</span>
+              <span>VAT ({invoice.vat_rate}%)</span>
+              <span>£{invoice.vat_amount.toFixed(2)}</span>
             </div>
             <div style={{ ...styles.totalRow, ...styles.grandTotal }}>
               <span>Total</span>
-              <span>£{estimate.total.toFixed(2)}</span>
+              <span>£{invoice.total.toFixed(2)}</span>
             </div>
           </div>
         </div>
 
         {/* Notes */}
-        {estimate.notes && (
+        {invoice.notes && (
           <div style={styles.notesSection}>
             <h3 style={styles.notesTitle}>Notes</h3>
-            <p style={styles.notesText}>{estimate.notes}</p>
+            <p style={styles.notesText}>{invoice.notes}</p>
           </div>
         )}
 
@@ -236,7 +236,7 @@ export default function SharedEstimatePage() {
         <div style={styles.footer}>
           <p>Thank you for your business!</p>
           <p style={styles.footerSmall}>
-            This is an estimate. Final costs may vary based on actual work performed.
+            This is an invoice. Final costs may vary based on actual work performed.
           </p>
           <div style={styles.disclaimer}>
             <p style={styles.disclaimerText}>
