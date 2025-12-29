@@ -44,15 +44,21 @@ export async function GET(
 
       const invoice = result.rows[0];
 
-      // Get business settings
-      const settingsResult = await client.query(
-        'SELECT * FROM business_settings WHERE user_id = $1 LIMIT 1',
-        [invoice.user_id]
-      );
+      // Get business settings (try without user_id filter if it doesn't exist)
+      let businessSettings = null;
+      try {
+        const settingsResult = await client.query(
+          'SELECT * FROM business_settings LIMIT 1'
+        );
+        businessSettings = settingsResult.rows[0] || null;
+      } catch (settingsError) {
+        console.error('Business settings query failed:', settingsError);
+        // Continue without business settings
+      }
 
       return NextResponse.json({
         invoice,
-        business_settings: settingsResult.rows[0] || null
+        business_settings: businessSettings
       });
 
     } finally {
@@ -61,6 +67,14 @@ export async function GET(
 
   } catch (error) {
     console.error('Error fetching shared invoice:', error);
-    return NextResponse.json({ error: 'Failed to load invoice' }, { status: 500 });
+    console.error('Error details:', {
+      message: error instanceof Error ? error.message : 'Unknown error',
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined
+    });
+    return NextResponse.json({
+      error: 'Failed to load invoice',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 });
   }
 }
