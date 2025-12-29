@@ -33,6 +33,7 @@ export async function GET(
          FROM invoices i
          LEFT JOIN line_items li ON li.document_type = 'invoice' AND li.document_id = i.id
          WHERE i.vehicle_reg = $1
+         GROUP BY i.id
          ORDER BY i.id DESC
          LIMIT 1`,
         [vehicleReg]

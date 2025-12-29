@@ -33,6 +33,7 @@ export async function GET(
          FROM estimates e
          LEFT JOIN line_items li ON li.document_type = 'estimate' AND li.document_id = e.id
          WHERE e.vehicle_reg = $1
+         GROUP BY e.id
          ORDER BY e.id DESC
          LIMIT 1`,
         [vehicleReg]
