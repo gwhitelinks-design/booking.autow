@@ -109,6 +109,19 @@ export default function BookingPage() {
 
         <form onSubmit={handleSubmit} style={styles.form}>
           <div style={styles.formGroup}>
+            <label style={styles.label}>Booked By *</label>
+            <input
+              type="text"
+              name="booked_by"
+              value={bookedBy}
+              onChange={(e) => setBookedBy(e.target.value)}
+              required
+              placeholder="Enter your name"
+              style={styles.input}
+            />
+          </div>
+
+          <div style={styles.formGroup}>
             <label style={styles.label}>Service Type *</label>
             <select
               name="service_type"
