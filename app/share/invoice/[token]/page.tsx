@@ -103,8 +103,8 @@ export default function SharedEstimatePage() {
         {/* Header */}
         <div style={styles.docHeader} className="doc-header">
           <div>
-            <h1 style={styles.docTitle}>ESTIMATE</h1>
-            <p style={styles.docDate}>Date: {new Date(estimate.estimate_date).toLocaleDateString('en-GB')}</p>
+            <h1 style={styles.docTitle}>INVOICE</h1>
+            <p style={styles.docDate}>Date: {new Date(estimate.invoice_date || estimate.estimate_date).toLocaleDateString('en-GB')}</p>
           </div>
           <div style={{ textAlign: 'right' as const }}>
             <img

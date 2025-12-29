@@ -111,7 +111,15 @@ A/N: 20052044
         const data = await response.json();
         const booking = data.booking;
 
+        const today = new Date().toISOString().split('T')[0];
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 30);
+        const dueDateStr = dueDate.toISOString().split('T')[0];
+
         setFormData({
+          invoice_number: '',
+          invoice_date: today,
+          due_date: dueDateStr,
           client_name: booking.customer_name || '',
           client_email: booking.customer_email || '',
           client_address: `${booking.location_address}, ${booking.location_postcode}`,

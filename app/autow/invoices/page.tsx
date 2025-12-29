@@ -93,6 +93,34 @@ export default function InvoicesPage() {
     }
   };
 
+  const generateShareLink = async (invoiceId: number) => {
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/invoice/generate-share-link', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ invoice_id: invoiceId })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+
+        // Copy to clipboard
+        navigator.clipboard.writeText(data.share_url);
+        alert(`Share link copied to clipboard!\n\n${data.share_url}`);
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error generating share link:', error);
+      alert('Failed to generate share link');
+    }
+  };
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -112,12 +140,21 @@ export default function InvoicesPage() {
           <button
             onClick={() => router.push('/autow/invoices/create')}
             style={styles.createButton}
+            className="header-btn"
           >
             + New Invoice
           </button>
           <button
+            onClick={() => router.push('/autow/estimates')}
+            style={styles.estimatesButton}
+            className="header-btn"
+          >
+            📋 Estimates
+          </button>
+          <button
             onClick={() => router.push('/autow/welcome')}
             style={styles.backButton}
+            className="header-btn"
           >
             ← Back
           </button>
@@ -157,13 +194,15 @@ export default function InvoicesPage() {
             <div key={invoice.id} style={styles.invoiceCard}>
               <div style={styles.cardHeader}>
                 <div>
-                  <h3 style={styles.invoiceNumber}>{invoice.invoice_number}</h3>
+                  <h3 style={styles.invoiceNumber}>{invoice.vehicle_reg || 'No Vehicle'}</h3>
                   <p style={styles.clientName}>{invoice.client_name}</p>
                 </div>
                 <div style={{ textAlign: 'right' as const }}>
                   {getStatusBadge(invoice.status)}
                   <p style={styles.invoiceDate}>
-                    {new Date(invoice.invoice_date).toLocaleDateString()}
+                    {invoice.invoice_date
+                      ? new Date(invoice.invoice_date).toLocaleDateString('en-GB')
+                      : 'No date'}
                   </p>
                 </div>
               </div>
@@ -171,12 +210,12 @@ export default function InvoicesPage() {
               <div style={styles.cardBody}>
                 <div style={styles.infoRow}>
                   <span style={styles.label}>Total:</span>
-                  <span style={styles.totalAmount}>£{invoice.total.toFixed(2)}</span>
+                  <span style={styles.totalAmount}>£{parseFloat(invoice.total.toString()).toFixed(2)}</span>
                 </div>
-                {invoice.balance_due > 0 && invoice.status !== 'paid' && (
+                {parseFloat(invoice.balance_due.toString()) > 0 && invoice.status !== 'paid' && (
                   <div style={styles.infoRow}>
                     <span style={styles.label}>Balance Due:</span>
-                    <span style={styles.balanceDue}>£{invoice.balance_due.toFixed(2)}</span>
+                    <span style={styles.balanceDue}>£{parseFloat(invoice.balance_due.toString()).toFixed(2)}</span>
                   </div>
                 )}
                 {invoice.vehicle_reg && (
@@ -206,6 +245,12 @@ export default function InvoicesPage() {
                 >
                   Edit
                 </button>
+                <button
+                  onClick={() => generateShareLink(invoice.id!)}
+                  style={{ ...styles.actionButton, ...styles.shareButton }}
+                >
+                  Share Link
+                </button>
                 {invoice.status === 'pending' && (
                   <button
                     onClick={() => markAsPaid(invoice.id!)}
@@ -229,6 +274,11 @@ export default function InvoicesPage() {
 
           .page-header > div:last-child {
             width: 100%;
+          }
+
+          .header-btn {
+            padding: 6px 12px !important;
+            font-size: 12px !important;
           }
         }
       `}</style>
@@ -274,6 +324,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '8px',
     fontSize: '15px',
     fontWeight: '700' as const,
+    cursor: 'pointer',
+  },
+  estimatesButton: {
+    padding: '12px 24px',
+    background: 'rgba(33, 150, 243, 0.2)',
+    color: '#2196f3',
+    border: '1px solid rgba(33, 150, 243, 0.4)',
+    borderRadius: '8px',
+    fontSize: '15px',
+    fontWeight: '600' as const,
     cursor: 'pointer',
   },
   backButton: {
@@ -390,6 +450,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(76, 175, 80, 0.1)',
     color: '#4caf50',
     borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  shareButton: {
+    background: 'rgba(255, 193, 7, 0.1)',
+    color: '#ffc107',
+    borderColor: 'rgba(255, 193, 7, 0.3)',
   },
   emptyState: {
     textAlign: 'center' as const,

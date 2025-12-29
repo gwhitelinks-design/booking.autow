@@ -7,15 +7,16 @@ export async function GET(
 ) {
   try {
     const { token } = params;
+    const vehicleReg = decodeURIComponent(token); // token is actually the vehicle_reg
 
-    if (!token) {
-      return NextResponse.json({ error: 'Token is required' }, { status: 400 });
+    if (!vehicleReg) {
+      return NextResponse.json({ error: 'Vehicle registration is required' }, { status: 400 });
     }
 
     const client = await pool.connect();
 
     try {
-      // Find estimate by share token
+      // Find estimate by vehicle_reg
       const result = await client.query(
         `SELECT e.*,
           json_agg(
@@ -31,9 +32,10 @@ export async function GET(
           ) FILTER (WHERE li.id IS NOT NULL) as line_items
          FROM estimates e
          LEFT JOIN line_items li ON li.document_type = 'estimate' AND li.document_id = e.id
-         WHERE e.share_token = $1
-         GROUP BY e.id`,
-        [token]
+         WHERE e.vehicle_reg = $1
+         ORDER BY e.id DESC
+         LIMIT 1`,
+        [vehicleReg]
       );
 
       if (result.rows.length === 0) {

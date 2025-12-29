@@ -107,6 +107,8 @@ A/N: 20052044
         const booking = data.booking;
 
         setFormData({
+          estimate_number: '',
+          estimate_date: new Date().toISOString().split('T')[0],
           client_name: booking.customer_name || '',
           client_email: booking.customer_email || '',
           client_address: `${booking.location_address}, ${booking.location_postcode}`,

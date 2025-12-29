@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     try {
       // Check if invoice exists and belongs to user
       const invoiceResult = await client.query(
-        'SELECT id, user_id, share_token FROM invoices WHERE id = $1',
+        'SELECT id, user_id, vehicle_reg FROM invoices WHERE id = $1',
         [invoice_id]
       );
 
@@ -35,30 +35,24 @@ export async function POST(request: NextRequest) {
 
       const invoice = invoiceResult.rows[0];
 
-      if (invoice.user_id !== userData.userId) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      // Skip user_id check for single-user system
+      // if (invoice.user_id !== userData.userId) {
+      //   return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
+      // }
+
+      // Check if invoice has a vehicle_reg
+      if (!invoice.vehicle_reg) {
+        return NextResponse.json({
+          error: 'This invoice does not have a vehicle registration. Please edit the invoice and add a vehicle registration first.'
+        }, { status: 400 });
       }
 
-      // Generate or return existing share token
-      let shareToken = invoice.share_token;
-
-      if (!shareToken) {
-        // Generate new token
-        shareToken = await client.query('SELECT generate_share_token() as token');
-        shareToken = shareToken.rows[0].token;
-
-        // Update invoice with share token
-        await client.query(
-          'UPDATE invoices SET share_token = $1, share_token_created_at = CURRENT_TIMESTAMP WHERE id = $2',
-          [shareToken, invoice_id]
-        );
-      }
-
-      const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/share/invoice/${shareToken}`;
+      // Use vehicle_reg as the share identifier
+      const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://booking.autow-services.co.uk'}/share/invoice/${encodeURIComponent(invoice.vehicle_reg)}`;
 
       return NextResponse.json({
         success: true,
-        share_token: shareToken,
+        vehicle_reg: invoice.vehicle_reg,
         share_url: shareUrl
       });
 
