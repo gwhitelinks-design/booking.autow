@@ -1,0 +1,84 @@
+import { NextRequest, NextResponse } from 'next/server';
+import pool from '@/lib/db';
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: { token: string } }
+) {
+  try {
+    const { token } = params;
+
+    if (!token) {
+      return NextResponse.json({ error: 'Token is required' }, { status: 400 });
+    }
+
+    const client = await pool.connect();
+
+    try {
+      // Find invoice by share token
+      const result = await client.query(
+        `SELECT i.*,
+          json_agg(
+            json_build_object(
+              'id', li.id,
+              'description', li.description,
+              'item_type', li.item_type,
+              'rate', li.rate,
+              'quantity', li.quantity,
+              'amount', li.amount,
+              'sort_order', li.sort_order
+            ) ORDER BY li.sort_order
+          ) FILTER (WHERE li.id IS NOT NULL) as line_items
+         FROM invoices i
+         LEFT JOIN line_items li ON li.document_type = 'invoice' AND li.document_id = i.id
+         WHERE i.share_token = $1
+         GROUP BY i.id`,
+        [token]
+      );
+
+      if (result.rows.length === 0) {
+        return NextResponse.json({ error: 'Invoice not found or link expired' }, { status: 404 });
+      }
+
+      const invoice = result.rows[0];
+
+      // Record the view
+      const ipAddress = request.headers.get('x-forwarded-for') ||
+                       request.headers.get('x-real-ip') ||
+                       'unknown';
+      const userAgent = request.headers.get('user-agent') || '';
+
+      await client.query(
+        `INSERT INTO document_views (document_type, document_id, ip_address, user_agent)
+         VALUES ('invoice', $1, $2, $3)`,
+        [invoice.id, ipAddress, userAgent]
+      );
+
+      // Update view count and last viewed
+      await client.query(
+        `UPDATE invoices
+         SET view_count = view_count + 1, last_viewed_at = CURRENT_TIMESTAMP
+         WHERE id = $1`,
+        [invoice.id]
+      );
+
+      // Get business settings
+      const settingsResult = await client.query(
+        'SELECT * FROM business_settings WHERE user_id = $1 LIMIT 1',
+        [invoice.user_id]
+      );
+
+      return NextResponse.json({
+        invoice,
+        business_settings: settingsResult.rows[0] || null
+      });
+
+    } finally {
+      client.release();
+    }
+
+  } catch (error) {
+    console.error('Error fetching shared invoice:', error);
+    return NextResponse.json({ error: 'Failed to load invoice' }, { status: 500 });
+  }
+}

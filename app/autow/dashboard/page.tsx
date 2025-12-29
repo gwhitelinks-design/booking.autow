@@ -192,6 +192,12 @@ export default function DashboardPage() {
 
       <div style={styles.actionButtons}>
         <button
+          onClick={() => router.push(`/autow/estimates/create?booking_id=${booking.id}`)}
+          style={styles.btnEstimate}
+        >
+          📋 Create Estimate
+        </button>
+        <button
           onClick={() => router.push(`/autow/edit?id=${booking.id}`)}
           style={styles.btnEdit}
         >
@@ -225,12 +231,12 @@ export default function DashboardPage() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <div style={styles.headerLeft}>
-          <img src="https://autow-services.co.uk/logo.png" alt="AUTOW" style={styles.logo} />
+      <div style={styles.header} className="dashboard-header">
+        <div style={styles.headerLeft} className="header-left">
+          <img src="https://autow-services.co.uk/logo.png" alt="AUTOW" style={styles.logo} className="dashboard-logo" />
           <div style={styles.headerText}>
-            <h1 style={styles.title}>Bookings Dashboard</h1>
-            <p style={styles.subtitle}>Manage your appointments</p>
+            <h1 style={styles.title} className="dashboard-title">Bookings Dashboard</h1>
+            <p style={styles.subtitle} className="dashboard-subtitle">Manage your appointments</p>
           </div>
         </div>
         <div style={styles.headerButtons}>
@@ -279,6 +285,32 @@ export default function DashboardPage() {
           <div style={styles.emptyState}>No upcoming bookings</div>
         )}
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .dashboard-header {
+            padding: 20px 10px !important;
+          }
+
+          .header-left {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 10px !important;
+          }
+
+          .dashboard-logo {
+            width: 120px !important;
+          }
+
+          .dashboard-title {
+            font-size: 19.6px !important;
+          }
+
+          .dashboard-subtitle {
+            font-size: 12px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -463,6 +495,17 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     gap: '12px',
     flexWrap: 'wrap' as const,
+  },
+  btnEstimate: {
+    padding: '12px 20px',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600' as const,
+    transition: 'all 0.3s',
+    background: '#9c27b0',
+    color: 'white',
   },
   btnEdit: {
     padding: '12px 20px',

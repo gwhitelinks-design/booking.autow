@@ -31,7 +31,7 @@ export default function WelcomePage() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.welcomeBox}>
+      <div style={styles.welcomeBox} className="welcome-box">
         <div style={styles.header}>
           <img
             src="https://autow-services.co.uk/logo.png"
@@ -60,12 +60,38 @@ export default function WelcomePage() {
             <h2 style={styles.optionTitle}>View Dashboard</h2>
             <p style={styles.optionDescription}>Manage existing bookings</p>
           </button>
+
+          <button
+            onClick={() => router.push('/autow/estimates')}
+            style={styles.optionCard}
+          >
+            <div style={styles.optionIcon}>📋</div>
+            <h2 style={styles.optionTitle}>Estimates</h2>
+            <p style={styles.optionDescription}>Create and manage estimates</p>
+          </button>
+
+          <button
+            onClick={() => router.push('/autow/invoices')}
+            style={styles.optionCard}
+          >
+            <div style={styles.optionIcon}>💰</div>
+            <h2 style={styles.optionTitle}>Invoices</h2>
+            <p style={styles.optionDescription}>Create and manage invoices</p>
+          </button>
         </div>
 
         <button onClick={handleLogout} style={styles.logoutButton}>
           🚪 Logout
         </button>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .welcome-box {
+            padding: 20px 10px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -112,7 +138,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   optionsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
     gap: '24px',
     marginBottom: '30px',
   },
@@ -120,7 +146,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%)',
     border: '2px solid rgba(48, 255, 55, 0.2)',
     borderRadius: '20px',
-    padding: '40px',
+    padding: '40px 10px',
     textAlign: 'center' as const,
     cursor: 'pointer',
     transition: 'all 0.3s',

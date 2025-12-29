@@ -90,7 +90,7 @@ export default function BookingPage() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.formContainer}>
+      <div style={styles.formContainer} className="form-container">
         <div style={styles.header}>
           <img
             src="https://autow-services.co.uk/logo.png"
@@ -124,7 +124,7 @@ export default function BookingPage() {
             </select>
           </div>
 
-          <div style={styles.formRow}>
+          <div style={styles.formRow} className="form-row">
             <div style={styles.formGroup}>
               <label style={styles.label}>Booking Date *</label>
               <input
@@ -201,7 +201,7 @@ export default function BookingPage() {
             />
           </div>
 
-          <div style={styles.formRow}>
+          <div style={styles.formRow} className="form-row">
             <div style={styles.formGroup}>
               <label style={styles.label}>Vehicle Make *</label>
               <input
@@ -301,6 +301,18 @@ export default function BookingPage() {
           </div>
         </form>
       </div>
+
+      <style>{`
+        @media (max-width: 768px) {
+          .form-container {
+            padding: 30px 10px !important;
+          }
+
+          .form-row {
+            grid-template-columns: 1fr !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
