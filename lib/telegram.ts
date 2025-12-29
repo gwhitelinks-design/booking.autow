@@ -58,3 +58,61 @@ ${bookingData.notes ? `📝 *Notes:* ${bookingData.notes}` : ''}
     return { success: false, error: String(error) };
   }
 }
+
+export async function sendShareLinkNotification(documentType: 'estimate' | 'invoice', documentData: any) {
+  const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
+  const telegramChatId = process.env.TELEGRAM_CHAT_ID;
+
+  if (!telegramBotToken || !telegramChatId) {
+    console.warn('Telegram credentials not configured');
+    return { success: false, error: 'Telegram not configured' };
+  }
+
+  const icon = documentType === 'estimate' ? '📋' : '💰';
+  const docType = documentType.charAt(0).toUpperCase() + documentType.slice(1);
+
+  const message = `
+${icon} *${docType.toUpperCase()} VIEWED*
+
+👤 *Client:* ${documentData.client_name}
+${documentData.client_phone ? `📞 *Phone:* ${documentData.client_phone}` : ''}
+${documentData.client_email ? `📧 *Email:* ${documentData.client_email}` : ''}
+
+${documentData.vehicle_reg ? `🚗 *Vehicle:* ${documentData.vehicle_reg}` : ''}
+${documentData.vehicle_make && documentData.vehicle_model ? `🔧 *Make/Model:* ${documentData.vehicle_make} ${documentData.vehicle_model}` : ''}
+
+💷 *Total:* £${parseFloat(documentData.total).toFixed(2)}
+${documentData.status ? `📊 *Status:* ${documentData.status}` : ''}
+
+⏰ *Viewed:* ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}
+  `.trim();
+
+  try {
+    const response = await fetch(
+      `https://api.telegram.org/bot${telegramBotToken}/sendMessage`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          chat_id: telegramChatId,
+          text: message,
+          parse_mode: 'Markdown',
+        }),
+      }
+    );
+
+    const data = await response.json();
+
+    if (response.ok) {
+      return { success: true, data };
+    } else {
+      console.error('Telegram API error:', data);
+      return { success: false, error: data };
+    }
+  } catch (error) {
+    console.error('Failed to send Telegram notification:', error);
+    return { success: false, error: String(error) };
+  }
+}

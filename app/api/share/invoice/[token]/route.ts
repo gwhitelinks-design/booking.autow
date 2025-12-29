@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { sendShareLinkNotification } from '@/lib/telegram';
 
 export async function GET(
   request: NextRequest,
@@ -53,6 +54,11 @@ export async function GET(
         console.error('Business settings query failed:', settingsError);
         // Continue without business settings
       }
+
+      // Send Telegram notification (non-blocking)
+      sendShareLinkNotification('invoice', invoice).catch(err =>
+        console.error('Telegram notification failed:', err)
+      );
 
       return NextResponse.json({
         invoice,
