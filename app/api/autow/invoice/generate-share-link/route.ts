@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
+import { randomUUID } from 'crypto';
 
-// Force rebuild - 2025-12-29 11:40
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');
@@ -24,9 +24,9 @@ export async function POST(request: NextRequest) {
     const client = await pool.connect();
 
     try {
-      // Check if invoice exists and belongs to user
+      // Check if invoice exists
       const invoiceResult = await client.query(
-        'SELECT id, user_id, vehicle_reg FROM invoices WHERE id = $1',
+        'SELECT id, share_token FROM invoices WHERE id = $1',
         [invoice_id]
       );
 
@@ -36,24 +36,24 @@ export async function POST(request: NextRequest) {
 
       const invoice = invoiceResult.rows[0];
 
-      // Skip user_id check for single-user system
-      // if (invoice.user_id !== userData.userId) {
-      //   return NextResponse.json({ error: 'Unauthorized' }, { status: 403 });
-      // }
+      // Generate new share token if one doesn't exist
+      let shareToken = invoice.share_token;
+      if (!shareToken) {
+        shareToken = randomUUID();
 
-      // Check if invoice has a vehicle_reg
-      if (!invoice.vehicle_reg) {
-        return NextResponse.json({
-          error: 'This invoice does not have a vehicle registration. Please edit the invoice and add a vehicle registration first.'
-        }, { status: 400 });
+        // Update invoice with new share token
+        await client.query(
+          'UPDATE invoices SET share_token = $1 WHERE id = $2',
+          [shareToken, invoice_id]
+        );
       }
 
-      // Use vehicle_reg as the share identifier
-      const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://booking.autow-services.co.uk'}/share/invoice/${encodeURIComponent(invoice.vehicle_reg)}`;
+      // Build share URL
+      const shareUrl = `${process.env.NEXT_PUBLIC_APP_URL || 'https://booking.autow-services.co.uk'}/share/invoice/${shareToken}`;
 
       return NextResponse.json({
         success: true,
-        vehicle_reg: invoice.vehicle_reg,
+        share_token: shareToken,
         share_url: shareUrl
       });
 

@@ -30,11 +30,20 @@ export async function POST(request: NextRequest) {
         ALTER TABLE estimates
         ADD COLUMN IF NOT EXISTS estimate_date DATE DEFAULT CURRENT_DATE;
 
+        -- Add share_token columns for secure sharing
+        ALTER TABLE estimates
+        ADD COLUMN IF NOT EXISTS share_token VARCHAR(100) UNIQUE;
+
+        ALTER TABLE invoices
+        ADD COLUMN IF NOT EXISTS share_token VARCHAR(100) UNIQUE;
+
         -- Create indexes for faster lookups
         CREATE INDEX IF NOT EXISTS idx_estimates_estimate_number ON estimates(estimate_number);
         CREATE INDEX IF NOT EXISTS idx_invoices_invoice_number ON invoices(invoice_number);
         CREATE INDEX IF NOT EXISTS idx_estimates_user_id ON estimates(user_id);
         CREATE INDEX IF NOT EXISTS idx_invoices_user_id ON invoices(user_id);
+        CREATE INDEX IF NOT EXISTS idx_estimates_share_token ON estimates(share_token);
+        CREATE INDEX IF NOT EXISTS idx_invoices_share_token ON invoices(share_token);
       `);
 
       return NextResponse.json({

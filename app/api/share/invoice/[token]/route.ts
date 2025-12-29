@@ -7,16 +7,15 @@ export async function GET(
 ) {
   try {
     const { token } = params;
-    const vehicleReg = decodeURIComponent(token); // token is actually the vehicle_reg
 
-    if (!vehicleReg) {
-      return NextResponse.json({ error: 'Vehicle registration is required' }, { status: 400 });
+    if (!token) {
+      return NextResponse.json({ error: 'Share token is required' }, { status: 400 });
     }
 
     const client = await pool.connect();
 
     try {
-      // Find invoice by vehicle_reg
+      // Find invoice by share_token
       const result = await client.query(
         `SELECT i.*,
           json_agg(
@@ -32,11 +31,9 @@ export async function GET(
           ) FILTER (WHERE li.id IS NOT NULL) as line_items
          FROM invoices i
          LEFT JOIN line_items li ON li.document_type = 'invoice' AND li.document_id = i.id
-         WHERE i.vehicle_reg = $1
-         GROUP BY i.id
-         ORDER BY i.id DESC
-         LIMIT 1`,
-        [vehicleReg]
+         WHERE i.share_token = $1
+         GROUP BY i.id`,
+        [token]
       );
 
       if (result.rows.length === 0) {
