@@ -9,29 +9,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userData = verifyToken(token);
-    if (!userData) {
+    const isValid = verifyToken(token);
+    if (!isValid) {
       return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
     }
 
     const client = await pool.connect();
 
     try {
-      // Update all estimates to belong to current user
+      // Update all estimates to belong to user_id 1 (single-user system)
       const estimatesResult = await client.query(
         'UPDATE estimates SET user_id = $1',
-        [userData.userId]
+        [1]
       );
 
-      // Update all invoices to belong to current user
+      // Update all invoices to belong to user_id 1 (single-user system)
       const invoicesResult = await client.query(
         'UPDATE invoices SET user_id = $1',
-        [userData.userId]
+        [1]
       );
 
       return NextResponse.json({
         success: true,
-        message: `Updated ${estimatesResult.rowCount} estimates and ${invoicesResult.rowCount} invoices to user_id ${userData.userId}`
+        message: `Updated ${estimatesResult.rowCount} estimates and ${invoicesResult.rowCount} invoices to user_id 1`
       });
 
     } finally {
