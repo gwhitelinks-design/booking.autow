@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { LineItem } from '@/lib/types';
 
+export const dynamic = 'force-dynamic';
+
 interface FormData {
   invoice_number: string;
   invoice_date: string;
