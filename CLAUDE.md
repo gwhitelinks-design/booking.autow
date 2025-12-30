@@ -4,9 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is **AUTOW Booking System** - a staff-only booking management application for AUTOW Services (mobile mechanic and automotive services). Built with Next.js 14 (App Router), TypeScript, and PostgreSQL (Supabase).
+This is **AUTOW Booking System** - a comprehensive business management application for AUTOW Services (mobile mechanic and automotive services). Built with Next.js 14 (App Router), TypeScript, and PostgreSQL (Supabase).
 
-**Not a public booking portal** - this is an internal tool for staff to manage customer appointments.
+**Features**:
+- Staff-only booking management (internal tool)
+- Estimate creation and management
+- Invoice generation and tracking
+- Customer-facing share links for estimates and invoices
+- Telegram notifications for bookings and document views
+- Delete functionality with confirmation
 
 ## Development Commands
 
@@ -52,19 +58,34 @@ psql $DATABASE_URL -f database/schema.sql
 ### Routing Structure
 
 ```
-/autow                    → Login page
-/autow/welcome            → Dashboard menu (protected)
-/autow/booking            → New booking form (protected)
-/autow/dashboard          → View all bookings (protected)
-/autow/edit?id=X          → Edit booking (protected)
+/autow                         → Login page
+/autow/welcome                 → Dashboard menu (protected)
+/autow/booking                 → New booking form (protected)
+/autow/dashboard               → View all bookings (protected)
+/autow/edit?id=X               → Edit booking (protected)
+/autow/estimates               → List all estimates (protected)
+/autow/estimates/create        → Create new estimate (protected)
+/autow/estimates/edit?id=X     → Edit estimate (protected)
+/autow/estimates/view?id=X     → View estimate details (protected)
+/autow/invoices                → List all invoices (protected)
+/autow/invoices/create         → Create new invoice (protected)
+/autow/invoices/edit?id=X      → Edit invoice (protected)
+/autow/invoices/view?id=X      → View invoice details (protected)
+/share/estimate/[token]        → Public estimate view (no auth)
+/share/invoice/[token]         → Public invoice view (no auth)
 ```
 
-All pages under `/autow` use a custom layout (`app/autow/layout.tsx`) with no header/footer.
+All pages under `/autow` use a custom layout (`app/autow/layout.tsx`) with no header/footer. Share links are public and use a different layout.
 
 ### API Routes
 
+**Authentication**
 ```
 POST /api/autow/auth/login           → Authenticate staff
+```
+
+**Bookings**
+```
 POST /api/autow/booking/create       → Create booking
 GET  /api/autow/booking/list         → List all bookings
 GET  /api/autow/booking/get?id=X     → Get single booking
@@ -73,19 +94,78 @@ POST /api/autow/booking/complete     → Mark completed
 POST /api/autow/booking/delete       → Delete booking
 ```
 
-All booking endpoints require `Authorization: Bearer <token>` header.
+**Estimates**
+```
+POST /api/autow/estimate/create              → Create estimate
+GET  /api/autow/estimate/list                → List all estimates
+GET  /api/autow/estimate/get?id=X            → Get single estimate
+POST /api/autow/estimate/update              → Update estimate
+POST /api/autow/estimate/delete              → Delete estimate
+POST /api/autow/estimate/generate-share-link → Generate share link
+POST /api/autow/estimate/convert-to-invoice  → Convert to invoice
+```
+
+**Invoices**
+```
+POST /api/autow/invoice/create               → Create invoice
+GET  /api/autow/invoice/list                 → List all invoices
+GET  /api/autow/invoice/get?id=X             → Get single invoice
+POST /api/autow/invoice/update               → Update invoice
+POST /api/autow/invoice/delete               → Delete invoice
+POST /api/autow/invoice/mark-as-paid         → Mark as paid
+POST /api/autow/invoice/generate-share-link  → Generate share link
+```
+
+**Public Share Links (No Auth Required)**
+```
+GET  /api/share/estimate/[token]     → Get estimate by share token
+GET  /api/share/invoice/[token]      → Get invoice by share token
+```
+
+All `/api/autow/*` endpoints require `Authorization: Bearer <token>` header. Share link endpoints are public but use secure UUID tokens.
 
 ### Database Schema
 
-**Main table**: `bookings`
+**Main tables**:
 
-Key fields:
+**`bookings`**
 - Service types: Mobile Mechanic, Garage Service, Vehicle Recovery, ECU Remapping
 - Status: confirmed, completed, cancelled
 - Includes customer details, vehicle info, location, timing
 - Auto-timestamps with trigger function
+- **Important function**: `check_availability(date, time, duration)` prevents double-booking
 
-**Important function**: `check_availability(date, time, duration)` prevents double-booking.
+**`estimates`**
+- Quote documents for customers
+- Status: draft, sent, accepted, declined, converted
+- Includes client details, vehicle info, line items
+- Supports share links via `share_token` (UUID)
+- Auto-calculates subtotal, VAT (20%), and total
+- Can be converted to invoices
+
+**`invoices`**
+- Final billing documents
+- Status: pending, paid, overdue, cancelled
+- Similar structure to estimates
+- Tracks payment status and due dates
+- Supports share links via `share_token` (UUID)
+- Can be marked as paid
+
+**`line_items`**
+- Shared by both estimates and invoices
+- Fields: description, item_type (part/service/labor/other), rate, quantity, amount
+- Polymorphic: `document_type` (estimate/invoice) + `document_id`
+- Supports sorting via `sort_order`
+
+**`business_settings`**
+- Company information for documents
+- Fields: business_name, email, address, phone, website, owner, workshop_location
+
+**Share Link System**:
+- Uses UUID tokens stored in `share_token` column
+- Tokens are unique and indexed for fast lookup
+- Public access without authentication
+- Sends Telegram notification when viewed
 
 See `database/schema.sql` for complete schema.
 
@@ -198,9 +278,12 @@ SMTP_HOST=...
 ## External Integrations
 
 ### Active
-- **Telegram Bot** (`lib/telegram.ts`): Sends message when new booking is created
-  - Called from `/api/autow/booking/create/route.ts`
+- **Telegram Bot** (`lib/telegram.ts`): Sends notifications for:
+  - **New bookings**: When staff creates a booking via `/api/autow/booking/create`
+  - **Share link views**: When customer opens estimate or invoice share link
+  - Notifications include: client details, vehicle info, amounts, timestamps
   - Non-blocking (doesn't fail if Telegram fails)
+  - Uses same bot token for both notification types
 
 ### Placeholder (Not Implemented)
 - **Google Calendar**: Schema has `calendar_event_id` field but no active code
@@ -235,7 +318,7 @@ Main types in `lib/types.ts`:
 ```typescript
 interface Booking {
   id?: number;
-  booked_by: string;
+  booked_by: string;          // Staff member name (editable field)
   booking_date: string;       // YYYY-MM-DD
   booking_time: string;       // HH:mm
   service_type: string;       // One of 4 service types
@@ -253,6 +336,68 @@ interface Booking {
   estimated_duration?: number; // minutes (default: 90)
   // ... timestamps
 }
+
+interface Estimate {
+  id?: number;
+  user_id?: number;
+  client_name: string;
+  client_email?: string;
+  client_address?: string;
+  client_phone?: string;
+  client_mobile?: string;
+  vehicle_reg?: string;
+  vehicle_make?: string;
+  vehicle_model?: string;
+  estimate_date: string;      // YYYY-MM-DD
+  estimate_number?: string;
+  subtotal: number;
+  vat_rate: number;           // 20
+  vat_amount: number;
+  total: number;
+  notes?: string;
+  status: string;             // draft/sent/accepted/declined/converted
+  share_token?: string;       // UUID for share links
+  line_items?: LineItem[];
+  // ... timestamps
+}
+
+interface Invoice {
+  id?: number;
+  user_id?: number;
+  client_name: string;
+  client_email?: string;
+  client_address?: string;
+  client_phone?: string;
+  client_mobile?: string;
+  vehicle_reg?: string;
+  vehicle_make?: string;
+  vehicle_model?: string;
+  invoice_date: string;       // YYYY-MM-DD
+  invoice_number?: string;
+  due_date?: string;          // YYYY-MM-DD
+  subtotal: number;
+  vat_rate: number;           // 20
+  vat_amount: number;
+  total: number;
+  balance_due: number;
+  notes?: string;
+  status: string;             // pending/paid/overdue/cancelled
+  share_token?: string;       // UUID for share links
+  line_items?: LineItem[];
+  // ... timestamps
+}
+
+interface LineItem {
+  id?: number;
+  document_type: 'estimate' | 'invoice';
+  document_id: number;
+  description: string;
+  item_type: 'part' | 'service' | 'labor' | 'other';
+  rate: number;
+  quantity: number;
+  amount: number;             // rate * quantity
+  sort_order?: number;
+}
 ```
 
 ## Dashboard Statistics Logic
@@ -263,14 +408,48 @@ Statistics are calculated from the bookings array:
 - **Completed**: Status = 'completed'
 - **Total Upcoming**: All future bookings (date >= today)
 
+## Key Features
+
+### Share Links
+- **Generation**: Click "Share Link" on any estimate or invoice to generate a unique URL
+- **UUID Tokens**: Each share link uses a cryptographically secure UUID (e.g., `abc123-def456-...`)
+- **Public Access**: No authentication required - customers can view without logging in
+- **Telegram Notifications**: You receive instant notification when customer opens the link
+- **Logo**: Share pages use `/latest2.png` from public directory
+- **Print Friendly**: Customers can print or save as PDF
+
+### Delete Functionality
+- **Confirmation**: All delete actions require confirmation dialog
+- **Red Styling**: Delete buttons are red to prevent accidental clicks
+- **Cascade Delete**: Deleting estimate/invoice also removes related line items and photos
+- **Transaction Safety**: Uses database transactions for data integrity
+
+### Booking Form
+- **Booked By Field**: Visible at top of form, pre-filled with username, editable
+- **Auto-Uppercase**: Vehicle reg and postcode automatically uppercase
+- **Availability Check**: Prevents double-booking using database function
+- **Telegram Notification**: Sends notification immediately after booking created
+
+### Estimates & Invoices
+- **Line Items**: Add multiple items with different types (parts, service, labor, other)
+- **Auto-Calculate**: Subtotal, VAT (20%), and total calculated automatically
+- **Status Tracking**: Track document lifecycle (draft → sent → accepted/paid)
+- **Convert to Invoice**: Estimates can be converted to invoices with one click
+- **Mark as Paid**: Invoices can be marked as paid to track payment status
+
 ## Critical Files
 
 - `lib/db.ts` - Database connection pool (modify for different database)
 - `lib/types.ts` - TypeScript interfaces (modify when schema changes)
+- `lib/telegram.ts` - Telegram notification functions (booking + share links)
 - `app/autow/layout.tsx` - Custom layout removes default Next.js chrome
 - `database/schema.sql` - Complete database schema with functions and indexes
 - `.env.local` - Local configuration (never commit this)
-- `app/api/autow/booking/create/route.ts` - Handles availability checking and Telegram notifications
+- `app/api/autow/booking/create/route.ts` - Booking creation with availability check
+- `app/api/share/estimate/[token]/route.ts` - Public estimate viewing with notification
+- `app/api/share/invoice/[token]/route.ts` - Public invoice viewing with notification
+- `app/share/estimate/[token]/page.tsx` - Customer-facing estimate page
+- `app/share/invoice/[token]/page.tsx` - Customer-facing invoice page
 
 ## Common Development Tasks
 
