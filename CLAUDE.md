@@ -247,6 +247,236 @@ Returns `true` if slot is available, `false` if conflict exists.
 - **Theme**: Dark with green accents
 - **Button styles**: Green background, white text, pointer cursor, border-radius 5px
 
+## Branding and Metadata (Social Media Sharing)
+
+### Overview
+
+When customers share invoice or estimate links on WhatsApp, Facebook, Twitter, or other platforms, the app displays AUTOW Services branding instead of generic "Create Next App" or Vercel branding. This is controlled through HTML metadata tags and Open Graph protocol.
+
+### What Gets Shared
+
+When a share link (`/share/invoice/[token]` or `/share/estimate/[token]`) is posted on social media:
+
+**Title**: "AUTOW Services - Document"
+**Description**: "View your estimate or invoice from AUTOW Services"
+**Image**: AUTOW logo (1200x630px Open Graph image)
+**Favicon**: AUTOW icon in browser tab
+
+### Metadata Configuration
+
+**Root Layout** (`app/layout.tsx`):
+```typescript
+export const metadata: Metadata = {
+  title: 'AUTOW Services',
+  description: 'Professional mobile mechanic and automotive services in Cornwall...',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  openGraph: {
+    type: 'website',
+    locale: 'en_GB',
+    siteName: 'AUTOW Services',
+    title: 'AUTOW Services - Professional Automotive Services',
+    description: '...',
+    images: [{ url: '/og-image.png', width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AUTOW Services',
+    images: ['/og-image.png'],
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
+};
+```
+
+**Share Layout** (`app/share/layout.tsx`):
+- Dedicated layout for `/share/*` routes
+- Prevents Google indexing (`robots: { index: false }`)
+- Same Open Graph images and metadata
+- Ensures share links display AUTOW branding
+
+### Required Images in `public/` Folder
+
+**1. Open Graph Image** (`public/og-image.png`)
+- **Dimensions**: 1200 x 630 pixels
+- **Format**: PNG or JPG
+- **Purpose**: Appears when sharing links on social media
+- **Current**: Copy of `latest2.png` logo
+- **Optimal**: Custom design with logo + text on black background with green accent
+
+**2. Favicon** (`public/favicon.ico`)
+- **Dimensions**: 32 x 32 pixels (or multi-size .ico)
+- **Format**: ICO file
+- **Purpose**: Browser tab icon, bookmarks
+- **Current**: Placeholder (85 bytes)
+- **Recommended**: Convert logo using https://favicon.io/
+
+**3. Apple Touch Icon** (`public/apple-touch-icon.png`)
+- **Dimensions**: 180 x 180 pixels
+- **Format**: PNG
+- **Purpose**: iOS home screen icon when user saves as app
+- **Current**: Copy of `latest2.png` logo
+
+### How It Works
+
+1. **Next.js Metadata API** automatically generates HTML `<meta>` tags in the `<head>`:
+   ```html
+   <meta property="og:title" content="AUTOW Services - Document" />
+   <meta property="og:description" content="View your estimate or invoice..." />
+   <meta property="og:image" content="https://yourdomain.com/og-image.png" />
+   <meta name="twitter:card" content="summary_large_image" />
+   ```
+
+2. **Social media crawlers** (WhatsApp, Facebook, Twitter) read these tags when a link is shared
+
+3. **Preview card displays**:
+   - The title from `og:title`
+   - The description from `og:description`
+   - The image from `og:image`
+   - The favicon from `<link rel="icon">`
+
+### Testing Social Sharing
+
+**Method 1: Social Media Debuggers**
+- **Facebook**: https://developers.facebook.com/tools/debug/
+- **Twitter**: https://cards-dev.twitter.com/validator
+- **LinkedIn**: https://www.linkedin.com/post-inspector/
+- **OpenGraph**: https://www.opengraph.xyz/
+
+**Method 2: Real Testing**
+1. Create a test invoice or estimate
+2. Generate share link
+3. Send link via WhatsApp or paste into social media
+4. Should display AUTOW branding (not "Create Next App")
+
+**Method 3: Browser Developer Tools**
+1. Open share link in browser
+2. Right-click → View Page Source
+3. Look for `<meta property="og:*">` tags in `<head>`
+4. Verify content matches AUTOW branding
+
+### Cache Clearing
+
+Social media platforms cache Open Graph data. After updating metadata:
+
+**WhatsApp**: Can take 24-48 hours to update cache (no manual clear)
+**Facebook**: Use https://developers.facebook.com/tools/debug/ → "Scrape Again"
+**Twitter**: Use https://cards-dev.twitter.com/validator → re-validate
+**LinkedIn**: Use https://www.linkedin.com/post-inspector/ → "Inspect"
+
+### Customizing Images
+
+To create better Open Graph images:
+
+**Option 1: Canva (Free)**
+1. Go to https://www.canva.com/
+2. Search "Open Graph" or create 1200x630px design
+3. Add AUTOW logo from `public/latest2.png`
+4. Add text: "AUTOW Services - Professional Automotive Services"
+5. Use brand colors: Black `#000000` background, Green `#30ff37` accent
+6. Download as PNG
+7. Save as `public/og-image.png`
+8. Commit and deploy
+
+**Option 2: Design Tool (Photoshop, Figma, etc.)**
+1. Create 1200 x 630 canvas
+2. Black background `#000000`
+3. Center AUTOW logo
+4. Add text overlay with business tagline
+5. Export as PNG (optimize for web, ~100-200 KB)
+6. Replace `public/og-image.png`
+
+**Option 3: Favicon Generator**
+For favicon.ico and apple-touch-icon.png:
+1. Go to https://favicon.io/favicon-converter/
+2. Upload your logo (`public/latest2.png`)
+3. Download generated favicon package
+4. Replace `public/favicon.ico`
+5. Optionally replace `public/apple-touch-icon.png` with higher quality version
+
+### Environment Variable
+
+The `metadataBase` URL is set from environment variable:
+```env
+NEXT_PUBLIC_APP_URL=https://yourdomain.vercel.app
+```
+
+This ensures all Open Graph URLs are absolute (required by social media crawlers).
+
+### SEO and Privacy
+
+**Share Pages** (`/share/*`):
+- Set `robots: { index: false, follow: false }`
+- Prevents Google from indexing share links
+- Keeps customer invoices/estimates private
+- Links are still shareable but not searchable
+
+**Main App** (`/autow`):
+- Normal metadata without noindex
+- Can appear in search results for "AUTOW Services"
+- Login required for access anyway
+
+### File Structure
+
+```
+app/
+├── layout.tsx              # Root metadata (site-wide)
+├── share/
+│   ├── layout.tsx          # Share-specific metadata (NEW)
+│   ├── invoice/[token]/
+│   │   └── page.tsx        # Invoice share page
+│   └── estimate/[token]/
+│       └── page.tsx        # Estimate share page
+└── autow/
+    └── layout.tsx          # Staff app layout (no metadata)
+
+public/
+├── og-image.png            # 1200x630 social media image (NEW)
+├── favicon.ico             # 32x32 browser icon (existing)
+├── apple-touch-icon.png    # 180x180 iOS icon (NEW)
+└── latest2.png             # Original logo (used in documents)
+```
+
+### Common Issues and Solutions
+
+**Issue**: Shared link still shows "Create Next App"
+- **Solution**: Clear social media cache (see Cache Clearing above)
+- **Solution**: Wait 24 hours for WhatsApp cache to expire
+- **Solution**: Verify deployment completed on Vercel
+
+**Issue**: Image not appearing in share preview
+- **Solution**: Check `og-image.png` exists in `public/` folder
+- **Solution**: Verify `NEXT_PUBLIC_APP_URL` is set in Vercel env vars
+- **Solution**: Image must be absolute URL (not relative path)
+- **Solution**: Image must be under 8 MB for most platforms
+
+**Issue**: Wrong title/description appearing
+- **Solution**: Check `app/share/layout.tsx` exists
+- **Solution**: Verify metadata in `app/layout.tsx` is correct
+- **Solution**: Clear browser cache and rebuild: `npm run build`
+
+**Issue**: Changes not showing after deployment
+- **Solution**: Hard refresh browser: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
+- **Solution**: Clear social platform cache using debugger tools
+- **Solution**: Generate new share link (new token may bypass cache)
+
+### Documentation Files
+
+- **`BRANDING_SETUP.md`**: Detailed guide for image creation and customization
+- **`app/layout.tsx`**: Root metadata configuration
+- **`app/share/layout.tsx`**: Share page metadata configuration
+
+### Future Enhancements
+
+Potential improvements:
+1. **Dynamic Open Graph images**: Generate unique image per invoice/estimate with amount
+2. **Multiple Open Graph images**: Different images for estimates vs invoices
+3. **Structured data**: Add JSON-LD for rich search results
+4. **Custom domain**: Use custom domain instead of .vercel.app
+5. **Analytics**: Track share link views with Open Graph tags
+
 ## Environment Variables
 
 ### Required
@@ -439,15 +669,31 @@ Statistics are calculated from the bookings array:
 
 ## Critical Files
 
+**Core Application**
 - `lib/db.ts` - Database connection pool (modify for different database)
 - `lib/types.ts` - TypeScript interfaces (modify when schema changes)
 - `lib/telegram.ts` - Telegram notification functions (booking + share links)
-- `app/autow/layout.tsx` - Custom layout removes default Next.js chrome
 - `database/schema.sql` - Complete database schema with functions and indexes
 - `.env.local` - Local configuration (never commit this)
+
+**Layouts and Metadata**
+- `app/layout.tsx` - Root layout with complete Open Graph metadata and branding
+- `app/share/layout.tsx` - Share page layout with metadata (prevents Google indexing)
+- `app/autow/layout.tsx` - Staff app layout (removes default Next.js chrome)
+
+**Branding Assets**
+- `public/og-image.png` - Open Graph image for social media sharing (1200x630)
+- `public/favicon.ico` - Browser tab icon (32x32)
+- `public/apple-touch-icon.png` - iOS home screen icon (180x180)
+- `public/latest2.png` - Original logo used in documents
+- `BRANDING_SETUP.md` - Guide for customizing branding and images
+
+**API Routes**
 - `app/api/autow/booking/create/route.ts` - Booking creation with availability check
 - `app/api/share/estimate/[token]/route.ts` - Public estimate viewing with notification
 - `app/api/share/invoice/[token]/route.ts` - Public invoice viewing with notification
+
+**Share Pages**
 - `app/share/estimate/[token]/page.tsx` - Customer-facing estimate page
 - `app/share/invoice/[token]/page.tsx` - Customer-facing invoice page
 
@@ -543,6 +789,28 @@ To add multiple users, you would need to:
 - Token expired or invalid
 - Clear localStorage and re-login
 - Check token validation logic in API routes
+
+### Share links show "Create Next App" or Vercel branding
+- Social media platforms cache Open Graph data (can take 24-48 hours to update)
+- Use Facebook debugger to force cache clear: https://developers.facebook.com/tools/debug/
+- Verify `NEXT_PUBLIC_APP_URL` is set correctly in Vercel environment variables
+- Check `public/og-image.png` exists and is accessible
+- Verify `app/share/layout.tsx` exists with proper metadata
+- Generate a new share link (new token may bypass cache)
+
+### Open Graph image not showing in share preview
+- Image must be absolute URL (check `metadataBase` in `app/layout.tsx`)
+- Image size must be under 8 MB for most platforms
+- Recommended dimensions: 1200 x 630 pixels
+- Use https://www.opengraph.xyz/ to test
+- Check browser console for 404 errors on image load
+
+### Favicon not updating in browser
+- Browser caches favicons aggressively
+- Hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
+- Clear browser cache completely
+- Try different browser to verify
+- Check `public/favicon.ico` exists and is valid .ico format
 
 ## Architecture Decisions
 
