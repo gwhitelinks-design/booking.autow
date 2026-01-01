@@ -2,7 +2,39 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: 'AUTOW Services',
-  description: 'AUTOW Services - Professional automotive services',
+  description: 'Professional mobile mechanic and automotive services in Cornwall. Mobile repairs, garage services, vehicle recovery, and ECU remapping.',
+  keywords: 'mobile mechanic, auto repair, vehicle recovery, ECU remapping, Cornwall, Penzance',
+  authors: [{ name: 'AUTOW Services' }],
+  creator: 'AUTOW Services',
+  publisher: 'AUTOW Services',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  openGraph: {
+    type: 'website',
+    locale: 'en_GB',
+    url: '/',
+    siteName: 'AUTOW Services',
+    title: 'AUTOW Services - Professional Automotive Services',
+    description: 'Professional mobile mechanic and automotive services in Cornwall. Mobile repairs, garage services, vehicle recovery, and ECU remapping.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'AUTOW Services Logo',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'AUTOW Services',
+    description: 'Professional mobile mechanic and automotive services in Cornwall.',
+    images: ['/og-image.png'],
+  },
+  icons: {
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
