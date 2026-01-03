@@ -147,6 +147,7 @@ export default function BookingPage() {
                 onChange={handleChange}
                 required
                 style={styles.input}
+                className="date-input"
               />
             </div>
 
@@ -159,6 +160,7 @@ export default function BookingPage() {
                 onChange={handleChange}
                 required
                 style={styles.input}
+                className="time-input"
               />
             </div>
           </div>
@@ -323,6 +325,39 @@ export default function BookingPage() {
 
           .form-row {
             grid-template-columns: 1fr !important;
+          }
+
+          .date-input,
+          .time-input {
+            font-size: 14px !important;
+            padding: 12px !important;
+            max-width: 100% !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+          }
+
+          /* Fix for iOS Safari time picker */
+          .time-input::-webkit-datetime-edit {
+            padding: 0 !important;
+            display: flex !important;
+            align-items: center !important;
+          }
+
+          /* Ensure native pickers have proper viewport */
+          .date-input,
+          .time-input {
+            -webkit-appearance: none;
+            appearance: none;
+            background: rgba(255, 255, 255, 0.05) !important;
+            color: #fff !important;
+          }
+
+          /* Style the native picker buttons */
+          .date-input::-webkit-calendar-picker-indicator,
+          .time-input::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            cursor: pointer;
+            opacity: 0.8;
           }
         }
       `}</style>
