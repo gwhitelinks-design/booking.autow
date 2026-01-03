@@ -45,6 +45,19 @@ export default function BookingPage() {
     }));
   };
 
+  const handleTimeInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value.replace(/[^\d]/g, ''); // Remove non-digits
+
+    if (value.length >= 2) {
+      value = value.slice(0, 2) + ':' + value.slice(2, 4);
+    }
+
+    setFormData(prev => ({
+      ...prev,
+      booking_time: value
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -153,13 +166,16 @@ export default function BookingPage() {
             </div>
 
             <div style={styles.formGroup}>
-              <label style={styles.label}>Booking Time *</label>
+              <label style={styles.label}>Booking Time (24hr format) *</label>
               <input
-                type="time"
+                type="text"
                 name="booking_time"
                 value={formData.booking_time}
-                onChange={handleChange}
+                onChange={handleTimeInput}
                 required
+                placeholder="14:30"
+                maxLength={5}
+                inputMode="numeric"
                 style={styles.input}
                 className="time-input"
               />
@@ -333,43 +349,29 @@ export default function BookingPage() {
             font-size: 16px !important;
             padding: 12px !important;
             max-width: 100% !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
             touch-action: manipulation !important;
           }
 
-          /* Prevent auto-zoom on focus by using 16px minimum */
+          /* Simple time text input */
           .time-input {
-            font-size: 16px !important;
-            padding: 12px !important;
-            height: auto !important;
-            min-height: 44px !important;
+            text-align: center !important;
+            letter-spacing: 2px !important;
+            font-weight: 600 !important;
+            font-family: monospace !important;
           }
 
-          /* Allow time picker internals to scale naturally */
-          .time-input::-webkit-datetime-edit {
-            padding: 0 !important;
-          }
-
-          /* Ensure native pickers have proper viewport */
-          .date-input,
-          .time-input {
+          /* Date picker styling */
+          .date-input {
             -webkit-appearance: none;
             appearance: none;
             background: rgba(255, 255, 255, 0.05) !important;
             color: #fff !important;
           }
 
-          /* Style the native picker buttons smaller */
-          .date-input::-webkit-calendar-picker-indicator,
-          .time-input::-webkit-calendar-picker-indicator {
+          .date-input::-webkit-calendar-picker-indicator {
             filter: invert(1);
             cursor: pointer;
             opacity: 0.8;
-            width: 16px !important;
-            height: 16px !important;
-            padding: 0 !important;
-            margin: 0 !important;
           }
         }
       `}</style>
