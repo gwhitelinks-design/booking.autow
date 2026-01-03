@@ -155,15 +155,11 @@ export default function BookingPage() {
             <div style={styles.formGroup}>
               <label style={styles.label}>Booking Time *</label>
               <input
-                type="text"
+                type="time"
                 name="booking_time"
                 value={formData.booking_time}
                 onChange={handleChange}
                 required
-                placeholder="14:30"
-                pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
-                maxLength={5}
-                inputMode="numeric"
                 style={styles.input}
                 className="time-input"
               />
@@ -334,33 +330,57 @@ export default function BookingPage() {
 
           .date-input,
           .time-input {
-            font-size: 14px !important;
-            padding: 12px !important;
+            font-size: 13px !important;
+            padding: 10px !important;
             max-width: 100% !important;
             overflow: hidden !important;
             text-overflow: ellipsis !important;
           }
 
-          /* Time input as text field */
+          /* Make time input smaller to prevent zoom */
           .time-input {
-            text-align: center;
-            letter-spacing: 1px;
-            font-variant-numeric: tabular-nums;
+            font-size: 12px !important;
+            padding: 8px !important;
+            height: auto !important;
+            min-height: 40px !important;
           }
 
-          /* Ensure native date picker has proper viewport */
-          .date-input {
+          /* Force smaller display for time picker internals */
+          .time-input::-webkit-datetime-edit {
+            font-size: 12px !important;
+            padding: 0 !important;
+          }
+
+          .time-input::-webkit-datetime-edit-fields-wrapper {
+            font-size: 12px !important;
+          }
+
+          .time-input::-webkit-datetime-edit-hour-field,
+          .time-input::-webkit-datetime-edit-minute-field,
+          .time-input::-webkit-datetime-edit-ampm-field {
+            font-size: 12px !important;
+            padding: 2px !important;
+          }
+
+          /* Ensure native pickers have proper viewport */
+          .date-input,
+          .time-input {
             -webkit-appearance: none;
             appearance: none;
             background: rgba(255, 255, 255, 0.05) !important;
             color: #fff !important;
           }
 
-          /* Style the native date picker button */
-          .date-input::-webkit-calendar-picker-indicator {
+          /* Style the native picker buttons smaller */
+          .date-input::-webkit-calendar-picker-indicator,
+          .time-input::-webkit-calendar-picker-indicator {
             filter: invert(1);
             cursor: pointer;
             opacity: 0.8;
+            width: 16px !important;
+            height: 16px !important;
+            padding: 0 !important;
+            margin: 0 !important;
           }
         }
       `}</style>
