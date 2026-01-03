@@ -330,36 +330,25 @@ export default function BookingPage() {
 
           .date-input,
           .time-input {
-            font-size: 13px !important;
-            padding: 10px !important;
+            font-size: 16px !important;
+            padding: 12px !important;
             max-width: 100% !important;
             overflow: hidden !important;
             text-overflow: ellipsis !important;
+            touch-action: manipulation !important;
           }
 
-          /* Make time input smaller to prevent zoom */
+          /* Prevent auto-zoom on focus by using 16px minimum */
           .time-input {
-            font-size: 12px !important;
-            padding: 8px !important;
+            font-size: 16px !important;
+            padding: 12px !important;
             height: auto !important;
-            min-height: 40px !important;
+            min-height: 44px !important;
           }
 
-          /* Force smaller display for time picker internals */
+          /* Allow time picker internals to scale naturally */
           .time-input::-webkit-datetime-edit {
-            font-size: 12px !important;
             padding: 0 !important;
-          }
-
-          .time-input::-webkit-datetime-edit-fields-wrapper {
-            font-size: 12px !important;
-          }
-
-          .time-input::-webkit-datetime-edit-hour-field,
-          .time-input::-webkit-datetime-edit-minute-field,
-          .time-input::-webkit-datetime-edit-ampm-field {
-            font-size: 12px !important;
-            padding: 2px !important;
           }
 
           /* Ensure native pickers have proper viewport */
