@@ -134,6 +134,7 @@ export default function BookingPage() {
               <option value="Garage Service">Garage Service</option>
               <option value="Vehicle Recovery">Vehicle Recovery</option>
               <option value="ECU Remapping">ECU Remapping</option>
+              <option value="Service">Service</option>
             </select>
           </div>
 
@@ -154,11 +155,15 @@ export default function BookingPage() {
             <div style={styles.formGroup}>
               <label style={styles.label}>Booking Time *</label>
               <input
-                type="time"
+                type="text"
                 name="booking_time"
                 value={formData.booking_time}
                 onChange={handleChange}
                 required
+                placeholder="14:30"
+                pattern="([01]?[0-9]|2[0-3]):[0-5][0-9]"
+                maxLength={5}
+                inputMode="numeric"
                 style={styles.input}
                 className="time-input"
               />
@@ -336,25 +341,23 @@ export default function BookingPage() {
             text-overflow: ellipsis !important;
           }
 
-          /* Fix for iOS Safari time picker */
-          .time-input::-webkit-datetime-edit {
-            padding: 0 !important;
-            display: flex !important;
-            align-items: center !important;
+          /* Time input as text field */
+          .time-input {
+            text-align: center;
+            letter-spacing: 1px;
+            font-variant-numeric: tabular-nums;
           }
 
-          /* Ensure native pickers have proper viewport */
-          .date-input,
-          .time-input {
+          /* Ensure native date picker has proper viewport */
+          .date-input {
             -webkit-appearance: none;
             appearance: none;
             background: rgba(255, 255, 255, 0.05) !important;
             color: #fff !important;
           }
 
-          /* Style the native picker buttons */
-          .date-input::-webkit-calendar-picker-indicator,
-          .time-input::-webkit-calendar-picker-indicator {
+          /* Style the native date picker button */
+          .date-input::-webkit-calendar-picker-indicator {
             filter: invert(1);
             cursor: pointer;
             opacity: 0.8;
