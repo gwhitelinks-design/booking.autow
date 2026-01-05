@@ -25,8 +25,6 @@ export default function BookingPage() {
     vehicle_reg: searchParams.get('registration') || '',
     vehicle_make: searchParams.get('vehicle_make') || '',
     vehicle_model: searchParams.get('vehicle_model') || '',
-    vehicle_make: '',
-    vehicle_model: '',
     location_address: '',
     location_postcode: '',
     issue_description: searchParams.get('issue') || '',
