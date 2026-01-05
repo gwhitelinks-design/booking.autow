@@ -156,70 +156,68 @@ export default function SharedAssessmentPage() {
   };
 
   return (
-    <>
-      <style>{responsiveStyles}</style>
-      <div style={styles.container}>
+    <div style={styles.container} className="mobile-container">
         {/* Print Button */}
         <div style={styles.actionBar} className="no-print">
-          <button onClick={handlePrint} style={styles.printBtn}>
+          <button onClick={handlePrint} style={styles.printBtn} className="mobile-btn">
             Print / Save as PDF
           </button>
         </div>
 
         {/* Header */}
-        <div style={styles.header}>
+        <div style={styles.header} className="mobile-header">
           <div style={styles.headerTop}>
             <div style={styles.logoSection}>
-              <img src="https://autow-services.co.uk/logo.png" alt="AUTOW Services" style={styles.logo} />
+              <img src="https://autow-services.co.uk/logo.png" alt="AUTOW Services" style={styles.logo} className="mobile-logo" />
               <div style={styles.headerText}>
-                <h1 style={styles.headerTitle}>Vehicle Damage Assessment</h1>
-                <p style={styles.headerSubtitle}>Professional Inspection Report</p>
+                <h1 style={styles.headerTitle} className="mobile-title">Vehicle Damage Assessment</h1>
+                <p style={styles.headerSubtitle} className="mobile-subtitle">Professional Inspection Report</p>
               </div>
             </div>
-            <div style={styles.regBadge}>{assessment.vehicle_reg}</div>
+            <div style={styles.regBadge} className="mobile-badge">{assessment.vehicle_reg}</div>
           </div>
 
-          <div style={styles.infoGrid}>
-            <div style={styles.infoItem}>
-              <div style={styles.infoLabel}>Make / Model</div>
-              <div style={styles.infoValue}>{assessment.vehicle_make} ({assessment.vehicle_engine})</div>
+          <div style={styles.infoGrid} className="mobile-grid">
+            <div style={styles.infoItem} className="mobile-info-item">
+              <div style={styles.infoLabel} className="mobile-info-label">Make / Model</div>
+              <div style={styles.infoValue} className="mobile-info-value">{assessment.vehicle_make} ({assessment.vehicle_engine})</div>
             </div>
-            <div style={styles.infoItem}>
-              <div style={styles.infoLabel}>Colour</div>
-              <div style={styles.infoValue}>{assessment.vehicle_colour}</div>
+            <div style={styles.infoItem} className="mobile-info-item">
+              <div style={styles.infoLabel} className="mobile-info-label">Colour</div>
+              <div style={styles.infoValue} className="mobile-info-value">{assessment.vehicle_colour}</div>
             </div>
-            <div style={styles.infoItem}>
-              <div style={styles.infoLabel}>Year</div>
-              <div style={styles.infoValue}>{assessment.vehicle_year}</div>
+            <div style={styles.infoItem} className="mobile-info-item">
+              <div style={styles.infoLabel} className="mobile-info-label">Year</div>
+              <div style={styles.infoValue} className="mobile-info-value">{assessment.vehicle_year}</div>
             </div>
-            <div style={styles.infoItem}>
-              <div style={styles.infoLabel}>Assessment Method</div>
-              <div style={styles.infoValue}>{assessment.assessment_method}</div>
+            <div style={styles.infoItem} className="mobile-info-item">
+              <div style={styles.infoLabel} className="mobile-info-label">Assessment Method</div>
+              <div style={styles.infoValue} className="mobile-info-value">{assessment.assessment_method}</div>
             </div>
-            <div style={styles.infoItem}>
-              <div style={styles.infoLabel}>Assessment Date</div>
-              <div style={{ ...styles.infoValue, color: '#4ade80' }}>{assessment.assessment_date}</div>
+            <div style={styles.infoItem} className="mobile-info-item">
+              <div style={styles.infoLabel} className="mobile-info-label">Assessment Date</div>
+              <div style={{ ...styles.infoValue, color: '#4ade80' }} className="mobile-info-value">{assessment.assessment_date}</div>
             </div>
-            <div style={styles.infoItem}>
-              <div style={styles.infoLabel}>Video Duration</div>
-              <div style={styles.infoValue}>{assessment.video_duration}</div>
+            <div style={styles.infoItem} className="mobile-info-item">
+              <div style={styles.infoLabel} className="mobile-info-label">Video Duration</div>
+              <div style={styles.infoValue} className="mobile-info-value">{assessment.video_duration}</div>
             </div>
-            <div style={styles.infoItem}>
-              <div style={styles.infoLabel}>Assessor</div>
-              <div style={styles.infoValue}>{assessment.assessor}</div>
+            <div style={styles.infoItem} className="mobile-info-item">
+              <div style={styles.infoLabel} className="mobile-info-label">Assessor</div>
+              <div style={styles.infoValue} className="mobile-info-value">{assessment.assessor}</div>
             </div>
           </div>
         </div>
 
         {/* Critical Alert */}
-        <div style={styles.alertBanner}>
-          <div style={styles.alertTitle}>
-            <span style={{ fontSize: '1.5em' }}>&#9888;</span>
+        <div style={styles.alertBanner} className="mobile-alert">
+          <div style={styles.alertTitle} className="mobile-alert-title">
+            <span style={{ fontSize: '1.2em' }}>&#9888;</span>
             CRITICAL: Multiple Safety Systems Compromised - Vehicle NOT Roadworthy
           </div>
           <div style={styles.alertContent}>
             {assessment.critical_alerts.map((alert: any, index: number) => (
-              <p key={index} style={styles.alertText}>
+              <p key={index} style={styles.alertText} className="mobile-alert-text">
                 <strong>{index + 1}. {alert.title}:</strong> {alert.description}
               </p>
             ))}
@@ -227,12 +225,12 @@ export default function SharedAssessmentPage() {
         </div>
 
         {/* Assessment Voice Transcript */}
-        <div style={styles.card}>
+        <div style={styles.card} className="mobile-card">
           <div style={styles.cardHeader}>
             <div style={{ ...styles.cardIcon, background: 'rgba(124,58,237,0.2)' }}>&#128221;</div>
-            <div style={styles.cardTitle}>Assessment Voice Transcript</div>
+            <div style={styles.cardTitle} className="mobile-title">Assessment Voice Transcript</div>
           </div>
-          <div style={styles.transcript}>
+          <div style={styles.transcript} className="mobile-transcript">
             {assessment.transcript.split('\n\n').map((paragraph: string, index: number) => (
               <p key={index} style={styles.transcriptParagraph}>
                 {paragraph.startsWith('- ') ? (
@@ -248,21 +246,21 @@ export default function SharedAssessmentPage() {
         </div>
 
         {/* Key Findings Summary */}
-        <div style={styles.card}>
+        <div style={styles.card} className="mobile-card">
           <div style={styles.cardHeader}>
             <div style={{ ...styles.cardIcon, background: 'rgba(220,38,38,0.2)' }}>&#9888;</div>
-            <div style={styles.cardTitle}>Key Findings Summary</div>
+            <div style={styles.cardTitle} className="mobile-title">Key Findings Summary</div>
           </div>
 
           {/* Critical - Engine & Drive System */}
           <div style={styles.findingGroup}>
-            <div style={{ ...styles.findingGroupTitle, background: 'rgba(220,38,38,0.15)', color: '#f87171', borderLeft: '3px solid #dc2626' }}>
+            <div style={{ ...styles.findingGroupTitle, background: 'rgba(220,38,38,0.15)', color: '#f87171', borderLeft: '3px solid #dc2626' }} className="mobile-finding-title">
               CRITICAL - ENGINE & DRIVE SYSTEM
             </div>
             <ul style={styles.findingList}>
               {assessment.findings.critical.map((item: string, index: number) => (
-                <li key={index} style={styles.findingItem}>
-                  <span style={{ ...styles.findingMarker, background: '#dc2626', color: '#fff' }}>!</span>
+                <li key={index} style={styles.findingItem} className="mobile-finding-item">
+                  <span style={{ ...styles.findingMarker, background: '#dc2626', color: '#fff' }} className="mobile-finding-marker">!</span>
                   <span>{item}</span>
                 </li>
               ))}
@@ -271,13 +269,13 @@ export default function SharedAssessmentPage() {
 
           {/* Structural Damage */}
           <div style={styles.findingGroup}>
-            <div style={{ ...styles.findingGroupTitle, background: 'rgba(249,115,22,0.15)', color: '#fb923c', borderLeft: '3px solid #f97316' }}>
+            <div style={{ ...styles.findingGroupTitle, background: 'rgba(249,115,22,0.15)', color: '#fb923c', borderLeft: '3px solid #f97316' }} className="mobile-finding-title">
               STRUCTURAL DAMAGE
             </div>
             <ul style={styles.findingList}>
               {assessment.findings.structural.map((item: string, index: number) => (
-                <li key={index} style={styles.findingItem}>
-                  <span style={{ ...styles.findingMarker, background: '#f97316', color: '#fff' }}>X</span>
+                <li key={index} style={styles.findingItem} className="mobile-finding-item">
+                  <span style={{ ...styles.findingMarker, background: '#f97316', color: '#fff' }} className="mobile-finding-marker">X</span>
                   <span>{item}</span>
                 </li>
               ))}
@@ -286,17 +284,17 @@ export default function SharedAssessmentPage() {
 
           {/* Undercarriage Damage */}
           <div style={styles.findingGroup}>
-            <div style={{ ...styles.findingGroupTitle, background: 'rgba(234,179,8,0.15)', color: '#fbbf24', borderLeft: '3px solid #eab308' }}>
+            <div style={{ ...styles.findingGroupTitle, background: 'rgba(234,179,8,0.15)', color: '#fbbf24', borderLeft: '3px solid #eab308' }} className="mobile-finding-title">
               UNDERCARRIAGE DAMAGE
             </div>
             <ul style={styles.findingList}>
               {assessment.findings.undercarriage.map((item: any, index: number) => (
-                <li key={index} style={styles.findingItem}>
+                <li key={index} style={styles.findingItem} className="mobile-finding-item">
                   <span style={{
                     ...styles.findingMarker,
                     background: item.priority === 'critical' ? '#dc2626' : '#f97316',
                     color: '#fff'
-                  }}>{item.priority === 'critical' ? '!' : 'X'}</span>
+                  }} className="mobile-finding-marker">{item.priority === 'critical' ? '!' : 'X'}</span>
                   <span>{item.text}</span>
                 </li>
               ))}
@@ -305,17 +303,17 @@ export default function SharedAssessmentPage() {
 
           {/* Body & Trim */}
           <div style={styles.findingGroup}>
-            <div style={{ ...styles.findingGroupTitle, background: 'rgba(59,130,246,0.15)', color: '#60a5fa', borderLeft: '3px solid #3b82f6' }}>
+            <div style={{ ...styles.findingGroupTitle, background: 'rgba(59,130,246,0.15)', color: '#60a5fa', borderLeft: '3px solid #3b82f6' }} className="mobile-finding-title">
               BODY & TRIM
             </div>
             <ul style={styles.findingList}>
               {assessment.findings.body.map((item: any, index: number) => (
-                <li key={index} style={styles.findingItem}>
+                <li key={index} style={styles.findingItem} className="mobile-finding-item">
                   <span style={{
                     ...styles.findingMarker,
                     background: item.priority === 'high' ? '#f97316' : '#eab308',
                     color: item.priority === 'medium' ? '#000' : '#fff'
-                  }}>X</span>
+                  }} className="mobile-finding-marker">X</span>
                   <span>{item.text}</span>
                 </li>
               ))}
@@ -324,12 +322,12 @@ export default function SharedAssessmentPage() {
         </div>
 
         {/* Damage Location Map */}
-        <div style={styles.card}>
+        <div style={styles.card} className="mobile-card">
           <div style={styles.cardHeader}>
             <div style={{ ...styles.cardIcon, background: 'rgba(59,130,246,0.2)' }}>&#128663;</div>
-            <div style={styles.cardTitle}>Damage Location Map</div>
+            <div style={styles.cardTitle} className="mobile-title">Damage Location Map</div>
           </div>
-          <p style={{ color: '#64748b', marginBottom: '15px', fontSize: '0.9em' }}>Hover over markers to see damage details</p>
+          <p style={{ color: '#64748b', marginBottom: '15px', fontSize: '0.9em' }} className="mobile-text">Tap markers to see damage details</p>
 
           <div style={styles.diagramContainer}>
             <div style={styles.diagramWrapper}>
@@ -357,22 +355,22 @@ export default function SharedAssessmentPage() {
               ))}
             </div>
 
-            <div style={styles.legend}>
-              <div style={styles.legendTitle}>Damage Severity</div>
-              <div style={styles.legendItem}>
-                <span style={{ ...styles.legendDot, background: '#dc2626' }}></span>
+            <div style={styles.legend} className="mobile-legend">
+              <div style={styles.legendTitle} className="mobile-legend-title">Damage Severity</div>
+              <div style={styles.legendItem} className="mobile-legend-item">
+                <span style={{ ...styles.legendDot, background: '#dc2626' }} className="mobile-legend-dot"></span>
                 <span>Critical - Safety Risk</span>
               </div>
-              <div style={styles.legendItem}>
-                <span style={{ ...styles.legendDot, background: '#f97316' }}></span>
+              <div style={styles.legendItem} className="mobile-legend-item">
+                <span style={{ ...styles.legendDot, background: '#f97316' }} className="mobile-legend-dot"></span>
                 <span>High - Major Damage</span>
               </div>
-              <div style={styles.legendItem}>
-                <span style={{ ...styles.legendDot, background: '#eab308' }}></span>
+              <div style={styles.legendItem} className="mobile-legend-item">
+                <span style={{ ...styles.legendDot, background: '#eab308' }} className="mobile-legend-dot"></span>
                 <span>Medium - Significant</span>
               </div>
-              <div style={styles.legendItem}>
-                <span style={{ ...styles.legendDot, background: '#22c55e' }}></span>
+              <div style={styles.legendItem} className="mobile-legend-item">
+                <span style={{ ...styles.legendDot, background: '#22c55e' }} className="mobile-legend-dot"></span>
                 <span>Low - Minor</span>
               </div>
             </div>
@@ -380,21 +378,21 @@ export default function SharedAssessmentPage() {
         </div>
 
         {/* Assessor's Conclusion */}
-        <div style={styles.card}>
+        <div style={styles.card} className="mobile-card">
           <div style={styles.cardHeader}>
             <div style={{ ...styles.cardIcon, background: 'rgba(34,197,94,0.2)' }}>&#9989;</div>
-            <div style={styles.cardTitle}>Assessor's Conclusion</div>
+            <div style={styles.cardTitle} className="mobile-title">Assessor's Conclusion</div>
           </div>
 
-          <p style={{ marginBottom: '20px', color: '#475569' }}>
+          <p style={{ marginBottom: '20px', color: '#475569' }} className="mobile-text">
             The vehicle has sustained substantial underside impact consistent with sliding across the road surface with significant force.
           </p>
 
-          <p style={{ marginBottom: '15px', color: '#64748b', fontWeight: 600 }}>This has resulted in:</p>
+          <p style={{ marginBottom: '15px', color: '#64748b', fontWeight: 600 }} className="mobile-text">This has resulted in:</p>
 
           <ol style={styles.conclusionList}>
             {assessment.conclusion.map((item: string, index: number) => (
-              <li key={index} style={styles.conclusionItem}>{item}</li>
+              <li key={index} style={styles.conclusionItem} className="mobile-conclusion-item">{item}</li>
             ))}
           </ol>
 
@@ -406,21 +404,21 @@ export default function SharedAssessmentPage() {
         </div>
 
         {/* Insurance Claim Assessment */}
-        <div style={styles.card}>
+        <div style={styles.card} className="mobile-card">
           <div style={styles.cardHeader}>
             <div style={{ ...styles.cardIcon, background: 'rgba(249,115,22,0.2)' }}>&#163;</div>
-            <div style={styles.cardTitle}>Insurance Claim Assessment - Economic Evaluation</div>
+            <div style={styles.cardTitle} className="mobile-title">Insurance Claim Assessment - Economic Evaluation</div>
           </div>
 
-          <p style={{ color: '#64748b', marginBottom: '25px', fontSize: '0.9em' }}>
+          <p style={{ color: '#64748b', marginBottom: '25px', fontSize: '0.9em' }} className="mobile-text">
             <strong>Purpose:</strong> To determine if repair costs exceed vehicle market value, which would classify this as an insurance write-off (Category B, S, or N depending on structural damage severity).
           </p>
 
           {/* Repair Costs Table */}
           <div style={{ marginBottom: '30px' }}>
-            <h4 style={{ color: '#16a34a', marginBottom: '15px', fontSize: '0.95em', textTransform: 'uppercase', letterSpacing: '1px' }}>Estimated Repair Costs</h4>
+            <h4 style={{ color: '#16a34a', marginBottom: '15px', fontSize: '0.95em', textTransform: 'uppercase', letterSpacing: '1px' }} className="mobile-value-title">Estimated Repair Costs</h4>
             <div style={{ overflowX: 'auto' }}>
-              <table style={styles.table}>
+              <table style={styles.table} className="mobile-table">
                 <thead>
                   <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #e2e8f0' }}>
                     <th style={styles.th}>Repair Category</th>
@@ -455,15 +453,15 @@ export default function SharedAssessmentPage() {
 
           {/* Vehicle Value & Economic Assessment Grid */}
           <div style={styles.valueGrid}>
-            <div style={styles.valueBox}>
-              <h4 style={{ color: '#16a34a', marginBottom: '15px', fontSize: '0.9em', textTransform: 'uppercase', letterSpacing: '1px' }}>Vehicle Market Value</h4>
-              <p style={{ color: '#64748b', marginBottom: '10px', fontSize: '0.85em' }}>Vehicle: {assessment.vehicle_year} {assessment.vehicle_make} {assessment.vehicle_model} {assessment.vehicle_engine}</p>
-              <div style={{ fontSize: '1.8em', fontWeight: 700, color: '#16a34a', marginBottom: '10px' }}>£{assessment.vehicle_value_min.toLocaleString()} - £{assessment.vehicle_value_max.toLocaleString()}</div>
-              <p style={{ color: '#94a3b8', fontSize: '0.8em' }}>Based on typical UK market values</p>
+            <div style={styles.valueBox} className="mobile-value-box">
+              <h4 style={{ color: '#16a34a', marginBottom: '15px', fontSize: '0.9em', textTransform: 'uppercase', letterSpacing: '1px' }} className="mobile-value-title">Vehicle Market Value</h4>
+              <p style={{ color: '#64748b', marginBottom: '10px', fontSize: '0.85em' }} className="mobile-text">Vehicle: {assessment.vehicle_year} {assessment.vehicle_make} {assessment.vehicle_model} {assessment.vehicle_engine}</p>
+              <div style={{ fontSize: '1.8em', fontWeight: 700, color: '#16a34a', marginBottom: '10px' }} className="mobile-value-amount">£{assessment.vehicle_value_min.toLocaleString()} - £{assessment.vehicle_value_max.toLocaleString()}</div>
+              <p style={{ color: '#94a3b8', fontSize: '0.8em' }} className="mobile-text">Based on typical UK market values</p>
             </div>
 
-            <div style={styles.assessmentValueBox}>
-              <h4 style={{ color: '#16a34a', marginBottom: '15px', fontSize: '0.9em', textTransform: 'uppercase', letterSpacing: '1px' }}>Economic Assessment</h4>
+            <div style={styles.assessmentValueBox} className="mobile-value-box">
+              <h4 style={{ color: '#16a34a', marginBottom: '15px', fontSize: '0.9em', textTransform: 'uppercase', letterSpacing: '1px' }} className="mobile-value-title">Economic Assessment</h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #e2e8f0' }}>
                   <span style={{ color: '#64748b' }}>Minimum Repair Cost:</span>
@@ -487,107 +485,44 @@ export default function SharedAssessmentPage() {
           </div>
 
           {/* Recommendation Banner */}
-          <div style={styles.recommendationBanner}>
+          <div style={styles.recommendationBanner} className="mobile-recommendation">
             <div style={{ fontSize: '0.7em', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.9, marginBottom: '6px' }}>RECOMMENDATION</div>
-            <div style={{ fontSize: '1.4em', fontWeight: 700, marginBottom: '12px' }}>INSURANCE WRITE-OFF</div>
-            <p style={{ opacity: 0.95, maxWidth: '700px', margin: '0 auto', lineHeight: 1.5, fontSize: '0.9em' }}>
+            <div style={{ fontSize: '1.4em', fontWeight: 700, marginBottom: '12px' }} className="mobile-recommendation-title">INSURANCE WRITE-OFF</div>
+            <p style={{ opacity: 0.95, maxWidth: '700px', margin: '0 auto', lineHeight: 1.5, fontSize: '0.9em' }} className="mobile-recommendation-text">
               Based on the extent of structural, mechanical, and safety-critical damage, repair costs significantly exceed the pre-accident market value of this vehicle. The combination of subframe deformation, auxiliary belt lock-up, cooling system failure, and potential brake/fuel line compromise makes economical repair unfeasible.
             </p>
           </div>
 
           {/* Category Badge */}
           <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-            <div style={styles.categoryBadge}>
-              <div style={{ fontSize: '0.7em', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', marginBottom: '5px' }}>Likely Category</div>
-              <div style={{ fontSize: '2em', fontWeight: 700, color: '#ea580c', marginBottom: '3px' }}>Category {assessment.write_off_category}</div>
-              <div style={{ color: '#78716c', fontSize: '0.8em' }}>Structural damage - repairable but uneconomical</div>
+            <div style={styles.categoryBadge} className="mobile-category">
+              <div style={{ fontSize: '0.7em', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', marginBottom: '5px' }} className="mobile-category-label">Likely Category</div>
+              <div style={{ fontSize: '2em', fontWeight: 700, color: '#ea580c', marginBottom: '3px' }} className="mobile-category-value">Category {assessment.write_off_category}</div>
+              <div style={{ color: '#78716c', fontSize: '0.8em' }} className="mobile-category-desc">Structural damage - repairable but uneconomical</div>
             </div>
           </div>
 
           {/* Note on Estimates */}
-          <div style={styles.noteBox}>
-            <h4 style={{ color: '#64748b', marginBottom: '10px', fontSize: '0.85em', textTransform: 'uppercase', letterSpacing: '1px' }}>Note on Estimates</h4>
-            <p style={{ color: '#475569', fontSize: '0.9em', lineHeight: 1.7 }}>
+          <div style={styles.noteBox} className="mobile-note">
+            <h4 style={{ color: '#64748b', marginBottom: '10px', fontSize: '0.85em', textTransform: 'uppercase', letterSpacing: '1px' }} className="mobile-note-title">Note on Estimates</h4>
+            <p style={{ color: '#475569', fontSize: '0.9em', lineHeight: 1.7 }} className="mobile-note-text">
               Cost estimates are based on typical UK garage rates and parts prices for a 2014 Citroen C3. Actual costs may vary based on location, parts availability (OEM vs aftermarket), and workshop labour rates. Additional hidden damage may be discovered during disassembly, particularly to brake and fuel lines which require physical inspection. These figures are provided for insurance assessment purposes only.
             </p>
           </div>
         </div>
 
         {/* Footer */}
-        <div style={styles.footer}>
-          <img src="https://autow-services.co.uk/logo.png" alt="AUTOW Services" style={styles.footerLogo} />
+        <div style={styles.footer} className="mobile-footer">
+          <img src="https://autow-services.co.uk/logo.png" alt="AUTOW Services" style={styles.footerLogo} className="mobile-footer-logo" />
           <p>Report Compiled: {assessment.assessment_date}</p>
           <p>Assessment Method: Video Evidence Review</p>
           <p style={{ marginTop: '10px', color: '#94a3b8' }}>AUTOW Services - Professional Vehicle Damage Assessment</p>
         </div>
-      </div>
-    </>
+    </div>
   );
 }
 
-const responsiveStyles = `
-  @media print {
-    .no-print { display: none !important; }
-    body { background: #fff; color: #000; }
-  }
-
-  .damage-marker {
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7em;
-    font-weight: 700;
-    cursor: pointer;
-    transition: transform 0.2s;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  }
-
-  .damage-marker:hover {
-    transform: scale(1.3);
-    z-index: 10;
-  }
-
-  .damage-marker::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #fff;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 9px;
-    white-space: normal;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-    margin-bottom: 4px;
-    max-width: 120px;
-    text-align: center;
-    line-height: 1.2;
-    z-index: 100;
-  }
-
-  .damage-marker:hover::after {
-    opacity: 1;
-  }
-
-  @media (max-width: 768px) {
-    .hide-mobile { display: none !important; }
-    .total-label { font-size: 0.85em !important; }
-  }
-
-  @media (max-width: 480px) {
-    .hide-mobile-sm { display: none !important; }
-    .damage-marker { width: 16px; height: 16px; font-size: 0.55em; }
-    .damage-marker::after { font-size: 8px; padding: 3px 5px; max-width: 100px; }
-  }
-`;
+// Mobile responsive styles are now in globals.css
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
