@@ -84,10 +84,11 @@ const SmartJotter: React.FC<SmartJotterProps> = ({
         }
 
         const ocrResult: OCRResponse = await ocrResponse.json();
+        console.log('OCR Result:', ocrResult);
         textToProcess = ocrResult.text;
 
         if (!textToProcess.trim()) {
-          throw new Error('No text could be extracted from the handwriting');
+          throw new Error('No text could be extracted from the handwriting. OCR returned: ' + JSON.stringify(ocrResult));
         }
       }
 
@@ -464,6 +465,14 @@ const SmartJotter: React.FC<SmartJotterProps> = ({
             </div>
           )}
 
+          {/* Debug: Show raw extracted text */}
+          {parsedData.notes && (
+            <div style={styles.debugSection}>
+              <span style={styles.debugLabel}>Raw OCR Text:</span>
+              <span style={styles.debugValue}>{parsedData.notes}</span>
+            </div>
+          )}
+
           {/* Action Buttons */}
           <div style={styles.actionButtons}>
             <button onClick={handleCreateBooking} style={styles.bookingBtn}>
@@ -714,6 +723,26 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '14px',
     textAlign: 'right' as const,
     marginBottom: '24px',
+  },
+  debugSection: {
+    background: 'rgba(255, 165, 0, 0.1)',
+    border: '1px solid rgba(255, 165, 0, 0.3)',
+    borderRadius: '8px',
+    padding: '12px',
+    marginBottom: '16px',
+  },
+  debugLabel: {
+    color: '#ffa500',
+    fontSize: '12px',
+    fontWeight: '600' as const,
+    display: 'block',
+    marginBottom: '4px',
+  },
+  debugValue: {
+    color: '#fff',
+    fontSize: '14px',
+    fontFamily: 'monospace',
+    wordBreak: 'break-all' as const,
   },
   actionButtons: {
     display: 'flex',

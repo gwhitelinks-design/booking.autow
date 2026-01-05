@@ -45,11 +45,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<OCRRespon
           content: [
             {
               type: 'text',
-              text: `Read all handwritten text in this image exactly as written. Include any: names, phone numbers (UK format 07xxx), vehicle makes/models, years, UK registrations (like AB12 CDE), and issues/problems mentioned.
-
-Return the raw text content, preserving numbers and letters exactly. No labels, no formatting - just the text content separated by commas.
-
-Example output: John Smith, 07123456789, Ford Focus, 2018, AB12 CDE, engine warning light`
+              text: 'Read and transcribe all the handwritten or typed text visible in this image. Return only the text content, nothing else.'
             },
             {
               type: 'image_url',
@@ -58,10 +54,11 @@ Example output: John Smith, 07123456789, Ford Focus, 2018, AB12 CDE, engine warn
           ]
         }
       ],
-      max_tokens: 300
+      max_tokens: 500
     });
 
-    console.log('OpenAI Vision response:', response.choices[0]?.message?.content);
+    const rawResponse = response.choices[0]?.message?.content || '';
+    console.log('OpenAI Vision raw response:', rawResponse);
 
     const extractedText = response.choices[0]?.message?.content || '';
 
