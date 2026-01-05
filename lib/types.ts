@@ -310,3 +310,41 @@ export interface DamageAssessment {
   created_at?: string;
   updated_at?: string;
 }
+
+// ============================================
+// JOTTER NOTES TYPES
+// ============================================
+
+export interface JotterNote {
+  id?: number;
+  note_number: string;
+  note_date: string;
+  status: 'draft' | 'active' | 'converted';
+
+  // Customer Information
+  customer_name?: string;
+  customer_phone?: string;
+  customer_email?: string;
+
+  // Vehicle Information
+  vehicle_make?: string;
+  vehicle_model?: string;
+  vehicle_reg?: string;
+  vehicle_year?: string;
+
+  // Issue/Notes
+  issue_description?: string;
+  notes?: string;
+  raw_input?: string;
+  confidence_score?: number;
+
+  // Relationships
+  booking_id?: number;
+  estimate_id?: number;
+
+  // Metadata
+  created_by: string;
+  created_at?: string;
+  updated_at?: string;
+  converted_at?: string;
+}

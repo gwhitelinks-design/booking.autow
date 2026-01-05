@@ -87,6 +87,24 @@ export default function WelcomePage() {
             <h2 style={styles.optionTitle}>Vehicle Assessments</h2>
             <p style={styles.optionDescription}>Damage assessment reports</p>
           </button>
+
+          <button
+            onClick={() => router.push('/autow/jotter')}
+            style={{...styles.optionCard, borderColor: 'rgba(156, 39, 176, 0.4)'}}
+          >
+            <div style={styles.optionIcon}>✍️</div>
+            <h2 style={styles.optionTitle}>Smart Jotter</h2>
+            <p style={styles.optionDescription}>Handwriting to booking data</p>
+          </button>
+
+          <button
+            onClick={() => router.push('/autow/notes')}
+            style={{...styles.optionCard, borderColor: 'rgba(156, 39, 176, 0.4)'}}
+          >
+            <div style={styles.optionIcon}>📝</div>
+            <h2 style={styles.optionTitle}>Jotter Notes</h2>
+            <p style={styles.optionDescription}>View and manage saved notes</p>
+          </button>
         </div>
 
         <button onClick={handleLogout} style={styles.logoutButton}>

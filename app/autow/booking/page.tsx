@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 export default function BookingPage() {
   const router = useRouter();
@@ -10,21 +10,49 @@ export default function BookingPage() {
   const [bookedBy, setBookedBy] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  const searchParams = useSearchParams();
+  const fromJotter = searchParams.get('from_jotter') === 'true';
+  const fromNote = searchParams.get('from_note') === 'true';
+  const noteId = searchParams.get('note_id');
+  
   const [formData, setFormData] = useState({
     service_type: 'Mobile Mechanic',
     booking_date: '',
     booking_time: '',
-    customer_name: '',
-    customer_phone: '',
+    customer_name: searchParams.get('customer_name') || '',
+    customer_phone: searchParams.get('phone') || '',
     customer_email: '',
-    vehicle_reg: '',
+    vehicle_reg: searchParams.get('registration') || '',
+    vehicle_make: searchParams.get('vehicle_make') || '',
+    vehicle_model: searchParams.get('vehicle_model') || '',
     vehicle_make: '',
     vehicle_model: '',
     location_address: '',
     location_postcode: '',
-    issue_description: '',
-    notes: '',
+    issue_description: searchParams.get('issue') || '',
+    notes: searchParams.get('notes') || '',
   });
+
+  // Parse vehicle from jotter (e.g., "Ford Focus")
+  useEffect(() => {
+    const vehicle = searchParams.get('vehicle');
+    const year = searchParams.get('year');
+    if (vehicle) {
+      const parts = vehicle.split(' ');
+      if (parts.length >= 2) {
+        setFormData(prev => ({
+          ...prev,
+          vehicle_make: parts[0],
+          vehicle_model: parts.slice(1).join(' '),
+        }));
+      } else if (parts.length === 1) {
+        setFormData(prev => ({ ...prev, vehicle_make: parts[0] }));
+      }
+    }
+    if (year) {
+      setFormData(prev => ({ ...prev, notes: prev.notes + (prev.notes ? ' ' : '') + 'Year: ' + year }));
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const token = localStorage.getItem('autow_token');
@@ -113,6 +141,12 @@ export default function BookingPage() {
           <h1 style={styles.title}>New Booking</h1>
           <p style={styles.subtitle}>Create a new customer appointment</p>
         </div>
+
+        {(fromJotter || fromNote) && (
+          <div style={styles.jotterBanner}>
+            Data pre-filled from {fromNote ? 'Jotter Note' : 'Smart Jotter'}
+          </div>
+        )}
 
         {successMessage && (
           <div style={styles.successMessage}>
@@ -415,6 +449,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#888',
     fontSize: '14px',
     margin: '0',
+  },
+  jotterBanner: {
+    background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
+    color: '#fff',
+    padding: '16px',
+    borderRadius: '12px',
+    marginBottom: '20px',
+    fontWeight: '600' as const,
+    boxShadow: '0 4px 16px rgba(156, 39, 176, 0.4)',
+    textAlign: 'center' as const,
   },
   successMessage: {
     background: 'linear-gradient(135deg, #30ff37 0%, #28cc2f 100%)',

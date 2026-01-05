@@ -243,6 +243,12 @@ export default function DashboardPage() {
           <button onClick={() => router.push('/autow/welcome')} style={styles.backBtn}>
             ← Menu
           </button>
+          <button onClick={() => router.push('/autow/jotter')} style={styles.jotterBtn}>
+            ✍️ Jotter
+          </button>
+          <button onClick={() => router.push('/autow/notes')} style={styles.notesBtn}>
+            📝 Notes
+          </button>
           <button onClick={() => router.push('/autow/assessments')} style={styles.assessmentsBtn}>
             Assessments
           </button>
@@ -368,6 +374,28 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(48, 255, 55, 0.1)',
     border: '2px solid rgba(48, 255, 55, 0.2)',
     color: '#30ff37',
+    padding: '12px 24px',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontWeight: 'bold' as const,
+    fontSize: '14px',
+    transition: 'all 0.3s',
+  },
+  jotterBtn: {
+    background: 'rgba(156, 39, 176, 0.1)',
+    border: '2px solid rgba(156, 39, 176, 0.4)',
+    color: '#ce93d8',
+    padding: '12px 24px',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontWeight: 'bold' as const,
+    fontSize: '14px',
+    transition: 'all 0.3s',
+  },
+  notesBtn: {
+    background: 'rgba(156, 39, 176, 0.15)',
+    border: '2px solid rgba(156, 39, 176, 0.5)',
+    color: '#e1bee7',
     padding: '12px 24px',
     borderRadius: '12px',
     cursor: 'pointer',
