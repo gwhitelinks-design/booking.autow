@@ -50,7 +50,7 @@ function AssessmentViewContent() {
 
   const handleShare = async () => {
     if (!assessment) return;
-    const shareUrl = `${window.location.origin}/assessments/${assessment.id}.html`;
+    const shareUrl = `${window.location.origin}/share/assessment/${assessment.id}`;
 
     try {
       await navigator.clipboard.writeText(shareUrl);
@@ -62,7 +62,7 @@ function AssessmentViewContent() {
 
   const handleViewFullReport = () => {
     if (!assessment) return;
-    window.open(`/assessments/${assessment.id}.html`, '_blank');
+    window.open(`/share/assessment/${assessment.id}`, '_blank');
   };
 
   if (loading) {

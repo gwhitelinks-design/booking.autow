@@ -4,6 +4,77 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import { DamageAssessment, DamageItem, CostEstimate, CriticalIssue } from '@/lib/types';
 
+// Static assessment data for HN14-UWY (until database is set up)
+const staticAssessments: { [key: string]: DamageAssessment } = {
+  'HN14-UWY': {
+    id: 1,
+    vehicle_reg: 'HN14 UWY',
+    vehicle_make: 'CITROEN C3',
+    vehicle_model: 'C3',
+    vehicle_engine: '1199cc Petrol',
+    vehicle_colour: 'Grey',
+    vehicle_first_registered: '2014-03-01',
+    vehicle_mot_status: 'Valid until March 2026',
+    assessment_date: '2026-01-03',
+    recommendation: 'write-off',
+    write_off_category: 'S',
+    recommendation_notes: 'Based on the extent of structural, mechanical, and safety-critical damage, repair costs significantly exceed the pre-accident market value of this vehicle. The combination of front-end collision damage, cooling system failure, and suspension/steering compromise makes economical repair unfeasible.',
+    repair_cost_min: 4050,
+    repair_cost_max: 7900,
+    vehicle_value_min: 2500,
+    vehicle_value_max: 4000,
+    critical_count: 6,
+    high_count: 12,
+    medium_count: 20,
+    low_count: 2,
+    total_items: 40,
+    photo_count: 25,
+    video_url: '',
+    notes: 'Full photographic assessment completed. Vehicle was involved in a front-end collision. Multiple structural and mechanical systems compromised.',
+    critical_issues: JSON.stringify([
+      { title: 'Radiator Failure', description: 'Complete coolant loss - engine overheating risk' },
+      { title: 'Structural Damage', description: 'Front chassis rails and subframe compromised' },
+      { title: 'Steering System', description: 'Track rod and steering rack damage affecting vehicle control' },
+      { title: 'Brake System', description: 'Front brake components damaged - reduced stopping power' },
+      { title: 'Airbag Deployment', description: 'Driver airbag deployed - requires replacement' },
+      { title: 'Suspension Failure', description: 'Front suspension geometry compromised' }
+    ]),
+    damage_items: JSON.stringify([
+      { section: 'Front End Structure', component: 'Front Bumper Assembly', damage: 'Complete destruction - impact absorption zone collapsed', assessment: 'Replacement required', priority: 'critical' },
+      { section: 'Front End Structure', component: 'Bonnet', damage: 'Severe buckling and deformation', assessment: 'Replacement required', priority: 'high' },
+      { section: 'Front End Structure', component: 'Front Wings (Both)', damage: 'Creased and misaligned', assessment: 'Replacement required', priority: 'high' },
+      { section: 'Front End Structure', component: 'Headlight Units', damage: 'Both units damaged/cracked', assessment: 'Replacement required', priority: 'high' },
+      { section: 'Cooling System', component: 'Radiator', damage: 'Punctured - complete coolant loss', assessment: 'Replacement required', priority: 'critical' },
+      { section: 'Cooling System', component: 'Radiator Support', damage: 'Bent and twisted', assessment: 'Panel beating or replacement', priority: 'high' },
+      { section: 'Cooling System', component: 'Coolant Hoses', damage: 'Disconnected/damaged', assessment: 'Replacement required', priority: 'medium' },
+      { section: 'Engine & Drivetrain', component: 'Engine Mounts', damage: 'Visible stress - potential fracture', assessment: 'Inspection and likely replacement', priority: 'critical' },
+      { section: 'Engine & Drivetrain', component: 'Auxiliary Belt', damage: 'Misaligned - possible damage', assessment: 'Inspection required', priority: 'medium' },
+      { section: 'Suspension & Steering', component: 'Front Suspension Struts', damage: 'Impact damage - geometry affected', assessment: 'Replacement required', priority: 'critical' },
+      { section: 'Suspension & Steering', component: 'Track Rod Ends', damage: 'Bent - steering affected', assessment: 'Replacement required', priority: 'critical' },
+      { section: 'Suspension & Steering', component: 'Steering Rack', damage: 'Potential internal damage', assessment: 'Inspection and likely replacement', priority: 'high' },
+      { section: 'Suspension & Steering', component: 'Rear Axle / Rear Beam', damage: 'Visual damage, potential buckle', assessment: 'Requires alignment jig checking', priority: 'high' },
+      { section: 'Braking System', component: 'Front Brake Discs', damage: 'Warped from impact', assessment: 'Replacement required', priority: 'high' },
+      { section: 'Braking System', component: 'Brake Calipers', damage: 'Mounting points stressed', assessment: 'Inspection required', priority: 'medium' },
+      { section: 'Safety Systems', component: 'Driver Airbag', damage: 'Deployed', assessment: 'Replacement required + ECU reset', priority: 'critical' },
+      { section: 'Safety Systems', component: 'Seatbelt Pretensioners', damage: 'May have activated', assessment: 'Inspection required', priority: 'high' },
+      { section: 'Body Panels', component: 'Front Doors', damage: 'Minor alignment issues', assessment: 'Adjustment/minor repair', priority: 'medium' },
+      { section: 'Body Panels', component: 'A-Pillars', damage: 'Paint damage, check for stress', assessment: 'Inspection required', priority: 'medium' },
+      { section: 'Interior', component: 'Dashboard', damage: 'Airbag housing damaged', assessment: 'Repair/replacement', priority: 'medium' }
+    ]),
+    cost_estimates: JSON.stringify([
+      { category: 'Structural Repairs', components: 'Front chassis rails, subframe, radiator support', parts_min: 800, parts_max: 1500, labour_min: 600, labour_max: 1200, subtotal_min: 1400, subtotal_max: 2700 },
+      { category: 'Body Panels', components: 'Bonnet, bumper, wings, headlights', parts_min: 600, parts_max: 1100, labour_min: 400, labour_max: 800, subtotal_min: 1000, subtotal_max: 1900 },
+      { category: 'Cooling System', components: 'Radiator, hoses, thermostat, coolant', parts_min: 250, parts_max: 400, labour_min: 150, labour_max: 300, subtotal_min: 400, subtotal_max: 700 },
+      { category: 'Suspension & Steering', components: 'Struts, track rods, alignment', parts_min: 350, parts_max: 600, labour_min: 250, labour_max: 400, subtotal_min: 600, subtotal_max: 1000 },
+      { category: 'Safety Systems', components: 'Airbag, pretensioners, ECU reset', parts_min: 400, parts_max: 800, labour_min: 150, labour_max: 300, subtotal_min: 550, subtotal_max: 1100 },
+      { category: 'Paint & Finishing', components: 'Full front-end respray, blending', parts_min: 0, parts_max: 0, labour_min: 400, labour_max: 800, subtotal_min: 400, subtotal_max: 800 }
+    ]),
+    share_token: 'HN14-UWY',
+    created_at: '2026-01-03T00:00:00Z',
+    updated_at: '2026-01-03T00:00:00Z'
+  }
+};
+
 export default function SharedAssessmentPage() {
   const params = useParams();
   const token = params.token as string;
@@ -15,11 +86,19 @@ export default function SharedAssessmentPage() {
 
   useEffect(() => {
     if (token) {
-      fetchSharedAssessment();
+      loadAssessment();
     }
   }, [token]);
 
-  const fetchSharedAssessment = async () => {
+  const loadAssessment = async () => {
+    // First check if we have static data for this token
+    if (staticAssessments[token]) {
+      setAssessment(staticAssessments[token]);
+      setLoading(false);
+      return;
+    }
+
+    // Otherwise try to fetch from API (for future database-backed assessments)
     try {
       const response = await fetch(`/api/share/assessment/${token}`);
 

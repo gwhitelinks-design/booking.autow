@@ -243,6 +243,9 @@ export default function DashboardPage() {
           <button onClick={() => router.push('/autow/welcome')} style={styles.backBtn}>
             ← Menu
           </button>
+          <button onClick={() => router.push('/autow/assessments')} style={styles.assessmentsBtn}>
+            Assessments
+          </button>
           <button onClick={() => router.push('/autow/booking')} style={styles.newBookingBtn}>
             + New Booking
           </button>
@@ -365,6 +368,17 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(48, 255, 55, 0.1)',
     border: '2px solid rgba(48, 255, 55, 0.2)',
     color: '#30ff37',
+    padding: '12px 24px',
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontWeight: 'bold' as const,
+    fontSize: '14px',
+    transition: 'all 0.3s',
+  },
+  assessmentsBtn: {
+    background: 'rgba(124, 58, 237, 0.1)',
+    border: '2px solid rgba(124, 58, 237, 0.4)',
+    color: '#a78bfa',
     padding: '12px 24px',
     borderRadius: '12px',
     cursor: 'pointer',

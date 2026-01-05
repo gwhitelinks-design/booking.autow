@@ -45,7 +45,7 @@ export default function AssessmentsPage() {
   };
 
   const handleShare = async (id: string) => {
-    const shareUrl = `${window.location.origin}/assessments/${id}.html`;
+    const shareUrl = `${window.location.origin}/share/assessment/${id}`;
 
     try {
       await navigator.clipboard.writeText(shareUrl);
