@@ -842,6 +842,259 @@ To add multiple users, you would need to:
 - Supabase provides free tier with good performance
 - Easy to scale
 
+## Vehicle Damage Assessments
+
+### Overview
+
+The assessment system allows creating detailed vehicle damage reports that can be shared with insurance companies and customers. Reports include damage findings, cost estimates, photos with markers, and write-off category recommendations.
+
+### Routes
+
+```
+/autow/assessments              → List all assessments (protected)
+/autow/assessments/create       → Create new assessment (coming soon)
+/autow/assessments/view?id=X    → View assessment summary (protected)
+/share/assessment/[token]       → Public shareable assessment report
+```
+
+### Assessment Report Features (`/share/assessment/[token]`)
+
+The public assessment report includes:
+
+1. **Vehicle Information Header**
+   - Registration, Make, Model, Engine, Colour, Year
+   - Assessment date, method, video duration, assessor name
+
+2. **Critical Alerts Banner**
+   - Red banner highlighting safety-critical issues
+   - Numbered list of critical findings
+
+3. **Assessment Voice Transcript**
+   - Full text of the assessment narration
+   - Diagnostic fault codes mentioned
+
+4. **Key Findings Summary**
+   - Categorized by severity: Critical, Structural, Undercarriage, Body & Trim
+   - Color-coded markers (red=critical, orange=high, yellow=medium)
+
+5. **Damage Location Map**
+   - Interactive diagram with clickable damage markers
+   - Tooltips show damage description on hover/tap
+   - Legend explaining severity colors
+
+6. **Assessor's Conclusion**
+   - Summary of damage extent
+   - List of resulting issues
+   - Final assessment statement
+
+7. **Insurance Claim Assessment**
+   - Detailed repair cost table by category
+   - Vehicle market value comparison
+   - Cost vs value ratio calculation
+   - Recommendation banner
+
+8. **Write-Off Category Boxes**
+   - **Category S**: Structural damage - repairable but requires inspection
+   - **Category N**: Non-structural damage - cosmetic/mechanical only
+   - Both shown for reference, applicable category highlighted
+
+9. **Notes and Footer**
+   - Disclaimer about estimate variations
+   - Report compilation date and assessor details
+
+### Static Assessment Data
+
+Currently using static data for the HN14-UWY Citroen C3 assessment. Data structure in `app/share/assessment/[token]/page.tsx`:
+
+```typescript
+const staticAssessments = {
+  'HN14-UWY': {
+    id: 'HN14-UWY',
+    vehicle_reg: 'HN14 UWY',
+    vehicle_make: 'Citroen',
+    vehicle_model: 'C3',
+    // ... vehicle details
+    transcript: '...', // Full assessment narration
+    critical_alerts: [...], // Array of critical issues
+    findings: {
+      critical: [...],
+      structural: [...],
+      undercarriage: [...],
+      body: [...]
+    },
+    conclusion: [...],
+    cost_estimates: [...], // Repair cost breakdown
+    damage_markers: [...] // Interactive map markers
+  }
+};
+```
+
+### Future: Database Integration
+
+When ready to store assessments in database, create table:
+
+```sql
+CREATE TABLE assessments (
+  id SERIAL PRIMARY KEY,
+  token VARCHAR(50) UNIQUE NOT NULL,
+  vehicle_reg VARCHAR(20),
+  vehicle_make VARCHAR(100),
+  vehicle_model VARCHAR(100),
+  -- ... other fields
+  transcript TEXT,
+  findings JSONB,
+  cost_estimates JSONB,
+  damage_markers JSONB,
+  recommendation VARCHAR(50),
+  write_off_category VARCHAR(5),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+## Global Mobile Responsive CSS System
+
+### Overview
+
+A centralized CSS system in `app/globals.css` provides mobile-responsive classes that all pages inherit automatically. This ensures consistent mobile experience across the entire application.
+
+### File Structure
+
+```
+app/
+├── globals.css          # Global mobile responsive styles (NEW)
+├── layout.tsx           # Root layout - imports globals.css
+└── share/
+    └── assessment/
+        └── [token]/
+            └── page.tsx # Uses mobile-* classes
+```
+
+### Breakpoints
+
+Three responsive breakpoints are defined:
+
+| Breakpoint | Max Width | Target Devices |
+|------------|-----------|----------------|
+| Tablet | 768px | iPad, tablets |
+| Mobile | 480px | Smartphones |
+| Extra Small | 360px | Small phones |
+
+### Available Mobile Classes
+
+**Layout & Containers**
+- `.mobile-container` - Reduced padding on mobile
+- `.mobile-header` - Smaller header padding and border radius
+- `.mobile-card` - Compact card styling
+
+**Typography**
+- `.mobile-title` - Smaller heading text
+- `.mobile-subtitle` - Smaller subtitle text
+- `.mobile-text` - Reduced body text size
+
+**Components**
+- `.mobile-btn` - Smaller buttons with reduced padding
+- `.mobile-badge` - Compact badges
+- `.mobile-alert` - Smaller alert boxes
+- `.mobile-table` - Compact table styling
+
+**Grid & Info**
+- `.mobile-grid` - 2-column grid on mobile, 1-column on extra small
+- `.mobile-info-item` - Compact info cards
+- `.mobile-info-label` - Tiny label text
+- `.mobile-info-value` - Smaller value text
+
+**Findings & Lists**
+- `.mobile-finding-title` - Compact section titles
+- `.mobile-finding-item` - Smaller list items
+- `.mobile-finding-marker` - Smaller severity markers
+
+**Value Boxes**
+- `.mobile-value-box` - Compact value containers
+- `.mobile-value-title` - Smaller value labels
+- `.mobile-value-amount` - Adjusted amount text size
+
+**Special Components**
+- `.mobile-recommendation` - Compact recommendation banner
+- `.mobile-category` - Smaller category badges
+- `.mobile-legend` - Compact map legend
+- `.mobile-footer` - Smaller footer
+
+**Utility Classes**
+- `.hide-mobile` - Hidden on tablets and below (768px)
+- `.hide-mobile-sm` - Hidden on mobile and below (480px)
+- `.no-print` - Hidden when printing
+
+### Usage Example
+
+```tsx
+<div style={styles.container} className="mobile-container">
+  <h1 style={styles.title} className="mobile-title">Page Title</h1>
+  <button style={styles.btn} className="mobile-btn">Click Me</button>
+  <div style={styles.card} className="mobile-card">
+    <table style={styles.table} className="mobile-table">
+      <th className="hide-mobile">Full Column</th>
+      <th className="hide-mobile-sm">Tablet+ Only</th>
+    </table>
+  </div>
+</div>
+```
+
+### Damage Markers
+
+Special styling for interactive damage markers on assessment diagrams:
+
+```css
+.damage-marker {
+  /* Base: 24px circles */
+  /* Mobile: 12px circles */
+  /* Extra small: Even smaller */
+}
+
+.damage-marker::after {
+  /* Tooltip on hover */
+  /* Smaller font on mobile */
+}
+```
+
+## Recent Session Notes
+
+### Session: 2026-01-05
+
+**Changes Made:**
+
+1. **Created Global CSS System**
+   - New file: `app/globals.css`
+   - Imported in `app/layout.tsx`
+   - Mobile-responsive classes for all breakpoints
+
+2. **Vehicle Assessment Share Page** (`app/share/assessment/[token]/page.tsx`)
+   - Converted from static HTML to Next.js page
+   - Added mobile-responsive classNames throughout
+   - Fixed tooltip overflow on damage markers
+   - Changed "TOTAL ESTIMATED REPAIR COST:" to "TOTAL ESTIMATED REPAIR COST VARIES:"
+
+3. **Dual Category Boxes**
+   - Shows both Category S and Category N side by side
+   - Each with description of what the category means
+   - Category S: Structural damage - repairable, requires inspection
+   - Category N: Non-structural - cosmetic/mechanical only
+
+4. **Updated Recommendation Banner**
+   - Title: "REPAIR COSTS OUT-WEIGH VEHICLE VALUE"
+   - Subtitle: "From an Insurance Perspective this would be considered a Write-Off"
+   - Followed by detailed explanation paragraph
+
+5. **Dashboard Share Links Updated**
+   - `app/autow/assessments/page.tsx` - Share link now points to `/share/assessment/${id}`
+   - `app/autow/assessments/view/page.tsx` - View Full Report and Share links updated
+
+**Commits:**
+- `1597e04` - Add global mobile responsive CSS system
+- `25ec12e` - Add dual category boxes (S and N) to assessment report
+- `aff09c0` - Update recommendation banner text
+
+**Live URL:** https://booking.autow-services.co.uk/share/assessment/HN14-UWY
+
 ## Future Enhancements
 
 Documented opportunities (no immediate plans):
@@ -855,3 +1108,7 @@ Documented opportunities (no immediate plans):
 8. SMS notifications
 9. Mobile app version
 10. Advanced scheduling (recurring bookings, etc.)
+11. Assessment database storage (currently static)
+12. Assessment photo upload and annotation
+13. PDF export for assessments
+14. Assessment creation wizard
