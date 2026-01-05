@@ -326,7 +326,7 @@ const SmartJotter: React.FC<SmartJotterProps> = ({
                 >
                   <SignatureCanvas
                     ref={canvasRef}
-                    penColor="#30ff37"
+                    penColor="#ffffff"
                     canvasProps={{
                       width: canvasSize.width,
                       height: canvasSize.height,
@@ -340,9 +340,9 @@ const SmartJotter: React.FC<SmartJotterProps> = ({
                       },
                     }}
                     backgroundColor="#0a0a0a"
-                    dotSize={2}
-                    minWidth={1.5}
-                    maxWidth={4}
+                    dotSize={1}
+                    minWidth={0.5}
+                    maxWidth={1.5}
                     velocityFilterWeight={0.7}
                     onEnd={handleCanvasEnd}
                   />
