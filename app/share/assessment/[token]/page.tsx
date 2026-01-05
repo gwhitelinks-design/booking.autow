@@ -493,12 +493,26 @@ export default function SharedAssessmentPage() {
             </p>
           </div>
 
-          {/* Category Badge */}
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
-            <div style={styles.categoryBadge} className="mobile-category">
-              <div style={{ fontSize: '0.7em', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', marginBottom: '5px' }} className="mobile-category-label">Likely Category</div>
-              <div style={{ fontSize: '2em', fontWeight: 700, color: '#ea580c', marginBottom: '3px' }} className="mobile-category-value">Category {assessment.write_off_category}</div>
-              <div style={{ color: '#78716c', fontSize: '0.8em' }} className="mobile-category-desc">Structural damage - repairable but uneconomical</div>
+          {/* Category Badges */}
+          <div style={{ marginBottom: '20px' }}>
+            <h4 style={{ color: '#64748b', textAlign: 'center', marginBottom: '15px', fontSize: '0.85em', textTransform: 'uppercase', letterSpacing: '1px' }} className="mobile-value-title">Potential Write-Off Categories</h4>
+            <div style={{ display: 'flex', justifyContent: 'center', gap: '20px', flexWrap: 'wrap' }}>
+              <div style={{ ...styles.categoryBadge, borderColor: '#ea580c', background: '#fff7ed' }} className="mobile-category">
+                <div style={{ fontSize: '0.7em', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', marginBottom: '5px' }} className="mobile-category-label">Category</div>
+                <div style={{ fontSize: '2em', fontWeight: 700, color: '#ea580c', marginBottom: '8px' }} className="mobile-category-value">S</div>
+                <div style={{ color: '#78716c', fontSize: '0.75em', lineHeight: 1.4 }} className="mobile-category-desc">
+                  <strong>Structural Damage</strong><br />
+                  Vehicle has structural damage but can be repaired safely. Must pass inspection before returning to road.
+                </div>
+              </div>
+              <div style={{ ...styles.categoryBadge, borderColor: '#eab308', background: '#fefce8' }} className="mobile-category">
+                <div style={{ fontSize: '0.7em', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', marginBottom: '5px' }} className="mobile-category-label">Category</div>
+                <div style={{ fontSize: '2em', fontWeight: 700, color: '#eab308', marginBottom: '8px' }} className="mobile-category-value">N</div>
+                <div style={{ color: '#78716c', fontSize: '0.75em', lineHeight: 1.4 }} className="mobile-category-desc">
+                  <strong>Non-Structural Damage</strong><br />
+                  No structural damage. Cosmetic or mechanical damage only. Can be repaired and returned to road.
+                </div>
+              </div>
             </div>
           </div>
 
