@@ -13,6 +13,8 @@ This is **AUTOW Booking System** - a comprehensive business management applicati
 - Customer-facing share links for estimates and invoices
 - Telegram notifications for bookings and document views
 - Delete functionality with confirmation
+- Smart Jotter with AI-powered OCR (camera/upload/drawing)
+- Notes system with CRUD and booking conversion
 
 ## Development Commands
 
@@ -71,6 +73,10 @@ psql $DATABASE_URL -f database/schema.sql
 /autow/invoices/create         → Create new invoice (protected)
 /autow/invoices/edit?id=X      → Edit invoice (protected)
 /autow/invoices/view?id=X      → View invoice details (protected)
+/autow/jotter                  → Smart Jotter - AI OCR input (protected)
+/autow/notes                   → List all jotter notes (protected)
+/autow/notes/view?id=X         → View note details (protected)
+/autow/notes/edit?id=X         → Edit note with freeform jot area (protected)
 /share/estimate/[token]        → Public estimate view (no auth)
 /share/invoice/[token]         → Public invoice view (no auth)
 ```
@@ -114,6 +120,22 @@ POST /api/autow/invoice/update               → Update invoice
 POST /api/autow/invoice/delete               → Delete invoice
 POST /api/autow/invoice/mark-as-paid         → Mark as paid
 POST /api/autow/invoice/generate-share-link  → Generate share link
+```
+
+**Smart Jotter**
+```
+POST /api/autow/jotter/parse         → Parse image/text with OpenAI Vision
+POST /api/autow/jotter/recognize     → OCR recognition endpoint
+```
+
+**Notes**
+```
+POST /api/autow/note/create          → Create note from jotter
+GET  /api/autow/note/list            → List all notes (optional status filter)
+GET  /api/autow/note/get?id=X        → Get single note
+POST /api/autow/note/update          → Update note
+POST /api/autow/note/delete          → Delete note
+POST /api/autow/note/convert-to-booking → Convert note to booking
 ```
 
 **Public Share Links (No Auth Required)**
@@ -160,6 +182,14 @@ All `/api/autow/*` endpoints require `Authorization: Bearer <token>` header. Sha
 **`business_settings`**
 - Company information for documents
 - Fields: business_name, email, address, phone, website, owner, workshop_location
+
+**`jotter_notes`**
+- Quick notes from Smart Jotter
+- Status: draft, active, converted
+- Includes customer details, vehicle info, issue description
+- Stores raw input text and AI confidence score
+- Can be converted to bookings
+- Auto-generated note_number (JN-YYYYMMDD-XXX)
 
 **Share Link System**:
 - Uses UUID tokens stored in `share_token` column
@@ -492,6 +522,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 ```env
 TELEGRAM_BOT_TOKEN=xxx        # Active: sends new booking notifications
 TELEGRAM_CHAT_ID=xxx          # Active: recipient for notifications
+OPENAI_API_KEY=xxx            # Active: Smart Jotter OCR parsing (GPT-4o-mini vision)
 ```
 
 ### Optional (placeholders, not implemented)
@@ -628,6 +659,26 @@ interface LineItem {
   amount: number;             // rate * quantity
   sort_order?: number;
 }
+
+interface JotterNote {
+  id?: number;
+  note_number: string;        // Auto-generated JN-YYYYMMDD-XXX
+  note_date: string;          // YYYY-MM-DD
+  status: 'draft' | 'active' | 'converted';
+  customer_name?: string;
+  customer_phone?: string;
+  customer_email?: string;
+  vehicle_make?: string;
+  vehicle_model?: string;
+  vehicle_reg?: string;
+  vehicle_year?: string;
+  issue_description?: string;
+  notes?: string;             // Freeform jot area
+  raw_input?: string;         // Original OCR/input text
+  confidence_score?: number;  // AI confidence (0-1)
+  booking_id?: number;        // Link to converted booking
+  // ... timestamps
+}
 ```
 
 ## Dashboard Statistics Logic
@@ -667,6 +718,23 @@ Statistics are calculated from the bookings array:
 - **Convert to Invoice**: Estimates can be converted to invoices with one click
 - **Mark as Paid**: Invoices can be marked as paid to track payment status
 
+### Smart Jotter
+- **Camera Input**: Take photo of handwritten notes or documents
+- **Upload Input**: Upload existing images for OCR
+- **Drawing Canvas**: Draw/write directly on screen (touch/mouse)
+- **Text Input**: Type notes directly
+- **AI Parsing**: OpenAI Vision API extracts customer, vehicle, and issue data
+- **Confidence Score**: Shows AI confidence in extracted data
+- **Quick Actions**: Save as Note or Create Booking directly from parsed data
+
+### Notes System
+- **List View**: Filter by status (draft, active, converted)
+- **View Details**: Full note with customer, vehicle, issue info
+- **Edit Page**: Large freeform jot area + collapsible structured fields
+- **Convert to Booking**: Pre-fills booking form with note data
+- **Delete**: Remove notes with confirmation
+- **Mobile Responsive**: Uses global CSS mobile classes
+
 ## Critical Files
 
 **Core Application**
@@ -690,8 +758,23 @@ Statistics are calculated from the bookings array:
 
 **API Routes**
 - `app/api/autow/booking/create/route.ts` - Booking creation with availability check
+- `app/api/autow/jotter/parse/route.ts` - OpenAI Vision API parsing
+- `app/api/autow/note/*/route.ts` - Notes CRUD operations
 - `app/api/share/estimate/[token]/route.ts` - Public estimate viewing with notification
 - `app/api/share/invoice/[token]/route.ts` - Public invoice viewing with notification
+
+**Smart Jotter**
+- `components/smart-jotter/SmartJotter.tsx` - Main jotter component with camera/upload/draw
+- `app/autow/jotter/page.tsx` - Jotter page wrapper
+- `types/smart-jotter.ts` - Smart Jotter type definitions
+
+**Notes Pages**
+- `app/autow/notes/page.tsx` - Notes list with status filters
+- `app/autow/notes/view/page.tsx` - View note details
+- `app/autow/notes/edit/page.tsx` - Edit note with freeform jot area
+
+**Database Migrations**
+- `migrations/create_jotter_notes_table.sql` - Jotter notes table schema
 
 **Share Pages**
 - `app/share/estimate/[token]/page.tsx` - Customer-facing estimate page
@@ -1058,7 +1141,56 @@ Special styling for interactive damage markers on assessment diagrams:
 
 ## Recent Session Notes
 
-### Session: 2026-01-05
+### Session: 2026-01-05 (Part 2) - Smart Jotter & Notes System
+
+**Features Built:**
+
+1. **Smart Jotter Component** (`components/smart-jotter/SmartJotter.tsx`)
+   - Camera capture for handwritten notes/documents
+   - Image upload for existing photos
+   - Drawing canvas with touch/mouse support
+   - Text input for typed notes
+   - OpenAI Vision API integration (GPT-4o-mini)
+   - AI-powered data extraction (customer, vehicle, issue)
+   - Confidence score display
+   - Actions: Save as Note, Create Booking
+
+2. **Notes System**
+   - Full CRUD: list, view, edit, delete
+   - Status filtering: draft, active, converted
+   - Convert to booking (pre-fills booking form)
+   - Freeform jot area on edit page
+   - Collapsible structured fields
+   - Mobile responsive with global CSS classes
+
+3. **API Routes**
+   - `POST /api/autow/jotter/parse` - OpenAI Vision parsing
+   - `POST /api/autow/note/create` - Create note
+   - `GET /api/autow/note/list` - List notes
+   - `GET /api/autow/note/get` - Get single note
+   - `POST /api/autow/note/update` - Update note
+   - `POST /api/autow/note/delete` - Delete note
+   - `POST /api/autow/note/convert-to-booking` - Convert to booking
+
+4. **Navigation Updates**
+   - Smart Jotter added to welcome menu
+   - Notes added to welcome menu
+   - Smart Jotter button on dashboard
+   - Notes button on dashboard
+
+5. **Database**
+   - Created `jotter_notes` table
+   - Migration file: `migrations/create_jotter_notes_table.sql`
+
+**Commits:**
+- `39cdd7a` - Add Smart Jotter and Notes system with mobile CSS support
+- `baa2fab` - Fix duplicate property error in booking page
+
+**Deployed to:** https://booking.autow-services.co.uk
+
+---
+
+### Session: 2026-01-05 (Part 1) - Global CSS & Assessments
 
 **Changes Made:**
 
