@@ -224,3 +224,89 @@ export interface InvoiceFormData {
   notes?: string;
   line_items: LineItem[];
 }
+
+// ============================================
+// DAMAGE ASSESSMENT TYPES
+// ============================================
+
+export interface DamageItem {
+  section: string;           // e.g., "Engine Bay", "Structural", "Front End"
+  component: string;         // e.g., "Subframe", "Coolant Radiator"
+  damage: string;            // Description of damage
+  assessment: string;        // e.g., "Replace", "Inspect", "Structural integrity compromised"
+  priority: 'critical' | 'high' | 'medium' | 'low';
+  status?: string;           // e.g., "Replace", "Inspect"
+}
+
+export interface CostEstimate {
+  category: string;          // e.g., "Structural - Subframe"
+  components: string;        // e.g., "Subframe replacement, brackets, mounting points"
+  parts_min: number;
+  parts_max: number;
+  labour_min: number;
+  labour_max: number;
+  subtotal_min: number;
+  subtotal_max: number;
+}
+
+export interface CriticalIssue {
+  title: string;
+  description: string;
+}
+
+export interface DamageAssessment {
+  id?: number;
+
+  // Vehicle Information
+  vehicle_reg: string;
+  vehicle_make?: string;
+  vehicle_model?: string;
+  vehicle_engine?: string;
+  vehicle_colour?: string;
+  vehicle_first_registered?: string;
+  vehicle_mot_status?: string;
+  vehicle_tax_status?: string;
+
+  // Assessment Details
+  assessment_date: string;
+  assessor_name?: string;
+  video_url?: string;
+
+  // Summary Counts
+  critical_count: number;
+  high_count: number;
+  medium_count: number;
+  low_count: number;
+  total_items: number;
+  photo_count: number;
+
+  // Critical Issues Summary
+  critical_issues: CriticalIssue[];
+
+  // All Damage Items
+  damage_items: DamageItem[];
+
+  // Cost Estimates
+  cost_estimates: CostEstimate[];
+
+  // Totals
+  repair_cost_min: number;
+  repair_cost_max: number;
+  vehicle_value_min: number;
+  vehicle_value_max: number;
+
+  // Insurance Recommendation
+  recommendation?: 'write-off' | 'repair' | 'undecided';
+  write_off_category?: 'A' | 'B' | 'S' | 'N';
+  recommendation_notes?: string;
+
+  // General Notes
+  notes?: string;
+
+  // Share Link
+  share_token?: string;
+
+  // Timestamps
+  created_at?: string;
+  updated_at?: string;
+}

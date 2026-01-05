@@ -59,7 +59,7 @@ ${bookingData.notes ? `📝 *Notes:* ${bookingData.notes}` : ''}
   }
 }
 
-export async function sendShareLinkNotification(documentType: 'estimate' | 'invoice', documentData: any) {
+export async function sendShareLinkNotification(documentType: 'estimate' | 'invoice' | 'assessment', documentData: any) {
   const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
   const telegramChatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -68,10 +68,29 @@ export async function sendShareLinkNotification(documentType: 'estimate' | 'invo
     return { success: false, error: 'Telegram not configured' };
   }
 
-  const icon = documentType === 'estimate' ? '📋' : '💰';
-  const docType = documentType.charAt(0).toUpperCase() + documentType.slice(1);
+  let message = '';
 
-  const message = `
+  if (documentType === 'assessment') {
+    // Damage Assessment notification
+    message = `
+🔍 *DAMAGE ASSESSMENT VIEWED*
+
+🚗 *Vehicle:* ${documentData.vehicle_reg || 'N/A'}
+${documentData.vehicle_make && documentData.vehicle_model ? `🔧 *Make/Model:* ${documentData.vehicle_make} ${documentData.vehicle_model}` : ''}
+
+📅 *Assessment Date:* ${documentData.assessment_date ? new Date(documentData.assessment_date).toLocaleDateString('en-GB') : 'N/A'}
+${documentData.recommendation ? `📊 *Recommendation:* ${documentData.recommendation.toUpperCase()}` : ''}
+
+💷 *Est. Repair Cost:* £${parseFloat(documentData.repair_cost_min || 0).toFixed(0)} - £${parseFloat(documentData.repair_cost_max || 0).toFixed(0)}
+
+⏰ *Viewed:* ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}
+    `.trim();
+  } else {
+    // Estimate/Invoice notification
+    const icon = documentType === 'estimate' ? '📋' : '💰';
+    const docType = documentType.charAt(0).toUpperCase() + documentType.slice(1);
+
+    message = `
 ${icon} *${docType.toUpperCase()} VIEWED*
 
 👤 *Client:* ${documentData.client_name}
@@ -85,7 +104,8 @@ ${documentData.vehicle_make && documentData.vehicle_model ? `🔧 *Make/Model:* 
 ${documentData.status ? `📊 *Status:* ${documentData.status}` : ''}
 
 ⏰ *Viewed:* ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}
-  `.trim();
+    `.trim();
+  }
 
   try {
     const response = await fetch(

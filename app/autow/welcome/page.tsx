@@ -78,6 +78,15 @@ export default function WelcomePage() {
             <h2 style={styles.optionTitle}>Invoices</h2>
             <p style={styles.optionDescription}>Create and manage invoices</p>
           </button>
+
+          <button
+            onClick={() => router.push('/autow/assessments')}
+            style={styles.optionCard}
+          >
+            <div style={styles.optionIcon}>🔍</div>
+            <h2 style={styles.optionTitle}>Vehicle Assessments</h2>
+            <p style={styles.optionDescription}>Damage assessment reports</p>
+          </button>
         </div>
 
         <button onClick={handleLogout} style={styles.logoutButton}>
