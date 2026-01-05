@@ -28,17 +28,22 @@ function parseText(text: string) {
   // Name - look for labeled format first, then try patterns
   let customer_name: string | null = null;
 
+  // Helper: check if text looks like a UK registration
+  const looksLikeReg = (s: string) => /^[A-Z]{2}\d{2}[A-Z]{3}$/i.test(s.replace(/\s/g, ''));
+
   // Try labeled formats: "Name: John Smith", "Customer: John", etc.
   const labeledName = t.match(/(?:name|customer|client)[:\s]+([A-Za-z]+(?:\s+[A-Za-z]+)?)/i);
-  if (labeledName) {
+  if (labeledName && !looksLikeReg(labeledName[1])) {
     customer_name = labeledName[1];
-  } else {
-    // Try finding two capitalized words that look like a name (not at end, not a vehicle make)
+  } else if (!labeledName) {
+    // Try finding two capitalized words that look like a name (not a vehicle make, not a registration)
     const vehicleMakes = /ford|bmw|audi|mercedes|toyota|honda|nissan|volkswagen|vauxhall|peugeot|renault|volvo|skoda|mini|jaguar|tesla|vw|porsche|lexus|kia|hyundai|mazda|fiat/i;
     const words = t.split(/[\s,]+/);
     for (let i = 0; i < words.length - 1; i++) {
       const w1 = words[i].replace(/[^A-Za-z]/g, '');
       const w2 = words[i + 1].replace(/[^A-Za-z]/g, '');
+      // Skip if combined looks like a registration
+      if (looksLikeReg(words[i]) || looksLikeReg(words[i] + words[i + 1])) continue;
       if (w1.length >= 2 && w2.length >= 2 &&
           /^[A-Z][a-z]+$/.test(w1) && /^[A-Z][a-z]+$/.test(w2) &&
           !vehicleMakes.test(w1) && !vehicleMakes.test(w2)) {
@@ -46,20 +51,22 @@ function parseText(text: string) {
         break;
       }
     }
-    // Fallback: try first two alpha words
+    // Fallback: try first two alpha words (only if they don't look like a registration)
     if (!customer_name) {
       const nm = t.match(/^([A-Za-z]+\s+[A-Za-z]+)/);
-      if (nm && !vehicleMakes.test(nm[1])) {
+      if (nm && !vehicleMakes.test(nm[1]) && !looksLikeReg(nm[1].replace(/\s/g, ''))) {
         customer_name = nm[1];
       }
     }
   }
 
-  // Capitalize name properly
-  if (customer_name) {
+  // Capitalize name properly (only if it's actually a name, not just letters)
+  if (customer_name && customer_name.length > 3) {
     customer_name = customer_name.split(' ').map((w: string) =>
       w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()
     ).join(' ');
+  } else {
+    customer_name = null; // Reset if too short to be a real name
   }
 
   // Issue - find part with keywords (more flexible)
