@@ -486,9 +486,9 @@ export default function SharedAssessmentPage() {
 
           {/* Recommendation Banner */}
           <div style={styles.recommendationBanner} className="mobile-recommendation">
-            <div style={{ fontSize: '0.7em', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.9, marginBottom: '6px' }}>RECOMMENDATION</div>
-            <div style={{ fontSize: '1.4em', fontWeight: 700, marginBottom: '12px' }} className="mobile-recommendation-title">INSURANCE WRITE-OFF</div>
-            <p style={{ opacity: 0.95, maxWidth: '700px', margin: '0 auto', lineHeight: 1.5, fontSize: '0.9em' }} className="mobile-recommendation-text">
+            <div style={{ fontSize: '1.4em', fontWeight: 700, marginBottom: '8px' }} className="mobile-recommendation-title">REPAIR COSTS OUT-WEIGH VEHICLE VALUE</div>
+            <div style={{ fontSize: '0.95em', opacity: 0.95, marginBottom: '12px' }}>From an Insurance Perspective this would be considered a Write-Off</div>
+            <p style={{ opacity: 0.9, maxWidth: '700px', margin: '0 auto', lineHeight: 1.5, fontSize: '0.85em' }} className="mobile-recommendation-text">
               Based on the extent of structural, mechanical, and safety-critical damage, repair costs significantly exceed the pre-accident market value of this vehicle. The combination of subframe deformation, auxiliary belt lock-up, cooling system failure, and potential brake/fuel line compromise makes economical repair unfeasible.
             </p>
           </div>
