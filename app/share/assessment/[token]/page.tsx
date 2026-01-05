@@ -1,553 +1,635 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-import { DamageAssessment, DamageItem, CostEstimate, CriticalIssue } from '@/lib/types';
 
-// Static assessment data for HN14-UWY (until database is set up)
-const staticAssessments: { [key: string]: DamageAssessment } = {
+// Static assessment data for HN14-UWY based on actual video transcript
+const staticAssessments: { [key: string]: any } = {
   'HN14-UWY': {
-    id: 1,
+    id: 'HN14-UWY',
     vehicle_reg: 'HN14 UWY',
-    vehicle_make: 'CITROEN C3',
+    vehicle_make: 'Citroen',
     vehicle_model: 'C3',
     vehicle_engine: '1199cc Petrol',
     vehicle_colour: 'Grey',
-    vehicle_first_registered: '2014-03-01',
-    vehicle_mot_status: 'Valid until March 2026',
-    assessment_date: '2026-01-03',
+    vehicle_year: 'May 2014',
+    assessment_date: '03 January 2026',
+    assessment_method: 'Remote Video Inspection',
+    video_duration: '3 minutes',
+    assessor: 'AUTOW Services, Gavin White',
     recommendation: 'write-off',
     write_off_category: 'S',
-    recommendation_notes: 'Based on the extent of structural, mechanical, and safety-critical damage, repair costs significantly exceed the pre-accident market value of this vehicle. The combination of front-end collision damage, cooling system failure, and suspension/steering compromise makes economical repair unfeasible.',
-    repair_cost_min: 4050,
-    repair_cost_max: 7900,
+    repair_cost_min: 3950,
+    repair_cost_max: 7600,
     vehicle_value_min: 2500,
     vehicle_value_max: 4000,
-    critical_count: 6,
-    high_count: 12,
-    medium_count: 20,
-    low_count: 2,
-    total_items: 40,
-    photo_count: 25,
-    video_url: '',
-    notes: 'Full photographic assessment completed. Vehicle was involved in a front-end collision. Multiple structural and mechanical systems compromised.',
-    critical_issues: [
-      { title: 'Radiator Failure', description: 'Complete coolant loss - engine overheating risk' },
-      { title: 'Structural Damage', description: 'Front chassis rails and subframe compromised' },
-      { title: 'Steering System', description: 'Track rod and steering rack damage affecting vehicle control' },
-      { title: 'Brake System', description: 'Front brake components damaged - reduced stopping power' },
-      { title: 'Airbag Deployment', description: 'Driver airbag deployed - requires replacement' },
-      { title: 'Suspension Failure', description: 'Front suspension geometry compromised' }
+    transcript: `This assessment is based on a detailed underside video inspection.
+
+The entire lower bumper section through to the subframe has suffered severe damage. The under-tray and bumper mounting structure are completely broken away. Multiple brackets are visibly bent, with all associated trim panels snapped or missing.
+
+The lower mounting brackets connecting to the crash bar arms are buckled.
+
+Air-conditioning and power-steering pipework has been forced rearwards into the auxiliary belt drive system. Clear evidence of contact is visible: the rotating wheel has burnt and engraved itself into the pipework, indicating sustained friction and heat generation.
+
+Coolant and power steering radiators both buckled and leaking, all coolant fluid has drained. Full rad pack broken, radiator support bar and crash bar legs buckled and bent.
+
+The offside subframe, when compared to the nearside, is visibly distorted. This confirms subframe deformation rather than cosmetic variance.
+
+Significant underside scraping is present across the anti-roll bar and surrounding areas. Brake lines and fuel lines run through this region and have clearly been struck with considerable force. At this stage, any of these lines may be compromised.
+
+At the rear, the fuel tank shows heavy scraping and engraving consistent with a ground-impact event.
+
+The rear axle assembly displays clear signs of impact damage. While exact alignment cannot be confirmed visually, deformation or buckling cannot be ruled out.
+
+There is evidence of sump contact, with oil leakage visible, suggesting the sump has been struck during the incident.
+
+The vehicle's non-start condition directly correlates with diagnostic data from the AUTEL scan report, which records:
+- Alternator fault - heat load stress
+- P1632 - Engine ECU internal fault (torque limitation)
+
+These faults are consistent with an auxiliary belt lock-up event. The belt is partially displaced and forced into the engine due to displaced radiator and air-conditioning pipework being pressed against the A/C pulley.
+
+The engine management system appears to have detected this lock-up and prevented engine start. Had the engine been allowed to run, significant secondary damage would almost certainly have occurred.
+
+Additional damage is noted to bumper retaining hardware, with clips broken and mounting points bent. Wheel-arch liners are completely smashed, with one side entirely missing and located inside the vehicle.`,
+    critical_alerts: [
+      { title: 'ENGINE LOCKED', description: 'A/C and power-steering pipes forced into auxiliary belt drive. Belt burnt and engraved from sustained friction.' },
+      { title: 'SUBFRAME DAMAGE', description: 'Subframe mounting brackets broken and bent. Subframe visibly distorted when compared side-to-side.' },
+      { title: 'FLUID SYSTEMS AT RISK', description: 'Brake lines and fuel lines struck with considerable force - integrity cannot be confirmed. Oil leak from sump. Fuel tank heavily scraped.' }
     ],
-    damage_items: [
-      { section: 'Front End Structure', component: 'Front Bumper Assembly', damage: 'Complete destruction - impact absorption zone collapsed', assessment: 'Replacement required', priority: 'critical' as const },
-      { section: 'Front End Structure', component: 'Bonnet', damage: 'Severe buckling and deformation', assessment: 'Replacement required', priority: 'high' as const },
-      { section: 'Front End Structure', component: 'Front Wings (Both)', damage: 'Creased and misaligned', assessment: 'Replacement required', priority: 'high' as const },
-      { section: 'Front End Structure', component: 'Headlight Units', damage: 'Both units damaged/cracked', assessment: 'Replacement required', priority: 'high' as const },
-      { section: 'Cooling System', component: 'Radiator', damage: 'Punctured - complete coolant loss', assessment: 'Replacement required', priority: 'critical' as const },
-      { section: 'Cooling System', component: 'Radiator Support', damage: 'Bent and twisted', assessment: 'Panel beating or replacement', priority: 'high' as const },
-      { section: 'Cooling System', component: 'Coolant Hoses', damage: 'Disconnected/damaged', assessment: 'Replacement required', priority: 'medium' as const },
-      { section: 'Engine & Drivetrain', component: 'Engine Mounts', damage: 'Visible stress - potential fracture', assessment: 'Inspection and likely replacement', priority: 'critical' as const },
-      { section: 'Engine & Drivetrain', component: 'Auxiliary Belt', damage: 'Misaligned - possible damage', assessment: 'Inspection required', priority: 'medium' as const },
-      { section: 'Suspension & Steering', component: 'Front Suspension Struts', damage: 'Impact damage - geometry affected', assessment: 'Replacement required', priority: 'critical' as const },
-      { section: 'Suspension & Steering', component: 'Track Rod Ends', damage: 'Bent - steering affected', assessment: 'Replacement required', priority: 'critical' as const },
-      { section: 'Suspension & Steering', component: 'Steering Rack', damage: 'Potential internal damage', assessment: 'Inspection and likely replacement', priority: 'high' as const },
-      { section: 'Suspension & Steering', component: 'Rear Axle / Rear Beam', damage: 'Visual damage, potential buckle', assessment: 'Requires alignment jig checking', priority: 'high' as const },
-      { section: 'Braking System', component: 'Front Brake Discs', damage: 'Warped from impact', assessment: 'Replacement required', priority: 'high' as const },
-      { section: 'Braking System', component: 'Brake Calipers', damage: 'Mounting points stressed', assessment: 'Inspection required', priority: 'medium' as const },
-      { section: 'Safety Systems', component: 'Driver Airbag', damage: 'Deployed', assessment: 'Replacement required + ECU reset', priority: 'critical' as const },
-      { section: 'Safety Systems', component: 'Seatbelt Pretensioners', damage: 'May have activated', assessment: 'Inspection required', priority: 'high' as const },
-      { section: 'Body Panels', component: 'Front Doors', damage: 'Minor alignment issues', assessment: 'Adjustment/minor repair', priority: 'medium' as const },
-      { section: 'Body Panels', component: 'A-Pillars', damage: 'Paint damage, check for stress', assessment: 'Inspection required', priority: 'medium' as const },
-      { section: 'Interior', component: 'Dashboard', damage: 'Airbag housing damaged', assessment: 'Repair/replacement', priority: 'medium' as const }
+    findings: {
+      critical: [
+        'A/C and power-steering pipes forced into auxiliary belt drive',
+        'Auxiliary belt burnt and engraved due to pipe contact',
+        'Belt displacement causing mechanical lock-up',
+        'Engine start inhibited as a protective response',
+        'Diagnostic correlation: alternator heat stress & ECU torque limitation (P1632)',
+        'Coolant Radiator: Failure - buckled and leaking, all fluid drained',
+        'AC Radiator: Failure - impacted and compromised'
+      ],
+      structural: [
+        'Subframe mounting brackets broken and bent',
+        'Subframe visibly distorted side-to-side',
+        'Radiator support structure bent',
+        'Bumper mounting arms and brackets damaged',
+        'Crash bar legs buckled and bent'
+      ],
+      undercarriage: [
+        { text: 'Sump impacted with visible oil leakage', priority: 'high' },
+        { text: 'Fuel tank heavily scraped and engraved', priority: 'critical' },
+        { text: 'Brake lines struck - integrity cannot be confirmed', priority: 'critical' },
+        { text: 'Fuel lines struck - integrity cannot be confirmed', priority: 'critical' },
+        { text: 'Rear axle impacted - possible deformation', priority: 'high' },
+        { text: 'Anti-roll bar damaged from scraping', priority: 'high' }
+      ],
+      body: [
+        { text: 'Full front bumper and rad pack broken', priority: 'high' },
+        { text: 'Wheel-arch liners smashed / missing (one located inside vehicle)', priority: 'medium' },
+        { text: 'Bumper retaining clips broken', priority: 'medium' },
+        { text: 'Lower trim panels snapped or detached', priority: 'medium' },
+        { text: 'Under-tray and bumper mounting structure completely broken away', priority: 'medium' }
+      ]
+    },
+    conclusion: [
+      'Structural deformation of the subframe and mounting points',
+      'Mechanical intrusion of pipework into the auxiliary drive system',
+      'Engine lock-up due to auxiliary belt displacement',
+      'Potential compromise of critical safety systems (fuel and brake lines)',
+      'Extensive underbody, fuel tank, and rear axle damage',
+      'Coolant and air con system and pipework severe damage'
     ],
     cost_estimates: [
-      { category: 'Structural Repairs', components: 'Front chassis rails, subframe, radiator support', parts_min: 800, parts_max: 1500, labour_min: 600, labour_max: 1200, subtotal_min: 1400, subtotal_max: 2700 },
-      { category: 'Body Panels', components: 'Bonnet, bumper, wings, headlights', parts_min: 600, parts_max: 1100, labour_min: 400, labour_max: 800, subtotal_min: 1000, subtotal_max: 1900 },
-      { category: 'Cooling System', components: 'Radiator, hoses, thermostat, coolant', parts_min: 250, parts_max: 400, labour_min: 150, labour_max: 300, subtotal_min: 400, subtotal_max: 700 },
-      { category: 'Suspension & Steering', components: 'Struts, track rods, alignment', parts_min: 350, parts_max: 600, labour_min: 250, labour_max: 400, subtotal_min: 600, subtotal_max: 1000 },
-      { category: 'Safety Systems', components: 'Airbag, pretensioners, ECU reset', parts_min: 400, parts_max: 800, labour_min: 150, labour_max: 300, subtotal_min: 550, subtotal_max: 1100 },
-      { category: 'Paint & Finishing', components: 'Full front-end respray, blending', parts_min: 0, parts_max: 0, labour_min: 400, labour_max: 800, subtotal_min: 400, subtotal_max: 800 }
+      { category: 'Engine & Drive System', components: 'A/C pipes, power steering pipes, auxiliary belt, pulleys', parts_min: 350, parts_max: 600, labour_min: 300, labour_max: 500, subtotal_min: 650, subtotal_max: 1100, color: '#dc2626' },
+      { category: 'Cooling & A/C System', components: 'Coolant radiator, A/C radiator, full rad pack, hoses, coolant', parts_min: 400, parts_max: 700, labour_min: 200, labour_max: 400, subtotal_min: 600, subtotal_max: 1100, color: '#dc2626' },
+      { category: 'Structural Repairs', components: 'Subframe, subframe brackets, radiator support, crash bar legs', parts_min: 600, parts_max: 1200, labour_min: 500, labour_max: 1000, subtotal_min: 1100, subtotal_max: 2200, color: '#ea580c' },
+      { category: 'Undercarriage', components: 'Sump repair/replace, fuel tank inspection, anti-roll bar, rear axle check', parts_min: 300, parts_max: 600, labour_min: 250, labour_max: 500, subtotal_min: 550, subtotal_max: 1100, color: '#ca8a04' },
+      { category: 'Safety-Critical Lines', components: 'Brake lines inspection/replace, fuel lines inspection/replace', parts_min: 150, parts_max: 350, labour_min: 200, labour_max: 400, subtotal_min: 350, subtotal_max: 750, color: '#dc2626' },
+      { category: 'Body & Trim', components: 'Under-tray, bumper structure, wheel arch liners, trim panels, clips', parts_min: 200, parts_max: 400, labour_min: 150, labour_max: 300, subtotal_min: 350, subtotal_max: 700, color: '#2563eb' },
+      { category: 'Diagnostics & Calibration', components: 'ECU fault reset, alternator check, full system diagnostic', parts_min: 0, parts_max: 0, labour_min: 150, labour_max: 300, subtotal_min: 150, subtotal_max: 300, color: '#7c3aed' },
+      { category: 'Alignment & Testing', components: 'Subframe alignment, geometry check, road test', parts_min: 0, parts_max: 0, labour_min: 200, labour_max: 350, subtotal_min: 200, subtotal_max: 350, color: '#16a34a' }
     ],
-    share_token: 'HN14-UWY',
-    created_at: '2026-01-03T00:00:00Z',
-    updated_at: '2026-01-03T00:00:00Z'
+    damage_markers: [
+      { top: '25%', left: '78%', tooltip: 'SUBFRAME - Distorted', priority: 'critical' },
+      { top: '25%', left: '65%', tooltip: 'Sump - Oil Leaking', priority: 'high' },
+      { top: '25%', left: '55%', tooltip: 'Anti-roll Bar - Scraped', priority: 'high' },
+      { top: '25%', left: '28%', tooltip: 'FUEL TANK - Scraped & Engraved', priority: 'critical' },
+      { top: '25%', left: '18%', tooltip: 'Rear Axle - Impact Damage', priority: 'high' },
+      { top: '14%', left: '82%', tooltip: 'Coolant Radiator - FAILED', priority: 'critical' },
+      { top: '10%', left: '78%', tooltip: 'Full Rad Pack - Broken', priority: 'critical' },
+      { top: '16%', left: '75%', tooltip: 'Crash Bar Legs - Buckled', priority: 'critical' },
+      { top: '12%', left: '85%', tooltip: 'A/C Radiator - FAILED', priority: 'critical' },
+      { top: '20%', left: '92%', tooltip: 'Wheel Arch Liner - Smashed', priority: 'medium' },
+      { top: '55%', left: '30%', tooltip: 'Front Bumper - Destroyed', priority: 'high' },
+      { top: '50%', left: '26%', tooltip: 'Under-tray - Broken Away', priority: 'high' },
+      { top: '58%', left: '30%', tooltip: 'SUBFRAME BRACKETS - Broken', priority: 'critical' },
+      { top: '58%', left: '70%', tooltip: 'FUEL TANK - Needs Leak Test', priority: 'critical' },
+      { top: '55%', left: '70%', tooltip: 'Rear Axle Assembly - Check', priority: 'high' },
+      { top: '80%', left: '82%', tooltip: 'A/C Pipes - ENGINE LOCKED!', priority: 'critical' },
+      { top: '80%', left: '76%', tooltip: 'Aux Belt - Burnt & Displaced', priority: 'critical' },
+      { top: '80%', left: '70%', tooltip: 'Subframe Brackets - Broken', priority: 'critical' },
+      { top: '80%', left: '62%', tooltip: 'Sump - Oil Leak', priority: 'high' },
+      { top: '80%', left: '54%', tooltip: 'Brake Lines - Struck', priority: 'critical' },
+      { top: '80%', left: '46%', tooltip: 'Fuel Lines - Struck', priority: 'critical' },
+      { top: '80%', left: '25%', tooltip: 'FUEL TANK - Scraped!', priority: 'critical' },
+      { top: '80%', left: '18%', tooltip: 'Rear Axle - Impact', priority: 'high' }
+    ]
   }
 };
 
 export default function SharedAssessmentPage() {
   const params = useParams();
   const token = params.token as string;
+  const assessment = staticAssessments[token];
 
-  const [loading, setLoading] = useState(true);
-  const [assessment, setAssessment] = useState<DamageAssessment | null>(null);
-  const [businessSettings, setBusinessSettings] = useState<any>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (token) {
-      loadAssessment();
-    }
-  }, [token]);
-
-  const loadAssessment = async () => {
-    // First check if we have static data for this token
-    if (staticAssessments[token]) {
-      setAssessment(staticAssessments[token]);
-      setLoading(false);
-      return;
-    }
-
-    // Otherwise try to fetch from API (for future database-backed assessments)
-    try {
-      const response = await fetch(`/api/share/assessment/${token}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setAssessment(data.assessment);
-        setBusinessSettings(data.business_settings);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || errorData.details || 'Assessment not found or link has expired');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError(`Failed to load assessment: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
+  if (!assessment) {
+    return (
+      <div style={styles.errorContainer}>
+        <div style={styles.errorBox}>
+          <h2 style={styles.errorTitle}>Assessment Not Found</h2>
+          <p style={styles.errorText}>The requested assessment could not be found or the link has expired.</p>
+        </div>
+      </div>
+    );
+  }
 
   const handlePrint = () => {
     window.print();
   };
 
-  if (loading) {
-    return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.loadingText}>Loading assessment...</div>
-      </div>
-    );
-  }
-
-  if (error || !assessment) {
-    return (
-      <div style={styles.loadingContainer}>
-        <div style={styles.errorText}>{error || 'Assessment not found'}</div>
-      </div>
-    );
-  }
-
-  // Parse JSON fields if they're strings
-  const criticalIssues: CriticalIssue[] = typeof assessment.critical_issues === 'string'
-    ? JSON.parse(assessment.critical_issues)
-    : assessment.critical_issues || [];
-
-  const damageItems: DamageItem[] = typeof assessment.damage_items === 'string'
-    ? JSON.parse(assessment.damage_items)
-    : assessment.damage_items || [];
-
-  const costEstimates: CostEstimate[] = typeof assessment.cost_estimates === 'string'
-    ? JSON.parse(assessment.cost_estimates)
-    : assessment.cost_estimates || [];
-
-  // Group damage items by section
-  const groupedItems: { [key: string]: DamageItem[] } = {};
-  damageItems.forEach(item => {
-    if (!groupedItems[item.section]) {
-      groupedItems[item.section] = [];
-    }
-    groupedItems[item.section].push(item);
-  });
-
-  const formatDate = (dateStr: string) => {
-    try {
-      return new Date(dateStr).toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-      });
-    } catch {
-      return dateStr;
-    }
-  };
-
   return (
-    <div style={styles.container}>
-      {/* Print Button */}
-      <div style={styles.actionBar} className="no-print">
-        <button onClick={handlePrint} style={styles.printBtn}>
-          Print / Save as PDF
-        </button>
-      </div>
-
-      {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.headerContent}>
-          <div style={styles.logoSection}>
-            <img src="/latest2.png" alt="AUTOW Services" style={styles.logo} />
-            <div style={styles.headerText}>
-              <h1 style={styles.headerTitle}>Vehicle Damage Assessment</h1>
-              <p style={styles.headerSubtitle}>Professional Inspection Report</p>
-            </div>
-          </div>
-          <div style={styles.vehicleBadge}>{assessment.vehicle_reg}</div>
+    <>
+      <style>{responsiveStyles}</style>
+      <div style={styles.container}>
+        {/* Print Button */}
+        <div style={styles.actionBar} className="no-print">
+          <button onClick={handlePrint} style={styles.printBtn}>
+            Print / Save as PDF
+          </button>
         </div>
 
-        <div style={styles.infoGrid}>
-          <div style={styles.infoItem}>
-            <div style={styles.infoLabel}>Make</div>
-            <div style={styles.infoValue}>{assessment.vehicle_make || 'N/A'}</div>
-          </div>
-          <div style={styles.infoItem}>
-            <div style={styles.infoLabel}>Engine</div>
-            <div style={styles.infoValue}>{assessment.vehicle_engine || 'N/A'}</div>
-          </div>
-          <div style={styles.infoItem}>
-            <div style={styles.infoLabel}>Colour</div>
-            <div style={styles.infoValue}>{assessment.vehicle_colour || 'N/A'}</div>
-          </div>
-          <div style={styles.infoItem}>
-            <div style={styles.infoLabel}>First Registered</div>
-            <div style={styles.infoValue}>
-              {assessment.vehicle_first_registered
-                ? formatDate(assessment.vehicle_first_registered)
-                : 'N/A'}
+        {/* Header */}
+        <div style={styles.header}>
+          <div style={styles.headerTop}>
+            <div style={styles.logoSection}>
+              <img src="https://autow-services.co.uk/logo.png" alt="AUTOW Services" style={styles.logo} />
+              <div style={styles.headerText}>
+                <h1 style={styles.headerTitle}>Vehicle Damage Assessment</h1>
+                <p style={styles.headerSubtitle}>Professional Inspection Report</p>
+              </div>
             </div>
+            <div style={styles.regBadge}>{assessment.vehicle_reg}</div>
           </div>
-          <div style={styles.infoItem}>
-            <div style={styles.infoLabel}>MOT Status</div>
-            <div style={{ ...styles.infoValue, color: '#30ff37' }}>
-              {assessment.vehicle_mot_status || 'N/A'}
+
+          <div style={styles.infoGrid}>
+            <div style={styles.infoItem}>
+              <div style={styles.infoLabel}>Make / Model</div>
+              <div style={styles.infoValue}>{assessment.vehicle_make} ({assessment.vehicle_engine})</div>
             </div>
-          </div>
-          <div style={styles.infoItem}>
-            <div style={styles.infoLabel}>Assessment Date</div>
-            <div style={styles.infoValue}>{formatDate(assessment.assessment_date)}</div>
+            <div style={styles.infoItem}>
+              <div style={styles.infoLabel}>Colour</div>
+              <div style={styles.infoValue}>{assessment.vehicle_colour}</div>
+            </div>
+            <div style={styles.infoItem}>
+              <div style={styles.infoLabel}>Year</div>
+              <div style={styles.infoValue}>{assessment.vehicle_year}</div>
+            </div>
+            <div style={styles.infoItem}>
+              <div style={styles.infoLabel}>Assessment Method</div>
+              <div style={styles.infoValue}>{assessment.assessment_method}</div>
+            </div>
+            <div style={styles.infoItem}>
+              <div style={styles.infoLabel}>Assessment Date</div>
+              <div style={{ ...styles.infoValue, color: '#4ade80' }}>{assessment.assessment_date}</div>
+            </div>
+            <div style={styles.infoItem}>
+              <div style={styles.infoLabel}>Video Duration</div>
+              <div style={styles.infoValue}>{assessment.video_duration}</div>
+            </div>
+            <div style={styles.infoItem}>
+              <div style={styles.infoLabel}>Assessor</div>
+              <div style={styles.infoValue}>{assessment.assessor}</div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Critical Alert Banner */}
-      {criticalIssues.length > 0 && (
+        {/* Critical Alert */}
         <div style={styles.alertBanner}>
-          <div style={styles.alertIcon}>!</div>
+          <div style={styles.alertTitle}>
+            <span style={{ fontSize: '1.5em' }}>&#9888;</span>
+            CRITICAL: Multiple Safety Systems Compromised - Vehicle NOT Roadworthy
+          </div>
           <div style={styles.alertContent}>
-            <h3 style={styles.alertTitle}>CRITICAL: Multiple Safety Issues - Vehicle NOT Roadworthy</h3>
-            {criticalIssues.map((issue, index) => (
+            {assessment.critical_alerts.map((alert: any, index: number) => (
               <p key={index} style={styles.alertText}>
-                <strong>{index + 1}. {issue.title}:</strong> {issue.description}
+                <strong>{index + 1}. {alert.title}:</strong> {alert.description}
               </p>
             ))}
           </div>
         </div>
-      )}
 
-      {/* Video Banner */}
-      {assessment.video_url && (
-        <div style={styles.videoBanner}>
-          <div style={{ fontSize: '2em' }}>Video</div>
-          <div>
-            <strong>Video Assessment Available</strong><br />
-            Full walkthrough with verbal assessment:{' '}
-            <a href={assessment.video_url} target="_blank" rel="noopener noreferrer" style={styles.videoLink}>
-              Watch on YouTube
-            </a>
+        {/* Assessment Voice Transcript */}
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+            <div style={{ ...styles.cardIcon, background: 'rgba(124,58,237,0.2)' }}>&#128221;</div>
+            <div style={styles.cardTitle}>Assessment Voice Transcript</div>
           </div>
-        </div>
-      )}
-
-      {/* Severity Summary */}
-      <div style={styles.glassCard}>
-        <div style={styles.sectionHeader}>
-          <div style={{ ...styles.sectionIcon, background: 'linear-gradient(135deg, #3b82f6, #2563eb)' }}>Stats</div>
-          <div style={styles.sectionTitle}>Damage Severity Summary</div>
-        </div>
-
-        <div style={styles.statsGrid}>
-          <div style={{ ...styles.statCard, borderColor: '#dc2626', background: 'rgba(220, 38, 38, 0.05)' }}>
-            <div style={{ ...styles.statNumber, color: '#dc2626' }}>{assessment.critical_count}</div>
-            <div style={styles.statLabel}>Critical</div>
-          </div>
-          <div style={{ ...styles.statCard, borderColor: '#f97316', background: 'rgba(249, 115, 22, 0.05)' }}>
-            <div style={{ ...styles.statNumber, color: '#f97316' }}>{assessment.high_count}</div>
-            <div style={styles.statLabel}>High</div>
-          </div>
-          <div style={{ ...styles.statCard, borderColor: '#eab308', background: 'rgba(234, 179, 8, 0.05)' }}>
-            <div style={{ ...styles.statNumber, color: '#eab308' }}>{assessment.medium_count}</div>
-            <div style={styles.statLabel}>Medium</div>
-          </div>
-          <div style={{ ...styles.statCard, borderColor: '#22c55e', background: 'rgba(34, 197, 94, 0.05)' }}>
-            <div style={{ ...styles.statNumber, color: '#22c55e' }}>{assessment.low_count}</div>
-            <div style={styles.statLabel}>Low</div>
+          <div style={styles.transcript}>
+            {assessment.transcript.split('\n\n').map((paragraph: string, index: number) => (
+              <p key={index} style={styles.transcriptParagraph}>
+                {paragraph.startsWith('- ') ? (
+                  <ul style={{ margin: '15px 0 15px 20px', color: '#dc2626' }}>
+                    {paragraph.split('\n').map((line: string, i: number) => (
+                      <li key={i}>{line.replace('- ', '')}</li>
+                    ))}
+                  </ul>
+                ) : paragraph}
+              </p>
+            ))}
           </div>
         </div>
 
-        <p style={{ textAlign: 'center', color: '#64748b', marginTop: '10px' }}>
-          <strong>Total Items: {assessment.total_items}</strong> | Based on {assessment.photo_count} photographs + video assessment
-        </p>
-      </div>
+        {/* Key Findings Summary */}
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+            <div style={{ ...styles.cardIcon, background: 'rgba(220,38,38,0.2)' }}>&#9888;</div>
+            <div style={styles.cardTitle}>Key Findings Summary</div>
+          </div>
 
-      {/* Damage Items by Section */}
-      {Object.entries(groupedItems).map(([section, items]) => (
-        <div key={section} style={styles.glassCard}>
-          <div style={styles.sectionHeader}>
-            <div style={{
-              ...styles.sectionIcon,
-              background: items.some(i => i.priority === 'critical')
-                ? 'linear-gradient(135deg, #ef4444, #dc2626)'
-                : 'linear-gradient(135deg, #f97316, #ea580c)'
-            }}>
-              {section.charAt(0)}
+          {/* Critical - Engine & Drive System */}
+          <div style={styles.findingGroup}>
+            <div style={{ ...styles.findingGroupTitle, background: 'rgba(220,38,38,0.15)', color: '#f87171', borderLeft: '3px solid #dc2626' }}>
+              CRITICAL - ENGINE & DRIVE SYSTEM
             </div>
-            <div style={styles.sectionTitle}>{section}</div>
-          </div>
-
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={{ ...styles.th, textAlign: 'left' }}>Component</th>
-                <th style={{ ...styles.th, textAlign: 'left' }}>Damage Description</th>
-                <th style={{ ...styles.th, textAlign: 'left' }}>Assessment</th>
-                <th style={styles.th}>Priority</th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((item, index) => (
-                <tr
-                  key={index}
-                  style={item.priority === 'critical' ? { background: 'rgba(220, 38, 38, 0.05)' } : {}}
-                >
-                  <td style={styles.td}><strong>{item.component}</strong></td>
-                  <td style={styles.td}>{item.damage}</td>
-                  <td style={styles.td}>{item.assessment}</td>
-                  <td style={{ ...styles.td, textAlign: 'center' }}>
-                    <span style={{
-                      ...styles.priorityBadge,
-                      ...(item.priority === 'critical' ? styles.priorityCritical :
-                          item.priority === 'high' ? styles.priorityHigh :
-                          item.priority === 'medium' ? styles.priorityMedium :
-                          styles.priorityLow)
-                    }}>
-                      {item.priority.toUpperCase()}
-                    </span>
-                  </td>
-                </tr>
+            <ul style={styles.findingList}>
+              {assessment.findings.critical.map((item: string, index: number) => (
+                <li key={index} style={styles.findingItem}>
+                  <span style={{ ...styles.findingMarker, background: '#dc2626', color: '#fff' }}>!</span>
+                  <span>{item}</span>
+                </li>
               ))}
-            </tbody>
-          </table>
-        </div>
-      ))}
-
-      {/* Insurance Assessment */}
-      {costEstimates.length > 0 && (
-        <div style={{ ...styles.glassCard, border: '2px solid #7c3aed' }}>
-          <div style={styles.sectionHeader}>
-            <div style={{ ...styles.sectionIcon, background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)' }}>Cost</div>
-            <div style={styles.sectionTitle}>Insurance Claim Assessment - Economic Evaluation</div>
+            </ul>
           </div>
 
-          <p style={styles.purposeBox}>
-            <strong>Purpose:</strong> To determine if repair costs exceed vehicle market value, which would classify this as an insurance write-off (Category B, S, or N depending on structural damage severity).
+          {/* Structural Damage */}
+          <div style={styles.findingGroup}>
+            <div style={{ ...styles.findingGroupTitle, background: 'rgba(249,115,22,0.15)', color: '#fb923c', borderLeft: '3px solid #f97316' }}>
+              STRUCTURAL DAMAGE
+            </div>
+            <ul style={styles.findingList}>
+              {assessment.findings.structural.map((item: string, index: number) => (
+                <li key={index} style={styles.findingItem}>
+                  <span style={{ ...styles.findingMarker, background: '#f97316', color: '#fff' }}>X</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Undercarriage Damage */}
+          <div style={styles.findingGroup}>
+            <div style={{ ...styles.findingGroupTitle, background: 'rgba(234,179,8,0.15)', color: '#fbbf24', borderLeft: '3px solid #eab308' }}>
+              UNDERCARRIAGE DAMAGE
+            </div>
+            <ul style={styles.findingList}>
+              {assessment.findings.undercarriage.map((item: any, index: number) => (
+                <li key={index} style={styles.findingItem}>
+                  <span style={{
+                    ...styles.findingMarker,
+                    background: item.priority === 'critical' ? '#dc2626' : '#f97316',
+                    color: '#fff'
+                  }}>{item.priority === 'critical' ? '!' : 'X'}</span>
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Body & Trim */}
+          <div style={styles.findingGroup}>
+            <div style={{ ...styles.findingGroupTitle, background: 'rgba(59,130,246,0.15)', color: '#60a5fa', borderLeft: '3px solid #3b82f6' }}>
+              BODY & TRIM
+            </div>
+            <ul style={styles.findingList}>
+              {assessment.findings.body.map((item: any, index: number) => (
+                <li key={index} style={styles.findingItem}>
+                  <span style={{
+                    ...styles.findingMarker,
+                    background: item.priority === 'high' ? '#f97316' : '#eab308',
+                    color: item.priority === 'medium' ? '#000' : '#fff'
+                  }}>X</span>
+                  <span>{item.text}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Damage Location Map */}
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+            <div style={{ ...styles.cardIcon, background: 'rgba(59,130,246,0.2)' }}>&#128663;</div>
+            <div style={styles.cardTitle}>Damage Location Map</div>
+          </div>
+          <p style={{ color: '#64748b', marginBottom: '15px', fontSize: '0.9em' }}>Hover over markers to see damage details</p>
+
+          <div style={styles.diagramContainer}>
+            <div style={styles.diagramWrapper}>
+              <img
+                src="https://thumbs.dreamstime.com/b/car-line-draw-four-all-view-top-side-back-insurance-rent-damage-condition-report-form-blueprint-72007177.jpg"
+                alt="Vehicle Damage Diagram"
+                style={styles.diagramImage}
+              />
+              {assessment.damage_markers.map((marker: any, index: number) => (
+                <div
+                  key={index}
+                  className="damage-marker"
+                  style={{
+                    ...styles.damageMarker,
+                    top: marker.top,
+                    left: marker.left,
+                    background: marker.priority === 'critical' ? '#dc2626' :
+                               marker.priority === 'high' ? '#f97316' : '#eab308',
+                    color: marker.priority === 'medium' ? '#000' : '#fff'
+                  }}
+                  data-tooltip={marker.tooltip}
+                >
+                  {marker.priority === 'critical' ? '!' : (index + 1)}
+                </div>
+              ))}
+            </div>
+
+            <div style={styles.legend}>
+              <div style={styles.legendTitle}>Damage Severity</div>
+              <div style={styles.legendItem}>
+                <span style={{ ...styles.legendDot, background: '#dc2626' }}></span>
+                <span>Critical - Safety Risk</span>
+              </div>
+              <div style={styles.legendItem}>
+                <span style={{ ...styles.legendDot, background: '#f97316' }}></span>
+                <span>High - Major Damage</span>
+              </div>
+              <div style={styles.legendItem}>
+                <span style={{ ...styles.legendDot, background: '#eab308' }}></span>
+                <span>Medium - Significant</span>
+              </div>
+              <div style={styles.legendItem}>
+                <span style={{ ...styles.legendDot, background: '#22c55e' }}></span>
+                <span>Low - Minor</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Assessor's Conclusion */}
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+            <div style={{ ...styles.cardIcon, background: 'rgba(34,197,94,0.2)' }}>&#9989;</div>
+            <div style={styles.cardTitle}>Assessor's Conclusion</div>
+          </div>
+
+          <p style={{ marginBottom: '20px', color: '#475569' }}>
+            The vehicle has sustained substantial underside impact consistent with sliding across the road surface with significant force.
           </p>
 
-          <h4 style={{ margin: '20px 0 15px', color: '#1a1a2e' }}>Estimated Repair Costs</h4>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={{ ...styles.th, textAlign: 'left' }}>Repair Category</th>
-                <th style={{ ...styles.th, textAlign: 'left' }}>Components</th>
-                <th style={styles.th}>Est. Parts</th>
-                <th style={styles.th}>Est. Labour</th>
-                <th style={styles.th}>Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {costEstimates.map((cost, index) => (
-                <tr
-                  key={index}
-                  style={cost.category.toLowerCase().includes('structural') || cost.category.toLowerCase().includes('engine') || cost.category.toLowerCase().includes('cooling')
-                    ? { background: 'rgba(220, 38, 38, 0.05)' }
-                    : {}
-                  }
-                >
-                  <td style={styles.td}><strong>{cost.category}</strong></td>
-                  <td style={styles.td}>{cost.components}</td>
-                  <td style={{ ...styles.td, textAlign: 'center' }}>
-                    {cost.parts_min > 0 || cost.parts_max > 0
-                      ? `£${cost.parts_min.toLocaleString()} - £${cost.parts_max.toLocaleString()}`
-                      : '-'}
-                  </td>
-                  <td style={{ ...styles.td, textAlign: 'center' }}>
-                    £{cost.labour_min.toLocaleString()} - £{cost.labour_max.toLocaleString()}
-                  </td>
-                  <td style={{ ...styles.td, textAlign: 'center' }}>
-                    <strong>£{cost.subtotal_min.toLocaleString()} - £{cost.subtotal_max.toLocaleString()}</strong>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot>
-              <tr style={{ background: '#1a1a1a', color: 'white' }}>
-                <td colSpan={4} style={{ textAlign: 'right', padding: '15px' }}>
-                  <strong>TOTAL ESTIMATED REPAIR COST:</strong>
-                </td>
-                <td style={{ padding: '15px', color: '#30ff37', textAlign: 'center' }}>
-                  <strong>£{assessment.repair_cost_min.toLocaleString()} - £{assessment.repair_cost_max.toLocaleString()}</strong>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+          <p style={{ marginBottom: '15px', color: '#64748b', fontWeight: 600 }}>This has resulted in:</p>
 
-          {/* Value vs Cost Comparison */}
-          <div style={styles.comparisonGrid}>
-            <div style={styles.valueBox}>
-              <h4 style={{ color: '#92400e', marginBottom: '15px' }}>Vehicle Market Value</h4>
-              <p style={{ color: '#78350f', marginBottom: '10px' }}>
-                <strong>Vehicle:</strong> {assessment.vehicle_first_registered ? new Date(assessment.vehicle_first_registered).getFullYear() : ''} {assessment.vehicle_make} {assessment.vehicle_model} {assessment.vehicle_engine}
-              </p>
-              <p style={{ fontSize: '1.4em', fontWeight: 700, color: '#92400e', marginTop: '15px' }}>
-                Est. Value: £{assessment.vehicle_value_min.toLocaleString()} - £{assessment.vehicle_value_max.toLocaleString()}
-              </p>
-              <p style={{ fontSize: '0.85em', color: '#a16207', marginTop: '5px' }}>Based on typical UK market values</p>
-            </div>
+          <ol style={styles.conclusionList}>
+            {assessment.conclusion.map((item: string, index: number) => (
+              <li key={index} style={styles.conclusionItem}>{item}</li>
+            ))}
+          </ol>
 
-            <div style={styles.assessmentBox}>
-              <h4 style={{ color: '#991b1b', marginBottom: '15px' }}>Economic Assessment</h4>
-              <p style={{ color: '#7f1d1d', marginBottom: '10px' }}>
-                <strong>Minimum Repair Cost:</strong> £{assessment.repair_cost_min.toLocaleString()}
-              </p>
-              <p style={{ color: '#7f1d1d', marginBottom: '10px' }}>
-                <strong>Maximum Vehicle Value:</strong> £{assessment.vehicle_value_max.toLocaleString()}
-              </p>
-              <p style={{ color: '#7f1d1d', marginBottom: '10px' }}>
-                <strong>Cost vs Value Ratio:</strong>{' '}
-                {Math.round((assessment.repair_cost_min / assessment.vehicle_value_max) * 100)}% -{' '}
-                {Math.round((assessment.repair_cost_max / assessment.vehicle_value_min) * 100)}%
-              </p>
-              <p style={{ fontSize: '1.3em', fontWeight: 700, color: '#dc2626', marginTop: '15px', textTransform: 'uppercase' }}>
-                {assessment.repair_cost_min > assessment.vehicle_value_max
-                  ? 'Repair costs exceed vehicle value'
-                  : 'Repair may be economical'}
-              </p>
-            </div>
-          </div>
-
-          {/* Recommendation */}
-          {assessment.recommendation === 'write-off' && (
-            <div style={styles.recommendationBox}>
-              <h3 style={{ fontSize: '1.5em', marginBottom: '15px' }}>RECOMMENDATION: INSURANCE WRITE-OFF</h3>
-              <p style={{ fontSize: '1.1em', opacity: 0.95, marginBottom: '15px' }}>
-                {assessment.recommendation_notes || 'Based on the extent of structural, mechanical, and safety-critical damage, repair costs significantly exceed the pre-accident market value of this vehicle.'}
-              </p>
-              {assessment.write_off_category && (
-                <div style={styles.categoryBadges}>
-                  <div style={styles.categoryBadge}>
-                    <div style={{ fontSize: '0.8em', opacity: 0.8 }}>Likely Category</div>
-                    <div style={{ fontSize: '1.3em', fontWeight: 700 }}>Category {assessment.write_off_category}</div>
-                    <div style={{ fontSize: '0.75em', opacity: 0.7 }}>
-                      {assessment.write_off_category === 'S' ? 'Structural damage - repairable' :
-                       assessment.write_off_category === 'N' ? 'Non-structural damage - repairable' :
-                       assessment.write_off_category === 'B' ? 'Break only - cannot be repaired' :
-                       'Scrap only - dangerous'}
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Disclaimer */}
-          <div style={styles.disclaimerBox}>
-            <h4 style={{ color: '#475569', marginBottom: '10px' }}>Note on Estimates</h4>
-            <p style={{ color: '#64748b', fontSize: '0.9em' }}>
-              Cost estimates are based on typical UK garage rates and parts prices. Actual costs may vary based on location, parts availability (OEM vs aftermarket), and workshop labour rates. Additional damage may be discovered during disassembly. These figures are provided for insurance assessment purposes only.
+          <div style={styles.finalAssessmentBox}>
+            <p style={{ color: '#dc2626' }}>
+              <strong>Final Assessment:</strong> Based on the observed damage and correlated diagnostic data, the vehicle is repairable but estimated costs (£{assessment.repair_cost_min.toLocaleString()} - £{assessment.repair_cost_max.toLocaleString()}) exceed the vehicle's market value (£{assessment.vehicle_value_min.toLocaleString()} - £{assessment.vehicle_value_max.toLocaleString()}), making repair economically unviable.
             </p>
           </div>
         </div>
-      )}
 
-      {/* Notes */}
-      {assessment.notes && (
-        <div style={styles.glassCard}>
-          <div style={styles.sectionHeader}>
-            <div style={{ ...styles.sectionIcon, background: 'linear-gradient(135deg, #30ff37, #28cc2f)' }}>Notes</div>
-            <div style={styles.sectionTitle}>Additional Notes</div>
+        {/* Insurance Claim Assessment */}
+        <div style={styles.card}>
+          <div style={styles.cardHeader}>
+            <div style={{ ...styles.cardIcon, background: 'rgba(249,115,22,0.2)' }}>&#163;</div>
+            <div style={styles.cardTitle}>Insurance Claim Assessment - Economic Evaluation</div>
           </div>
-          <p style={{ whiteSpace: 'pre-wrap', lineHeight: 1.8 }}>{assessment.notes}</p>
+
+          <p style={{ color: '#64748b', marginBottom: '25px', fontSize: '0.9em' }}>
+            <strong>Purpose:</strong> To determine if repair costs exceed vehicle market value, which would classify this as an insurance write-off (Category B, S, or N depending on structural damage severity).
+          </p>
+
+          {/* Repair Costs Table */}
+          <div style={{ marginBottom: '30px' }}>
+            <h4 style={{ color: '#16a34a', marginBottom: '15px', fontSize: '0.95em', textTransform: 'uppercase', letterSpacing: '1px' }}>Estimated Repair Costs</h4>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={styles.table}>
+                <thead>
+                  <tr style={{ background: '#f1f5f9', borderBottom: '2px solid #e2e8f0' }}>
+                    <th style={styles.th}>Repair Category</th>
+                    <th style={styles.th} className="hide-mobile">Components</th>
+                    <th style={styles.th} className="hide-mobile-sm">Est. Parts</th>
+                    <th style={styles.th}>Est. Labour</th>
+                    <th style={styles.th}>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {assessment.cost_estimates.map((cost: any, index: number) => (
+                    <tr key={index} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <td style={{ ...styles.td, fontWeight: 600, color: cost.color }}>{cost.category}</td>
+                      <td style={{ ...styles.td, color: '#64748b' }} className="hide-mobile">{cost.components}</td>
+                      <td style={{ ...styles.td, textAlign: 'right', color: '#334155' }} className="hide-mobile-sm">
+                        {cost.parts_min > 0 ? `£${cost.parts_min} - £${cost.parts_max}` : '-'}
+                      </td>
+                      <td style={{ ...styles.td, textAlign: 'right', color: '#334155' }}>£{cost.labour_min} - £{cost.labour_max}</td>
+                      <td style={{ ...styles.td, textAlign: 'right', fontWeight: 600, color: '#1e293b' }}>£{cost.subtotal_min.toLocaleString()} - £{cost.subtotal_max.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr style={{ background: '#fef2f2', borderTop: '2px solid #dc2626' }}>
+                    <td colSpan={4} style={{ padding: '15px', fontWeight: 700, color: '#dc2626', fontSize: '1em' }} className="total-label">TOTAL ESTIMATED REPAIR COST VARIES:</td>
+                    <td style={{ padding: '15px', textAlign: 'right', fontWeight: 700, color: '#dc2626', fontSize: '1.1em' }}>£{assessment.repair_cost_min.toLocaleString()} - £{assessment.repair_cost_max.toLocaleString()}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* Vehicle Value & Economic Assessment Grid */}
+          <div style={styles.valueGrid}>
+            <div style={styles.valueBox}>
+              <h4 style={{ color: '#16a34a', marginBottom: '15px', fontSize: '0.9em', textTransform: 'uppercase', letterSpacing: '1px' }}>Vehicle Market Value</h4>
+              <p style={{ color: '#64748b', marginBottom: '10px', fontSize: '0.85em' }}>Vehicle: {assessment.vehicle_year} {assessment.vehicle_make} {assessment.vehicle_model} {assessment.vehicle_engine}</p>
+              <div style={{ fontSize: '1.8em', fontWeight: 700, color: '#16a34a', marginBottom: '10px' }}>£{assessment.vehicle_value_min.toLocaleString()} - £{assessment.vehicle_value_max.toLocaleString()}</div>
+              <p style={{ color: '#94a3b8', fontSize: '0.8em' }}>Based on typical UK market values</p>
+            </div>
+
+            <div style={styles.assessmentValueBox}>
+              <h4 style={{ color: '#16a34a', marginBottom: '15px', fontSize: '0.9em', textTransform: 'uppercase', letterSpacing: '1px' }}>Economic Assessment</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #e2e8f0' }}>
+                  <span style={{ color: '#64748b' }}>Minimum Repair Cost:</span>
+                  <span style={{ fontWeight: 600, color: '#dc2626' }}>£{assessment.repair_cost_min.toLocaleString()}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #e2e8f0' }}>
+                  <span style={{ color: '#64748b' }}>Maximum Vehicle Value:</span>
+                  <span style={{ fontWeight: 600, color: '#16a34a' }}>£{assessment.vehicle_value_max.toLocaleString()}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid #e2e8f0' }}>
+                  <span style={{ color: '#64748b' }}>Cost vs Value Ratio:</span>
+                  <span style={{ fontWeight: 600, color: '#ca8a04' }}>
+                    {Math.round((assessment.repair_cost_min / assessment.vehicle_value_max) * 100)}% - {Math.round((assessment.repair_cost_max / assessment.vehicle_value_min) * 100)}%
+                  </span>
+                </div>
+                <div style={{ padding: '10px', background: '#fef2f2', borderRadius: '8px', marginTop: '5px' }}>
+                  <span style={{ color: '#dc2626', fontWeight: 600 }}>Repair costs meet or exceed vehicle value</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Recommendation Banner */}
+          <div style={styles.recommendationBanner}>
+            <div style={{ fontSize: '0.7em', textTransform: 'uppercase', letterSpacing: '2px', opacity: 0.9, marginBottom: '6px' }}>RECOMMENDATION</div>
+            <div style={{ fontSize: '1.4em', fontWeight: 700, marginBottom: '12px' }}>INSURANCE WRITE-OFF</div>
+            <p style={{ opacity: 0.95, maxWidth: '700px', margin: '0 auto', lineHeight: 1.5, fontSize: '0.9em' }}>
+              Based on the extent of structural, mechanical, and safety-critical damage, repair costs significantly exceed the pre-accident market value of this vehicle. The combination of subframe deformation, auxiliary belt lock-up, cooling system failure, and potential brake/fuel line compromise makes economical repair unfeasible.
+            </p>
+          </div>
+
+          {/* Category Badge */}
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '20px' }}>
+            <div style={styles.categoryBadge}>
+              <div style={{ fontSize: '0.7em', textTransform: 'uppercase', letterSpacing: '1px', color: '#64748b', marginBottom: '5px' }}>Likely Category</div>
+              <div style={{ fontSize: '2em', fontWeight: 700, color: '#ea580c', marginBottom: '3px' }}>Category {assessment.write_off_category}</div>
+              <div style={{ color: '#78716c', fontSize: '0.8em' }}>Structural damage - repairable but uneconomical</div>
+            </div>
+          </div>
+
+          {/* Note on Estimates */}
+          <div style={styles.noteBox}>
+            <h4 style={{ color: '#64748b', marginBottom: '10px', fontSize: '0.85em', textTransform: 'uppercase', letterSpacing: '1px' }}>Note on Estimates</h4>
+            <p style={{ color: '#475569', fontSize: '0.9em', lineHeight: 1.7 }}>
+              Cost estimates are based on typical UK garage rates and parts prices for a 2014 Citroen C3. Actual costs may vary based on location, parts availability (OEM vs aftermarket), and workshop labour rates. Additional hidden damage may be discovered during disassembly, particularly to brake and fuel lines which require physical inspection. These figures are provided for insurance assessment purposes only.
+            </p>
+          </div>
         </div>
-      )}
 
-      {/* Footer */}
-      <div style={styles.footer}>
-        <img src="/latest2.png" alt="AUTOW Services" style={styles.footerLogo} />
-        <p><strong>Vehicle Damage Assessment Report</strong></p>
-        <p>{assessment.vehicle_reg} | {assessment.vehicle_make} {assessment.vehicle_engine} | {assessment.vehicle_colour} | {assessment.vehicle_first_registered ? formatDate(assessment.vehicle_first_registered) : ''}</p>
-        <p style={{ marginTop: '10px' }}>Assessment Date: {formatDate(assessment.assessment_date)} | Based on {assessment.photo_count} photographs + video assessment</p>
-        {assessment.vehicle_mot_status && (
-          <p style={{ marginTop: '5px', fontSize: '0.85em' }}>MOT: {assessment.vehicle_mot_status}</p>
-        )}
-        <p style={{ marginTop: '15px', fontSize: '0.8em', opacity: 0.7 }}>
-          This report is based on photographic and video evidence review. A physical inspection by a qualified mechanic is recommended.
-        </p>
+        {/* Footer */}
+        <div style={styles.footer}>
+          <img src="https://autow-services.co.uk/logo.png" alt="AUTOW Services" style={styles.footerLogo} />
+          <p>Report Compiled: {assessment.assessment_date}</p>
+          <p>Assessment Method: Video Evidence Review</p>
+          <p style={{ marginTop: '10px', color: '#94a3b8' }}>AUTOW Services - Professional Vehicle Damage Assessment</p>
+        </div>
       </div>
-
-      <style>{`
-        @media print {
-          .no-print {
-            display: none !important;
-          }
-          body {
-            background: white !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-        }
-
-        @media (max-width: 768px) {
-          .comparison-grid {
-            grid-template-columns: 1fr !important;
-          }
-        }
-      `}</style>
-    </div>
+    </>
   );
 }
+
+const responsiveStyles = `
+  @media print {
+    .no-print { display: none !important; }
+    body { background: #fff; color: #000; }
+  }
+
+  .damage-marker {
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7em;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .damage-marker:hover {
+    transform: scale(1.3);
+    z-index: 10;
+  }
+
+  .damage-marker::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #000;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 9px;
+    white-space: normal;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+    margin-bottom: 4px;
+    max-width: 120px;
+    text-align: center;
+    line-height: 1.2;
+    z-index: 100;
+  }
+
+  .damage-marker:hover::after {
+    opacity: 1;
+  }
+
+  @media (max-width: 768px) {
+    .hide-mobile { display: none !important; }
+    .total-label { font-size: 0.85em !important; }
+  }
+
+  @media (max-width: 480px) {
+    .hide-mobile-sm { display: none !important; }
+    .damage-marker { width: 16px; height: 16px; font-size: 0.55em; }
+    .damage-marker::after { font-size: 8px; padding: 3px 5px; max-width: 100px; }
+  }
+`;
 
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    background: 'linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 50%, #f0f2f5 100%)',
-    color: '#1a1a2e',
+    background: 'linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%)',
+    color: '#1e293b',
     lineHeight: 1.6,
     minHeight: '100vh',
     padding: '20px',
   },
-  loadingContainer: {
+  errorContainer: {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    background: '#f5f5f5',
+    background: '#f8fafc',
     minHeight: '100vh',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
+    padding: '20px',
   },
-  loadingText: {
-    fontSize: '18px',
-    color: '#666',
+  errorBox: {
+    textAlign: 'center',
+    padding: '60px 40px',
+    background: '#fff',
+    borderRadius: '16px',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+  },
+  errorTitle: {
+    color: '#dc2626',
+    marginBottom: '10px',
   },
   errorText: {
-    fontSize: '18px',
-    color: '#f44336',
+    color: '#64748b',
   },
   actionBar: {
-    maxWidth: '1200px',
+    maxWidth: '1000px',
     margin: '0 auto 20px auto',
     display: 'flex',
     justifyContent: 'flex-end',
   },
   printBtn: {
     padding: '12px 24px',
-    background: '#30ff37',
+    background: '#22c55e',
     border: 'none',
     borderRadius: '8px',
     color: '#000',
@@ -556,294 +638,313 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 600,
   },
   header: {
-    background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-    color: 'white',
-    padding: '40px',
-    borderRadius: '24px',
-    marginBottom: '24px',
-    maxWidth: '1200px',
-    margin: '0 auto 24px auto',
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-    position: 'relative',
-    borderTop: '4px solid #30ff37',
+    background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+    borderTop: '4px solid #22c55e',
+    borderRadius: '16px',
+    padding: '30px',
+    marginBottom: '20px',
+    maxWidth: '1000px',
+    margin: '0 auto 20px auto',
+    boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
   },
-  headerContent: {
+  headerTop: {
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'space-between',
+    alignItems: 'center',
     flexWrap: 'wrap',
-    gap: '30px',
+    gap: '20px',
+    marginBottom: '25px',
   },
   logoSection: {
     display: 'flex',
     alignItems: 'center',
-    gap: '25px',
+    gap: '15px',
   },
   logo: {
-    height: '70px',
-    filter: 'drop-shadow(0 4px 12px rgba(48, 255, 55, 0.4))',
+    height: '60px',
   },
   headerText: {},
   headerTitle: {
-    fontSize: '1.8em',
-    fontWeight: 700,
-    color: '#30ff37',
-    marginBottom: '5px',
+    fontSize: '1.5em',
+    color: '#22c55e',
+    marginBottom: '3px',
     margin: 0,
   },
   headerSubtitle: {
-    color: '#aaa',
-    fontSize: '0.95em',
+    color: '#94a3b8',
+    fontSize: '0.9em',
     margin: 0,
   },
-  vehicleBadge: {
-    background: 'linear-gradient(135deg, #30ff37 0%, #28cc2f 100%)',
+  regBadge: {
+    background: '#22c55e',
     color: '#000',
-    padding: '15px 30px',
-    borderRadius: '16px',
+    padding: '12px 24px',
+    borderRadius: '10px',
     fontWeight: 700,
-    fontSize: '1.1em',
-    boxShadow: '0 4px 20px rgba(48, 255, 55, 0.4)',
+    fontSize: '1.2em',
   },
   infoGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-    gap: '16px',
-    marginTop: '30px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+    gap: '12px',
   },
   infoItem: {
-    background: 'rgba(255, 255, 255, 0.1)',
-    padding: '16px 20px',
-    borderRadius: '14px',
-    border: '1px solid rgba(255, 255, 255, 0.15)',
+    background: 'rgba(255,255,255,0.1)',
+    padding: '12px 16px',
+    borderRadius: '10px',
+    border: '1px solid rgba(255,255,255,0.1)',
   },
   infoLabel: {
-    fontSize: '0.75em',
+    fontSize: '0.7em',
     textTransform: 'uppercase',
     letterSpacing: '1px',
-    color: '#888',
-    marginBottom: '4px',
+    color: '#94a3b8',
+    marginBottom: '3px',
   },
   infoValue: {
-    fontSize: '1.1em',
     fontWeight: 600,
     color: '#fff',
   },
   alertBanner: {
     background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-    color: 'white',
-    padding: '25px 30px',
-    borderRadius: '20px',
-    marginBottom: '24px',
-    maxWidth: '1200px',
-    margin: '0 auto 24px auto',
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '20px',
-    boxShadow: '0 8px 30px rgba(220, 38, 38, 0.3)',
+    borderRadius: '16px',
+    padding: '25px',
+    marginBottom: '20px',
+    maxWidth: '1000px',
+    margin: '0 auto 20px auto',
+    border: '1px solid #ef4444',
+    color: '#fff',
   },
-  alertIcon: {
-    fontSize: '2.5em',
-    lineHeight: 1,
-    fontWeight: 700,
-  },
-  alertContent: {},
   alertTitle: {
-    fontSize: '1.3em',
-    marginBottom: '12px',
-    margin: '0 0 12px 0',
+    fontSize: '1.2em',
+    fontWeight: 700,
+    marginBottom: '15px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    color: '#fff',
+  },
+  alertContent: {
+    color: '#fff',
   },
   alertText: {
     marginBottom: '8px',
     opacity: 0.95,
-    margin: '0 0 8px 0',
+    color: '#fff',
   },
-  videoBanner: {
-    background: 'linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)',
-    color: 'white',
-    padding: '20px 30px',
+  card: {
+    background: '#fff',
+    border: '1px solid #e2e8f0',
     borderRadius: '16px',
-    marginBottom: '24px',
-    maxWidth: '1200px',
-    margin: '0 auto 24px auto',
+    padding: '25px',
+    marginBottom: '20px',
+    maxWidth: '1000px',
+    margin: '0 auto 20px auto',
+    boxShadow: '0 2px 10px rgba(0,0,0,0.05)',
+  },
+  cardHeader: {
     display: 'flex',
     alignItems: 'center',
-    gap: '20px',
-    boxShadow: '0 8px 30px rgba(124, 58, 237, 0.3)',
-  },
-  videoLink: {
-    color: '#fcd34d',
-    fontWeight: 600,
-  },
-  glassCard: {
-    background: 'rgba(255, 255, 255, 0.85)',
-    backdropFilter: 'blur(20px)',
-    borderRadius: '24px',
-    border: '1px solid rgba(255, 255, 255, 0.9)',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
-    padding: '30px',
-    marginBottom: '24px',
-    maxWidth: '1200px',
-    margin: '0 auto 24px auto',
-  },
-  sectionHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-    marginBottom: '25px',
+    gap: '12px',
+    marginBottom: '20px',
     paddingBottom: '15px',
-    borderBottom: '2px solid rgba(48, 255, 55, 0.2)',
+    borderBottom: '1px solid #e2e8f0',
   },
-  sectionIcon: {
-    width: '50px',
-    height: '50px',
-    borderRadius: '14px',
+  cardIcon: {
+    width: '40px',
+    height: '40px',
+    borderRadius: '10px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     fontSize: '1.2em',
-    color: 'white',
-    fontWeight: 700,
   },
-  sectionTitle: {
-    fontSize: '1.4em',
-    fontWeight: 700,
-    color: '#1a1a2e',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
-    gap: '16px',
-    marginBottom: '20px',
-  },
-  statCard: {
-    background: 'rgba(255, 255, 255, 0.9)',
-    padding: '24px',
-    borderRadius: '18px',
-    textAlign: 'center',
-    border: '2px solid transparent',
-  },
-  statNumber: {
-    fontSize: '2.8em',
-    fontWeight: 800,
-    lineHeight: 1,
-    marginBottom: '8px',
-  },
-  statLabel: {
-    fontSize: '0.85em',
-    textTransform: 'uppercase',
-    letterSpacing: '1px',
-    color: '#666',
+  cardTitle: {
+    fontSize: '1.1em',
     fontWeight: 600,
+    color: '#16a34a',
+  },
+  transcript: {
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: '12px',
+    padding: '20px',
+    fontSize: '0.95em',
+    lineHeight: 1.8,
+    color: '#475569',
+  },
+  transcriptParagraph: {
+    marginBottom: '15px',
+  },
+  findingGroup: {
+    marginBottom: '25px',
+  },
+  findingGroupTitle: {
+    fontWeight: 700,
+    marginBottom: '12px',
+    padding: '10px 15px',
+    borderRadius: '8px',
+    fontSize: '0.9em',
+  },
+  findingList: {
+    listStyle: 'none',
+    paddingLeft: '15px',
+    margin: 0,
+  },
+  findingItem: {
+    padding: '8px 0',
+    borderBottom: '1px solid #e2e8f0',
+    display: 'flex',
+    alignItems: 'flex-start',
+    gap: '10px',
+    color: '#334155',
+  },
+  findingMarker: {
+    width: '22px',
+    height: '22px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '0.7em',
+    fontWeight: 700,
+    flexShrink: 0,
+    marginTop: '2px',
+  },
+  diagramContainer: {
+    display: 'flex',
+    gap: '20px',
+    flexWrap: 'wrap',
+  },
+  diagramWrapper: {
+    flex: 1,
+    minWidth: '300px',
+    position: 'relative',
+    background: '#f8f9fa',
+    borderRadius: '12px',
+    overflow: 'hidden',
+  },
+  diagramImage: {
+    width: '100%',
+    display: 'block',
+  },
+  damageMarker: {
+    position: 'absolute',
+  },
+  legend: {
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: '12px',
+    padding: '20px',
+    minWidth: '200px',
+  },
+  legendTitle: {
+    fontWeight: 700,
+    color: '#16a34a',
+    marginBottom: '15px',
+    fontSize: '0.9em',
+  },
+  legendItem: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '8px 0',
+    borderBottom: '1px solid #e2e8f0',
+    color: '#475569',
+  },
+  legendDot: {
+    width: '14px',
+    height: '14px',
+    borderRadius: '50%',
+    display: 'inline-block',
+  },
+  conclusionList: {
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
+  },
+  conclusionItem: {
+    padding: '12px 15px',
+    background: '#f8fafc',
+    borderRadius: '8px',
+    marginBottom: '10px',
+    borderLeft: '3px solid #16a34a',
+    color: '#334155',
+  },
+  finalAssessmentBox: {
+    background: '#fef2f2',
+    border: '1px solid #fecaca',
+    borderRadius: '12px',
+    padding: '20px',
+    marginTop: '25px',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
-    marginTop: '15px',
+    fontSize: '0.9em',
   },
   th: {
-    background: 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)',
-    color: '#30ff37',
-    padding: '14px 16px',
-    textAlign: 'center',
-    fontSize: '0.85em',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
+    padding: '12px 15px',
+    textAlign: 'left',
+    color: '#64748b',
   },
   td: {
-    padding: '14px 16px',
-    borderBottom: '1px solid rgba(0, 0, 0, 0.06)',
-    verticalAlign: 'middle',
+    padding: '12px 15px',
   },
-  priorityBadge: {
-    display: 'inline-block',
-    padding: '5px 12px',
-    borderRadius: '20px',
-    fontSize: '0.75em',
-    fontWeight: 700,
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  priorityCritical: {
-    background: '#dc2626',
-    color: 'white',
-  },
-  priorityHigh: {
-    background: '#f97316',
-    color: 'white',
-  },
-  priorityMedium: {
-    background: '#eab308',
-    color: '#000',
-  },
-  priorityLow: {
-    background: '#22c55e',
-    color: 'white',
-  },
-  purposeBox: {
-    background: '#f5f3ff',
-    padding: '15px',
-    borderRadius: '12px',
-    marginBottom: '25px',
-    borderLeft: '4px solid #7c3aed',
-  },
-  comparisonGrid: {
+  valueGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
     gap: '20px',
-    marginTop: '30px',
+    marginBottom: '30px',
   },
   valueBox: {
-    background: 'linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)',
-    padding: '25px',
-    borderRadius: '16px',
-    border: '2px solid #f59e0b',
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: '12px',
+    padding: '20px',
   },
-  assessmentBox: {
-    background: 'linear-gradient(135deg, #fecaca 0%, #fca5a5 100%)',
-    padding: '25px',
-    borderRadius: '16px',
-    border: '2px solid #dc2626',
+  assessmentValueBox: {
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
+    borderRadius: '12px',
+    padding: '20px',
   },
-  recommendationBox: {
+  recommendationBanner: {
     background: 'linear-gradient(135deg, #dc2626 0%, #b91c1c 100%)',
-    color: 'white',
-    padding: '30px',
     borderRadius: '16px',
-    marginTop: '25px',
+    padding: '20px',
+    marginBottom: '20px',
     textAlign: 'center',
-  },
-  categoryBadges: {
-    display: 'flex',
-    justifyContent: 'center',
-    gap: '30px',
-    flexWrap: 'wrap',
-    marginTop: '20px',
+    color: '#fff',
   },
   categoryBadge: {
-    background: 'rgba(255,255,255,0.15)',
+    background: '#fff7ed',
+    border: '2px solid #ea580c',
+    borderRadius: '12px',
     padding: '15px 25px',
-    borderRadius: '12px',
     textAlign: 'center',
+    width: '100%',
+    maxWidth: '300px',
   },
-  disclaimerBox: {
+  noteBox: {
     background: '#f8fafc',
-    padding: '20px',
+    border: '1px solid #e2e8f0',
     borderRadius: '12px',
-    marginTop: '20px',
-    borderLeft: '4px solid #64748b',
+    padding: '20px',
   },
   footer: {
     textAlign: 'center',
     padding: '30px',
     color: '#64748b',
-    fontSize: '0.9em',
-    maxWidth: '1200px',
-    margin: '0 auto',
+    fontSize: '0.85em',
+    borderTop: '1px solid #e2e8f0',
+    marginTop: '30px',
+    maxWidth: '1000px',
+    margin: '30px auto 0 auto',
   },
   footerLogo: {
-    height: '50px',
-    marginBottom: '15px',
-    opacity: 0.8,
+    height: '40px',
+    marginBottom: '10px',
+    opacity: 0.7,
   },
 };

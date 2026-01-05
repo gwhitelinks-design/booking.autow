@@ -13,151 +13,112 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #f5f7fa 0%, #e4e8ec 50%, #f0f2f5 100%);
-            color: #1a1a2e;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #1e293b;
             line-height: 1.6;
             min-height: 100vh;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
         }
 
-        /* Glass Card Effect */
-        .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 24px;
-            border: 1px solid rgba(255, 255, 255, 0.9);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 0 0 1px rgba(48, 255, 55, 0.1);
-            padding: 30px;
-            margin-bottom: 24px;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .glass-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(48, 255, 55, 0.2);
-        }
-
         /* Header */
         .header {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: white;
-            padding: 40px;
-            border-radius: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(48, 255, 55, 0.2);
-            position: relative;
-            overflow: hidden;
+            background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+            border: none;
+            border-top: 4px solid #22c55e;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
         }
 
-        .header::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #30ff37, #28cc2f, #30ff37);
-        }
-
-        .header-content {
+        .header-top {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             flex-wrap: wrap;
-            gap: 30px;
+            gap: 20px;
+            margin-bottom: 25px;
         }
 
         .logo-section {
             display: flex;
             align-items: center;
-            gap: 25px;
+            gap: 15px;
         }
 
         .logo {
-            height: 70px;
-            filter: drop-shadow(0 4px 12px rgba(48, 255, 55, 0.4));
+            height: 60px;
         }
 
         .header-text h1 {
-            font-size: 1.8em;
-            font-weight: 700;
-            color: #30ff37;
-            margin-bottom: 5px;
+            font-size: 1.5em;
+            color: #22c55e;
+            margin-bottom: 3px;
         }
 
         .header-text p {
-            color: #aaa;
-            font-size: 0.95em;
+            color: #94a3b8;
+            font-size: 0.9em;
         }
 
-        .vehicle-badge {
-            background: linear-gradient(135deg, #30ff37 0%, #28cc2f 100%);
+        .reg-badge {
+            background: #22c55e;
             color: #000;
-            padding: 15px 30px;
-            border-radius: 16px;
+            padding: 12px 24px;
+            border-radius: 10px;
             font-weight: 700;
-            font-size: 1.1em;
-            box-shadow: 0 4px 20px rgba(48, 255, 55, 0.4);
+            font-size: 1.2em;
         }
 
-        /* Vehicle Info Grid */
         .info-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 16px;
-            margin-top: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
         }
 
         .info-item {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 16px 20px;
-            border-radius: 14px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255,255,255,0.1);
+            padding: 12px 16px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
         .info-label {
-            font-size: 0.75em;
+            font-size: 0.7em;
             text-transform: uppercase;
             letter-spacing: 1px;
-            color: #888;
-            margin-bottom: 4px;
+            color: #94a3b8;
+            margin-bottom: 3px;
         }
 
         .info-value {
-            font-size: 1.1em;
             font-weight: 600;
             color: #fff;
         }
 
-        .info-value.green { color: #30ff37; }
+        .info-value.green { color: #4ade80; }
 
-        /* Critical Alert Banner */
+        /* Alert Banner */
         .alert-banner {
             background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
-            color: white;
-            padding: 25px 30px;
-            border-radius: 20px;
-            margin-bottom: 24px;
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 1px solid #ef4444;
+        }
+
+        .alert-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 15px;
             display: flex;
-            align-items: flex-start;
-            gap: 20px;
-            box-shadow: 0 8px 30px rgba(220, 38, 38, 0.3);
-        }
-
-        .alert-icon {
-            font-size: 2.5em;
-            line-height: 1;
-        }
-
-        .alert-content h3 {
-            font-size: 1.3em;
-            margin-bottom: 12px;
+            align-items: center;
+            gap: 10px;
         }
 
         .alert-content p {
@@ -165,210 +126,200 @@
             opacity: 0.95;
         }
 
-        /* Video Banner */
-        .video-banner {
-            background: linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%);
-            color: white;
-            padding: 20px 30px;
+        /* Cards */
+        .card {
+            background: #fff;
+            border: 1px solid #e2e8f0;
             border-radius: 16px;
-            margin-bottom: 24px;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            box-shadow: 0 8px 30px rgba(124, 58, 237, 0.3);
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
         }
 
-        .video-banner a {
-            color: #fcd34d;
-            font-weight: 600;
-        }
-
-        /* Section Headers */
-        .section-header {
+        .card-header {
             display: flex;
             align-items: center;
-            gap: 15px;
-            margin-bottom: 25px;
+            gap: 12px;
+            margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 2px solid rgba(48, 255, 55, 0.2);
+            border-bottom: 1px solid #e2e8f0;
         }
 
-        .section-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 14px;
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5em;
-            color: white;
+            font-size: 1.2em;
         }
 
-        .section-icon.green { background: linear-gradient(135deg, #30ff37, #28cc2f); }
-        .section-icon.red { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .section-icon.orange { background: linear-gradient(135deg, #f97316, #ea580c); }
-        .section-icon.blue { background: linear-gradient(135deg, #3b82f6, #2563eb); }
-        .section-icon.purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .card-icon.red { background: rgba(220,38,38,0.2); }
+        .card-icon.orange { background: rgba(249,115,22,0.2); }
+        .card-icon.yellow { background: rgba(234,179,8,0.2); }
+        .card-icon.purple { background: rgba(124,58,237,0.2); }
+        .card-icon.blue { background: rgba(59,130,246,0.2); }
+        .card-icon.green { background: rgba(34,197,94,0.2); }
 
-        .section-title {
-            font-size: 1.4em;
-            font-weight: 700;
-            color: #1a1a2e;
-        }
-
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-            gap: 16px;
-            margin-bottom: 30px;
-        }
-
-        .stat-card {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 24px;
-            border-radius: 18px;
-            text-align: center;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
-        }
-
-        .stat-card.critical { border-color: #dc2626; background: rgba(220, 38, 38, 0.05); }
-        .stat-card.high { border-color: #f97316; background: rgba(249, 115, 22, 0.05); }
-        .stat-card.medium { border-color: #eab308; background: rgba(234, 179, 8, 0.05); }
-        .stat-card.low { border-color: #22c55e; background: rgba(34, 197, 94, 0.05); }
-
-        .stat-number {
-            font-size: 2.8em;
-            font-weight: 800;
-            line-height: 1;
-            margin-bottom: 8px;
-        }
-
-        .stat-card.critical .stat-number { color: #dc2626; }
-        .stat-card.high .stat-number { color: #f97316; }
-        .stat-card.medium .stat-number { color: #eab308; }
-        .stat-card.low .stat-number { color: #22c55e; }
-
-        .stat-label {
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #666;
+        .card-title {
+            font-size: 1.1em;
             font-weight: 600;
+            color: #16a34a;
         }
 
-        /* Damage Table */
-        .damage-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-
-        .damage-table th {
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: #30ff37;
-            padding: 14px 16px;
-            text-align: left;
-            font-size: 0.85em;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .damage-table th:first-child { border-radius: 12px 0 0 0; }
-        .damage-table th:last-child { border-radius: 0 12px 0 0; }
-
-        .damage-table td {
-            padding: 14px 16px;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-            vertical-align: middle;
-        }
-
-        .damage-table tr:hover {
-            background: rgba(48, 255, 55, 0.03);
-        }
-
-        .damage-table tr.critical-row {
-            background: rgba(220, 38, 38, 0.05);
-        }
-
-        /* Priority Badges */
-        .priority-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 0.75em;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .priority-badge.critical { background: #dc2626; color: white; }
-        .priority-badge.high { background: #f97316; color: white; }
-        .priority-badge.medium { background: #eab308; color: #000; }
-        .priority-badge.low { background: #22c55e; color: white; }
-
-        /* Vehicle Diagram */
-        .diagram-container {
-            display: flex;
-            gap: 30px;
-            align-items: flex-start;
-            flex-wrap: wrap;
-        }
-
-        .diagram-image-wrapper {
-            flex: 1;
-            min-width: 400px;
-            position: relative;
-            background: white;
-            border-radius: 16px;
+        /* Transcript */
+        .transcript {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            font-size: 0.95em;
+            line-height: 1.8;
+            color: #475569;
         }
 
-        .diagram-image-wrapper img {
-            width: 100%;
-            height: auto;
-            display: block;
+        .transcript p {
+            margin-bottom: 15px;
         }
 
-        /* Damage Markers */
-        .damage-marker {
-            position: absolute;
-            width: 26px;
-            height: 26px;
+        /* Finding Groups */
+        .finding-group {
+            margin-bottom: 25px;
+        }
+
+        .finding-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .finding-group-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .finding-group-title.critical {
+            background: rgba(220,38,38,0.15);
+            color: #f87171;
+            border-left: 3px solid #dc2626;
+        }
+
+        .finding-group-title.structural {
+            background: rgba(249,115,22,0.15);
+            color: #fb923c;
+            border-left: 3px solid #f97316;
+        }
+
+        .finding-group-title.undercarriage {
+            background: rgba(234,179,8,0.15);
+            color: #fbbf24;
+            border-left: 3px solid #eab308;
+        }
+
+        .finding-group-title.body {
+            background: rgba(59,130,246,0.15);
+            color: #60a5fa;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .finding-list {
+            list-style: none;
+            padding-left: 15px;
+        }
+
+        .finding-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            color: #334155;
+        }
+
+        .finding-item:last-child {
+            border-bottom: none;
+        }
+
+        .finding-marker {
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: bold;
-            font-size: 11px;
-            color: white;
+            font-size: 0.7em;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .finding-marker.critical {
+            background: #dc2626;
+            color: #fff;
+        }
+
+        .finding-marker.high {
+            background: #f97316;
+            color: #fff;
+        }
+
+        .finding-marker.medium {
+            background: #eab308;
+            color: #000;
+        }
+
+        .finding-marker.low {
+            background: #22c55e;
+            color: #fff;
+        }
+
+        /* Vehicle Diagram */
+        .diagram-container {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .diagram-wrapper {
+            flex: 1;
+            min-width: 300px;
+            position: relative;
+            background: #f8f9fa;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .diagram-wrapper img {
+            width: 100%;
+            display: block;
+        }
+
+        .damage-marker {
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7em;
+            font-weight: 700;
+            color: #fff;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: transform 0.2s;
             box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-            z-index: 10;
-            border: 2px solid white;
         }
 
         .damage-marker:hover {
-            transform: scale(1.4);
-            z-index: 20;
+            transform: scale(1.3);
+            z-index: 10;
         }
 
-        .damage-marker.critical {
-            background: #dc2626;
-            animation: pulse-marker 2s infinite;
-        }
-
+        .damage-marker.critical { background: #dc2626; }
         .damage-marker.high { background: #f97316; }
         .damage-marker.medium { background: #eab308; color: #000; }
-        .damage-marker.low { background: #22c55e; }
-
-        @keyframes pulse-marker {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
-            50% { box-shadow: 0 0 0 8px rgba(220, 38, 38, 0); }
-        }
 
         .damage-marker::after {
             content: attr(data-tooltip);
@@ -376,55 +327,73 @@
             bottom: 100%;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0,0,0,0.9);
-            color: white;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 11px;
-            font-weight: normal;
+            background: #000;
+            color: #fff;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 9px;
             white-space: nowrap;
             opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            margin-bottom: 8px;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            margin-bottom: 4px;
+            max-width: 120px;
+            white-space: normal;
+            text-align: center;
+            line-height: 1.2;
             z-index: 100;
+        }
+
+        /* Keep tooltips on screen for edge markers */
+        .damage-marker[style*="left: 8"]::after,
+        .damage-marker[style*="left: 9"]::after {
+            left: auto;
+            right: 0;
+            transform: none;
+        }
+
+        .damage-marker[style*="left: 1"]::after,
+        .damage-marker[style*="left: 2"]::after {
+            left: 0;
+            transform: none;
         }
 
         .damage-marker:hover::after {
             opacity: 1;
-            visibility: visible;
         }
 
-        /* Legend Panel */
-        .legend-panel {
-            flex: 0 0 280px;
-            background: white;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        .legend {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            min-width: 200px;
         }
 
         .legend-title {
             font-weight: 700;
-            color: #1a1a2e;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid #30ff37;
+            color: #16a34a;
+            margin-bottom: 15px;
+            font-size: 0.9em;
         }
 
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 12px;
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #e2e8f0;
+            color: #475569;
+        }
+
+        .legend-item:last-child {
+            border-bottom: none;
         }
 
         .legend-dot {
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            flex-shrink: 0;
         }
 
         .legend-dot.critical { background: #dc2626; }
@@ -432,35 +401,22 @@
         .legend-dot.medium { background: #eab308; }
         .legend-dot.low { background: #22c55e; }
 
-        .legend-count {
-            margin-left: auto;
-            background: #f3f4f6;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.85em;
+        /* Conclusion */
+        .conclusion-list {
+            list-style: none;
         }
 
-        /* Quote Box */
-        .quote-box {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-left: 4px solid #30ff37;
-            padding: 20px 25px;
-            border-radius: 0 12px 12px 0;
-            margin-top: 25px;
-        }
-
-        .quote-text {
-            font-style: italic;
-            color: #475569;
+        .conclusion-item {
+            padding: 12px 15px;
+            background: #f8fafc;
+            border-radius: 8px;
             margin-bottom: 10px;
-            line-height: 1.7;
+            border-left: 3px solid #16a34a;
+            color: #334155;
         }
 
-        .quote-author {
-            text-align: right;
-            color: #94a3b8;
-            font-size: 0.9em;
+        .conclusion-item:last-child {
+            margin-bottom: 0;
         }
 
         /* Footer */
@@ -468,36 +424,335 @@
             text-align: center;
             padding: 30px;
             color: #64748b;
-            font-size: 0.9em;
+            font-size: 0.85em;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 30px;
         }
 
         .footer-logo {
-            height: 50px;
-            margin-bottom: 15px;
-            opacity: 0.8;
+            height: 40px;
+            margin-bottom: 10px;
+            opacity: 0.7;
         }
 
-        /* Print Styles */
+        /* Print */
         @media print {
-            body { background: white; }
-            .glass-card { box-shadow: none; border: 1px solid #e5e7eb; }
-            .damage-marker { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+            body { background: #fff; color: #000; }
+            .card { border: 1px solid #ddd; }
+            .alert-banner { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
 
-        /* Responsive */
+        /* Mobile Responsive */
         @media (max-width: 768px) {
-            .header-content { flex-direction: column; text-align: center; }
-            .logo-section { flex-direction: column; }
-            .diagram-image-wrapper { min-width: 100%; }
-            .legend-panel { flex: 1 1 100%; }
+            .container {
+                padding: 10px;
+            }
+
+            /* Header */
+            .header {
+                padding: 20px 15px;
+                border-radius: 12px;
+            }
+
+            .header-top {
+                flex-direction: column;
+                text-align: center;
+                gap: 15px;
+            }
+
+            .logo-section {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .logo {
+                height: 50px;
+            }
+
+            .header-text h1 {
+                font-size: 1.2em;
+            }
+
+            .header-text p {
+                font-size: 0.8em;
+            }
+
+            .reg-badge {
+                padding: 10px 20px;
+                font-size: 1em;
+            }
+
+            .info-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 8px;
+            }
+
+            .info-item {
+                padding: 10px 12px;
+            }
+
+            .info-label {
+                font-size: 0.65em;
+            }
+
+            .info-value {
+                font-size: 0.85em;
+            }
+
+            /* Alert Banner */
+            .alert-banner {
+                padding: 15px;
+                border-radius: 12px;
+            }
+
+            .alert-title {
+                font-size: 1em;
+                flex-wrap: wrap;
+            }
+
+            .alert-content p {
+                font-size: 0.85em;
+                margin-bottom: 10px;
+            }
+
+            /* Cards */
+            .card {
+                padding: 15px;
+                border-radius: 12px;
+                margin-bottom: 15px;
+            }
+
+            .card-header {
+                margin-bottom: 15px;
+                padding-bottom: 12px;
+                gap: 10px;
+            }
+
+            .card-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 1em;
+            }
+
+            .card-title {
+                font-size: 0.95em;
+            }
+
+            /* Transcript */
+            .transcript {
+                padding: 15px;
+                font-size: 0.85em;
+                line-height: 1.7;
+            }
+
+            .transcript p {
+                margin-bottom: 12px;
+            }
+
+            /* Findings */
+            .finding-group-title {
+                font-size: 0.8em;
+                padding: 8px 12px;
+            }
+
+            .finding-list {
+                padding-left: 10px;
+            }
+
+            .finding-item {
+                font-size: 0.85em;
+                padding: 6px 0;
+                gap: 8px;
+            }
+
+            .finding-marker {
+                width: 18px;
+                height: 18px;
+                font-size: 0.6em;
+            }
+
+            /* Diagram */
+            .diagram-container {
+                flex-direction: column;
+            }
+
+            .diagram-wrapper {
+                min-width: 100%;
+            }
+
+            .damage-marker {
+                width: 18px;
+                height: 18px;
+                font-size: 0.6em;
+            }
+
+            .damage-marker::after {
+                font-size: 8px;
+                padding: 3px 6px;
+                max-width: 110px;
+            }
+
+            .legend {
+                padding: 15px;
+            }
+
+            .legend-title {
+                font-size: 0.85em;
+            }
+
+            .legend-item {
+                font-size: 0.85em;
+                padding: 6px 0;
+            }
+
+            .legend-dot {
+                width: 12px;
+                height: 12px;
+            }
+
+            /* Conclusion */
+            .conclusion-item {
+                padding: 10px 12px;
+                font-size: 0.85em;
+                margin-bottom: 8px;
+            }
+
+            /* Footer */
+            .footer {
+                padding: 20px 10px;
+                font-size: 0.8em;
+            }
+
+            .footer-logo {
+                height: 30px;
+            }
+        }
+
+        /* Extra small mobile */
+        @media (max-width: 480px) {
+            .container {
+                padding: 8px;
+            }
+
+            .header {
+                padding: 15px 12px;
+            }
+
+            .header-text h1 {
+                font-size: 1.1em;
+            }
+
+            .reg-badge {
+                padding: 8px 16px;
+                font-size: 0.9em;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 6px;
+            }
+
+            .info-item {
+                padding: 8px 10px;
+            }
+
+            .info-label {
+                font-size: 0.6em;
+            }
+
+            .info-value {
+                font-size: 0.75em;
+            }
+
+            .alert-title {
+                font-size: 0.9em;
+            }
+
+            .alert-content p {
+                font-size: 0.8em;
+            }
+
+            .card {
+                padding: 12px;
+            }
+
+            .card-title {
+                font-size: 0.9em;
+            }
+
+            .transcript {
+                padding: 12px;
+                font-size: 0.8em;
+            }
+
+            .finding-item {
+                font-size: 0.8em;
+            }
+
+            .damage-marker {
+                width: 16px;
+                height: 16px;
+                font-size: 0.55em;
+            }
+
+            .damage-marker::after {
+                font-size: 8px;
+                padding: 3px 5px;
+                max-width: 100px;
+            }
+        }
+
+        /* Mobile table adjustments */
+        @media (max-width: 768px) {
+            table {
+                font-size: 0.75em !important;
+            }
+
+            table th, table td {
+                padding: 8px 6px !important;
+            }
+
+            table th:nth-child(2),
+            table td:nth-child(2) {
+                max-width: 120px;
+                font-size: 0.7em;
+            }
+        }
+
+        @media (max-width: 480px) {
+            table {
+                font-size: 0.65em !important;
+            }
+
+            table th, table td {
+                padding: 6px 4px !important;
+            }
+
+            table th:nth-child(2),
+            table td:nth-child(2) {
+                display: none;
+            }
+
+            table th:nth-child(3),
+            table td:nth-child(3) {
+                display: none;
+            }
+        }
+
+        /* Mobile value boxes */
+        @media (max-width: 768px) {
+            div[style*="grid-template-columns: repeat(auto-fit, minmax(280px"] {
+                grid-template-columns: 1fr !important;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+
         <!-- Header -->
         <div class="header">
-            <div class="header-content">
+            <div class="header-top">
                 <div class="logo-section">
                     <img src="https://autow-services.co.uk/logo.png" alt="AUTOW Services" class="logo">
                     <div class="header-text">
@@ -505,738 +760,484 @@
                         <p>Professional Inspection Report</p>
                     </div>
                 </div>
-                <div class="vehicle-badge">HN14 UWY</div>
+                <div class="reg-badge">HN14 UWY</div>
             </div>
 
             <div class="info-grid">
                 <div class="info-item">
-                    <div class="info-label">Make</div>
-                    <div class="info-value">CITROEN</div>
-                </div>
-                <div class="info-item">
-                    <div class="info-label">Engine</div>
-                    <div class="info-value">1199cc Petrol</div>
+                    <div class="info-label">Make / Model</div>
+                    <div class="info-value">Citroen (1199cc Petrol)</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Colour</div>
                     <div class="info-value">Grey</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">First Registered</div>
+                    <div class="info-label">Year</div>
                     <div class="info-value">May 2014</div>
                 </div>
                 <div class="info-item">
-                    <div class="info-label">MOT Status</div>
-                    <div class="info-value green">Valid until 28/11/2026</div>
+                    <div class="info-label">Assessment Method</div>
+                    <div class="info-value">Remote Video Inspection</div>
                 </div>
                 <div class="info-item">
                     <div class="info-label">Assessment Date</div>
-                    <div class="info-value">03 January 2026</div>
+                    <div class="info-value green">03 January 2026</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Video Duration</div>
+                    <div class="info-value">3 minutes</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Assessor</div>
+                    <div class="info-value">AUTOW Services, Gavin White</div>
                 </div>
             </div>
         </div>
 
         <!-- Critical Alert -->
-        <div class="alert-banner">
-            <div class="alert-icon">⚠️</div>
-            <div class="alert-content">
-                <h3>CRITICAL: Multiple Safety Issues - Vehicle NOT Roadworthy</h3>
-                <p><strong>1. ENGINE LOCKED:</strong> A/C & power steering pipes caved into auxiliary belt pulley, jamming the system. Belt shows burn marks.</p>
-                <p><strong>2. SUBFRAME DAMAGE:</strong> Subframe brackets broken off and bent. Subframe itself is bent (visible side-to-side difference).</p>
-                <p><strong>3. FLUID SYSTEMS:</strong> Brake lines and fuel lines potentially compromised. Oil leak from sump. Fuel tank heavily scraped.</p>
+        <div class="alert-banner" style="color: #fff;">
+            <div class="alert-title" style="color: #fff;">
+                <span style="font-size: 1.5em;">&#9888;</span>
+                CRITICAL: Multiple Safety Systems Compromised - Vehicle NOT Roadworthy
+            </div>
+            <div class="alert-content" style="color: #fff;">
+                <p style="color: #fff;"><strong>1. ENGINE LOCKED:</strong> A/C and power-steering pipes forced into auxiliary belt drive. Belt burnt and engraved from sustained friction.</p>
+                <p style="color: #fff;"><strong>2. SUBFRAME DAMAGE:</strong> Subframe mounting brackets broken and bent. Subframe visibly distorted when compared side-to-side.</p>
+                <p style="color: #fff;"><strong>3. FLUID SYSTEMS AT RISK:</strong> Brake lines and fuel lines struck with considerable force - integrity cannot be confirmed. Oil leak from sump. Fuel tank heavily scraped.</p>
             </div>
         </div>
 
-        <!-- Video Banner -->
-        <div class="video-banner">
-            <div style="font-size: 2em;">🎥</div>
-            <div>
-                <strong>Video Assessment Available</strong><br>
-                Full walkthrough with verbal assessment: <a href="https://youtu.be/flQuVU4_yiE" target="_blank">Watch on YouTube</a>
+        <!-- Assessment Transcript -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon purple">&#128221;</div>
+                <div class="card-title">Assessment Voice Transcript</div>
+            </div>
+
+            <div class="transcript">
+                <p>This assessment is based on a detailed underside video inspection.</p>
+
+                <p>The entire lower bumper section through to the subframe has suffered severe damage. The under-tray and bumper mounting structure are completely broken away. Multiple brackets are visibly bent, with all associated trim panels snapped or missing.</p>
+
+                <p>The lower mounting brackets connecting to the crash bar arms are buckled.</p>
+
+                <p>Air-conditioning and power-steering pipework has been forced rearwards into the auxiliary belt drive system. Clear evidence of contact is visible: the rotating wheel has burnt and engraved itself into the pipework, indicating sustained friction and heat generation.</p>
+
+                <p>Coolant and power steering radiators both buckled and leaking, all coolant fluid has drained. Full rad pack broken, radiator support bar and crash bar legs buckled and bent.</p>
+
+                <p>The offside subframe, when compared to the nearside, is visibly distorted. This confirms subframe deformation rather than cosmetic variance.</p>
+
+                <p>Significant underside scraping is present across the anti-roll bar and surrounding areas. Brake lines and fuel lines run through this region and have clearly been struck with considerable force. At this stage, any of these lines may be compromised.</p>
+
+                <p>At the rear, the fuel tank shows heavy scraping and engraving consistent with a ground-impact event.</p>
+
+                <p>The rear axle assembly displays clear signs of impact damage. While exact alignment cannot be confirmed visually, deformation or buckling cannot be ruled out.</p>
+
+                <p>There is evidence of sump contact, with oil leakage visible, suggesting the sump has been struck during the incident.</p>
+
+                <p>The vehicle's non-start condition directly correlates with diagnostic data from the AUTEL scan report, which records:</p>
+
+                <ul style="margin: 15px 0 15px 20px; color: #dc2626;">
+                    <li>Alternator fault - heat load stress</li>
+                    <li>P1632 - Engine ECU internal fault (torque limitation)</li>
+                </ul>
+
+                <p>These faults are consistent with an auxiliary belt lock-up event. The belt is partially displaced and forced into the engine due to displaced radiator and air-conditioning pipework being pressed against the A/C pulley.</p>
+
+                <p>The engine management system appears to have detected this lock-up and prevented engine start. Had the engine been allowed to run, significant secondary damage would almost certainly have occurred.</p>
+
+                <p>Additional damage is noted to bumper retaining hardware, with clips broken and mounting points bent. Wheel-arch liners are completely smashed, with one side entirely missing and located inside the vehicle.</p>
             </div>
         </div>
 
-        <!-- Severity Summary -->
-        <div class="glass-card">
-            <div class="section-header">
-                <div class="section-icon blue">📊</div>
-                <div class="section-title">Damage Severity Summary</div>
+        <!-- Key Findings Summary -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon red">&#9888;</div>
+                <div class="card-title">Key Findings Summary</div>
             </div>
 
-            <div class="stats-grid">
-                <div class="stat-card critical">
-                    <div class="stat-number">6</div>
-                    <div class="stat-label">Critical</div>
-                </div>
-                <div class="stat-card high">
-                    <div class="stat-number">12</div>
-                    <div class="stat-label">High</div>
-                </div>
-                <div class="stat-card medium">
-                    <div class="stat-number">20</div>
-                    <div class="stat-label">Medium</div>
-                </div>
-                <div class="stat-card low">
-                    <div class="stat-number">2</div>
-                    <div class="stat-label">Low</div>
-                </div>
+            <!-- Critical - Engine & Drive System -->
+            <div class="finding-group">
+                <div class="finding-group-title critical">CRITICAL - ENGINE & DRIVE SYSTEM</div>
+                <ul class="finding-list">
+                    <li class="finding-item">
+                        <span class="finding-marker critical">!</span>
+                        <span>A/C and power-steering pipes forced into auxiliary belt drive</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker critical">!</span>
+                        <span>Auxiliary belt burnt and engraved due to pipe contact</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker critical">!</span>
+                        <span>Belt displacement causing mechanical lock-up</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker critical">!</span>
+                        <span>Engine start inhibited as a protective response</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker critical">!</span>
+                        <span>Diagnostic correlation: alternator heat stress & ECU torque limitation (P1632)</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker critical">!</span>
+                        <span>Coolant Radiator: Failure - buckled and leaking, all fluid drained</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker critical">!</span>
+                        <span>AC Radiator: Failure - impacted and compromised</span>
+                    </li>
+                </ul>
             </div>
 
-            <p style="text-align: center; color: #64748b; margin-top: 10px;">
-                <strong>Total Items: 40</strong> | Based on 31 photographs + video assessment
-            </p>
+            <!-- Structural Damage -->
+            <div class="finding-group">
+                <div class="finding-group-title structural">STRUCTURAL DAMAGE</div>
+                <ul class="finding-list">
+                    <li class="finding-item">
+                        <span class="finding-marker high">X</span>
+                        <span>Subframe mounting brackets broken and bent</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker high">X</span>
+                        <span>Subframe visibly distorted side-to-side</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker high">X</span>
+                        <span>Radiator support structure bent</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker high">X</span>
+                        <span>Bumper mounting arms and brackets damaged</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker high">X</span>
+                        <span>Crash bar legs buckled and bent</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Undercarriage Damage -->
+            <div class="finding-group">
+                <div class="finding-group-title undercarriage">UNDERCARRIAGE DAMAGE</div>
+                <ul class="finding-list">
+                    <li class="finding-item">
+                        <span class="finding-marker high">X</span>
+                        <span>Sump impacted with visible oil leakage</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker critical">!</span>
+                        <span>Fuel tank heavily scraped and engraved</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker critical">!</span>
+                        <span>Brake lines struck - integrity cannot be confirmed</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker critical">!</span>
+                        <span>Fuel lines struck - integrity cannot be confirmed</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker high">X</span>
+                        <span>Rear axle impacted - possible deformation</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker high">X</span>
+                        <span>Anti-roll bar damaged from scraping</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Body & Trim -->
+            <div class="finding-group">
+                <div class="finding-group-title body">BODY & TRIM</div>
+                <ul class="finding-list">
+                    <li class="finding-item">
+                        <span class="finding-marker high">X</span>
+                        <span>Full front bumper and rad pack broken</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker medium">X</span>
+                        <span>Wheel-arch liners smashed / missing (one located inside vehicle)</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker medium">X</span>
+                        <span>Bumper retaining clips broken</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker medium">X</span>
+                        <span>Lower trim panels snapped or detached</span>
+                    </li>
+                    <li class="finding-item">
+                        <span class="finding-marker medium">X</span>
+                        <span>Under-tray and bumper mounting structure completely broken away</span>
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <!-- Damage Location Diagram -->
-        <div class="glass-card">
-            <div class="section-header">
-                <div class="section-icon purple">🚗</div>
-                <div class="section-title">Damage Location Map</div>
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon blue">&#128663;</div>
+                <div class="card-title">Damage Location Map</div>
             </div>
-            <p style="color: #64748b; margin-bottom: 20px;">Hover over markers to see damage details</p>
+            <p style="color: #64748b; margin-bottom: 15px; font-size: 0.9em;">Hover over markers to see damage details</p>
 
             <div class="diagram-container">
-                <div class="diagram-image-wrapper">
-                    <img src="https://thumbs.dreamstime.com/b/car-line-draw-four-all-view-top-side-back-insurance-rent-damage-condition-report-form-blueprint-72007177.jpg" alt="Vehicle Damage Diagram" style="background: #f8f9fa;">
+                <div class="diagram-wrapper">
+                    <img src="https://thumbs.dreamstime.com/b/car-line-draw-four-all-view-top-side-back-insurance-rent-damage-condition-report-form-blueprint-72007177.jpg" alt="Vehicle Damage Diagram">
 
-                    <!-- ========== SIDE VIEW - Underside (Front is RIGHT) ========== -->
-                    <div class="damage-marker critical" style="top: 25%; left: 78%;" data-tooltip="SUBFRAME - Bent">!</div>
-                    <div class="damage-marker high" style="top: 25%; left: 65%;" data-tooltip="Sump/Oil Pan - Leaking">1</div>
-                    <div class="damage-marker medium" style="top: 25%; left: 50%;" data-tooltip="Floor Pan - Scraped">2</div>
-                    <div class="damage-marker critical" style="top: 25%; left: 28%;" data-tooltip="FUEL TANK - Scraped">!</div>
-                    <div class="damage-marker high" style="top: 25%; left: 18%;" data-tooltip="Rear Beam - Impact">3</div>
+                    <!-- SIDE VIEW - Underside (Front is RIGHT) -->
+                    <div class="damage-marker critical" style="top: 25%; left: 78%;" data-tooltip="SUBFRAME - Distorted">!</div>
+                    <div class="damage-marker high" style="top: 25%; left: 65%;" data-tooltip="Sump - Oil Leaking">1</div>
+                    <div class="damage-marker high" style="top: 25%; left: 55%;" data-tooltip="Anti-roll Bar - Scraped">2</div>
+                    <div class="damage-marker critical" style="top: 25%; left: 28%;" data-tooltip="FUEL TANK - Scraped & Engraved">!</div>
+                    <div class="damage-marker high" style="top: 25%; left: 18%;" data-tooltip="Rear Axle - Impact Damage">3</div>
 
-                    <!-- ========== SIDE VIEW - Front wheel area (above wheel) ========== -->
-                    <div class="damage-marker high" style="top: 18%; left: 88%;" data-tooltip="Front Bumper - Impacted">4</div>
-                    <div class="damage-marker critical" style="top: 14%; left: 82%;" data-tooltip="Coolant Radiator - Buckled & Leaking">!</div>
+                    <!-- SIDE VIEW - Front section -->
+                    <div class="damage-marker critical" style="top: 14%; left: 82%;" data-tooltip="Coolant Radiator - FAILED">!</div>
                     <div class="damage-marker critical" style="top: 10%; left: 78%;" data-tooltip="Full Rad Pack - Broken">!</div>
-                    <div class="damage-marker critical" style="top: 16%; left: 75%;" data-tooltip="Support Brackets to Crash Bar - Buckled">!</div>
-                    <div class="damage-marker high" style="top: 12%; left: 85%;" data-tooltip="A/C Radiator & Hoses - Impacted">5</div>
-                    <div class="damage-marker medium" style="top: 20%; left: 92%;" data-tooltip="Wheel Arch Liner - Broken/Torn">6</div>
+                    <div class="damage-marker critical" style="top: 16%; left: 75%;" data-tooltip="Crash Bar Legs - Buckled">!</div>
+                    <div class="damage-marker critical" style="top: 12%; left: 85%;" data-tooltip="A/C Radiator - FAILED">!</div>
+                    <div class="damage-marker medium" style="top: 20%; left: 92%;" data-tooltip="Wheel Arch Liner - Smashed">4</div>
 
-                    <!-- ========== FRONT VIEW - Bumper/Lower area only ========== -->
-                    <div class="damage-marker high" style="top: 55%; left: 30%;" data-tooltip="Front Bumper - Destroyed">4</div>
-                    <div class="damage-marker high" style="top: 50%; left: 26%;" data-tooltip="Lower Grille - Missing">5</div>
-                    <div class="damage-marker high" style="top: 50%; left: 34%;" data-tooltip="A/C Condenser - Damaged">6</div>
+                    <!-- FRONT VIEW -->
+                    <div class="damage-marker high" style="top: 55%; left: 30%;" data-tooltip="Front Bumper - Destroyed">5</div>
+                    <div class="damage-marker high" style="top: 50%; left: 26%;" data-tooltip="Under-tray - Broken Away">6</div>
                     <div class="damage-marker critical" style="top: 58%; left: 30%;" data-tooltip="SUBFRAME BRACKETS - Broken">!</div>
 
-                    <!-- ========== REAR VIEW - Lower area only ========== -->
-                    <div class="damage-marker critical" style="top: 58%; left: 70%;" data-tooltip="FUEL TANK - LEAK TEST!">!</div>
-                    <div class="damage-marker high" style="top: 55%; left: 70%;" data-tooltip="Rear Beam - Check alignment">7</div>
+                    <!-- REAR VIEW -->
+                    <div class="damage-marker critical" style="top: 58%; left: 70%;" data-tooltip="FUEL TANK - Needs Leak Test">!</div>
+                    <div class="damage-marker high" style="top: 55%; left: 70%;" data-tooltip="Rear Axle Assembly - Check">7</div>
 
-                    <!-- ========== TOP-DOWN VIEW - Underside (Front is RIGHT) ========== -->
+                    <!-- TOP-DOWN VIEW - Underside -->
                     <div class="damage-marker critical" style="top: 80%; left: 82%;" data-tooltip="A/C Pipes - ENGINE LOCKED!">!</div>
-                    <div class="damage-marker critical" style="top: 80%; left: 76%;" data-tooltip="Subframe Brackets - Broken">!</div>
-                    <div class="damage-marker high" style="top: 80%; left: 70%;" data-tooltip="Anti-Roll Bar - Bent">8</div>
-                    <div class="damage-marker high" style="top: 80%; left: 62%;" data-tooltip="Sump - Oil Leak">9</div>
-                    <div class="damage-marker medium" style="top: 80%; left: 54%;" data-tooltip="Cat Heat Shield">10</div>
-                    <div class="damage-marker medium" style="top: 80%; left: 46%;" data-tooltip="Floor Pan - Scraped">11</div>
-                    <div class="damage-marker medium" style="top: 80%; left: 38%;" data-tooltip="Exhaust Heat Shield">12</div>
+                    <div class="damage-marker critical" style="top: 80%; left: 76%;" data-tooltip="Aux Belt - Burnt & Displaced">!</div>
+                    <div class="damage-marker critical" style="top: 80%; left: 70%;" data-tooltip="Subframe Brackets - Broken">!</div>
+                    <div class="damage-marker high" style="top: 80%; left: 62%;" data-tooltip="Sump - Oil Leak">8</div>
+                    <div class="damage-marker critical" style="top: 80%; left: 54%;" data-tooltip="Brake Lines - Struck">!</div>
+                    <div class="damage-marker critical" style="top: 80%; left: 46%;" data-tooltip="Fuel Lines - Struck">!</div>
                     <div class="damage-marker critical" style="top: 80%; left: 25%;" data-tooltip="FUEL TANK - Scraped!">!</div>
-                    <div class="damage-marker high" style="top: 80%; left: 18%;" data-tooltip="Rear Axle / Rear Beam - Visual damage">13</div>
+                    <div class="damage-marker high" style="top: 80%; left: 18%;" data-tooltip="Rear Axle - Impact">9</div>
                 </div>
 
-                <div class="legend-panel">
-                    <div class="legend-title">Damage Legend</div>
-
-                    <div style="margin-bottom: 20px;">
-                        <div style="font-size: 0.8em; color: #888; text-transform: uppercase; margin-bottom: 10px;">By Severity</div>
-                        <div class="legend-item">
-                            <span class="legend-dot critical"></span>
-                            <span>Critical</span>
-                            <span class="legend-count">6</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot high"></span>
-                            <span>High Priority</span>
-                            <span class="legend-count">12</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot medium"></span>
-                            <span>Medium Priority</span>
-                            <span class="legend-count">20</span>
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-dot low"></span>
-                            <span>Low Priority</span>
-                            <span class="legend-count">2</span>
-                        </div>
+                <div class="legend">
+                    <div class="legend-title">Damage Severity</div>
+                    <div class="legend-item">
+                        <span class="legend-dot critical"></span>
+                        <span>Critical - Safety Risk</span>
                     </div>
-
-                    <div style="margin-bottom: 20px;">
-                        <div style="font-size: 0.8em; color: #888; text-transform: uppercase; margin-bottom: 10px;">By Location</div>
-                        <div class="legend-item">
-                            <span>Front End</span>
-                            <span class="legend-count">8</span>
-                        </div>
-                        <div class="legend-item">
-                            <span>Underside</span>
-                            <span class="legend-count">18</span>
-                        </div>
-                        <div class="legend-item">
-                            <span>Rear</span>
-                            <span class="legend-count">6</span>
-                        </div>
-                        <div class="legend-item">
-                            <span>Drivetrain</span>
-                            <span class="legend-count">8</span>
-                        </div>
+                    <div class="legend-item">
+                        <span class="legend-dot high"></span>
+                        <span>High - Major Damage</span>
                     </div>
-
-                    <div style="background: #fef3c7; padding: 15px; border-radius: 12px; border-left: 4px solid #dc2626;">
-                        <div style="font-weight: 700; color: #92400e; font-size: 0.85em;">⚠️ CRITICAL</div>
-                        <div style="font-size: 0.8em; color: #92400e; margin-top: 5px;">Fuel tank scraped. Leak test required before operation.</div>
+                    <div class="legend-item">
+                        <span class="legend-dot medium"></span>
+                        <span>Medium - Significant</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot low"></span>
+                        <span>Low - Minor</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Video Assessment Findings -->
-        <div class="glass-card" style="border: 2px solid #dc2626;">
-            <div class="section-header">
-                <div class="section-icon red">🎥</div>
-                <div class="section-title">Video Assessment Findings - Critical New Damage</div>
+        <!-- Assessor's Conclusion -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon green">&#9989;</div>
+                <div class="card-title">Assessor's Conclusion</div>
             </div>
 
-            <p style="background: #fef2f2; padding: 15px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #dc2626;">
-                <strong>Source:</strong> On-site video assessment dated 03 January 2026. These findings reveal additional critical damage not visible in photographs alone.
+            <p style="margin-bottom: 20px; color: #475569;">
+                The vehicle has sustained substantial underside impact consistent with sliding across the road surface with significant force.
             </p>
 
-            <h4 style="color: #dc2626; margin: 25px 0 15px; display: flex; align-items: center; gap: 10px;">
-                <span class="priority-badge critical">CRITICAL</span>
-                Engine / Auxiliary Belt System
-            </h4>
-            <table class="damage-table">
-                <thead>
-                    <tr>
-                        <th>Component</th>
-                        <th>Damage Description</th>
-                        <th>Impact</th>
-                        <th>Priority</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="critical-row">
-                        <td><strong>A/C & Power Steering Pipes</strong></td>
-                        <td>Pipes caved into auxiliary belt pulley system</td>
-                        <td style="color: #dc2626; font-weight: bold;">ENGINE LOCKED - Cannot start</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>Auxiliary Belt</strong></td>
-                        <td>Belt burnt/engraved from contact with pipes - jammed tight</td>
-                        <td>Prevented further damage by stopping engine</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Sump / Oil Pan</strong></td>
-                        <td>Hit during impact - oil leak detected</td>
-                        <td>Active fluid leak</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                </tbody>
-            </table>
+            <p style="margin-bottom: 15px; color: #64748b; font-weight: 600;">This has resulted in:</p>
 
-            <h4 style="color: #dc2626; margin: 30px 0 15px; display: flex; align-items: center; gap: 10px;">
-                <span class="priority-badge critical">CRITICAL</span>
-                Cooling System / Radiator Pack
-            </h4>
-            <table class="damage-table">
-                <thead>
-                    <tr>
-                        <th>Component</th>
-                        <th>Damage Description</th>
-                        <th>Assessment</th>
-                        <th>Priority</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="critical-row">
-                        <td><strong>Coolant Radiator</strong></td>
-                        <td>Buckled and leaking - impact damage from collision</td>
-                        <td>Active coolant leak - REPLACE</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>Full Radiator Pack Assembly</strong></td>
-                        <td>Complete rad pack broken - mounting points damaged</td>
-                        <td>Entire assembly compromised</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>A/C Condenser / Radiator</strong></td>
-                        <td>Impacted - fins bent and damaged, hoses compromised</td>
-                        <td>No A/C function - REPLACE</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>A/C Hoses</strong></td>
-                        <td>Impacted and damaged during collision</td>
-                        <td>Likely need replacement</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                </tbody>
-            </table>
+            <ol class="conclusion-list">
+                <li class="conclusion-item">Structural deformation of the subframe and mounting points</li>
+                <li class="conclusion-item">Mechanical intrusion of pipework into the auxiliary drive system</li>
+                <li class="conclusion-item">Engine lock-up due to auxiliary belt displacement</li>
+                <li class="conclusion-item">Potential compromise of critical safety systems (fuel and brake lines)</li>
+                <li class="conclusion-item">Extensive underbody, fuel tank, and rear axle damage</li>
+                <li class="conclusion-item">Coolant and air con system and pipework severe damage</li>
+            </ol>
 
-            <h4 style="color: #dc2626; margin: 30px 0 15px; display: flex; align-items: center; gap: 10px;">
-                <span class="priority-badge critical">CRITICAL</span>
-                Structural / Subframe Damage
-            </h4>
-            <table class="damage-table">
-                <thead>
-                    <tr>
-                        <th>Component</th>
-                        <th>Damage Description</th>
-                        <th>Assessment</th>
-                        <th>Priority</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="critical-row">
-                        <td><strong>Subframe</strong></td>
-                        <td>Bent - visible difference comparing left to right side</td>
-                        <td>Structural integrity compromised</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>Subframe Brackets</strong></td>
-                        <td>Completely broken off and bent</td>
-                        <td>Requires replacement</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>Main Support Leg Brackets (Crash Bar)</strong></td>
-                        <td>Buckled - front crash bar mounting points compromised</td>
-                        <td>Structural support failed - REPLACE</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Radiator Pack Support Arm</strong></td>
-                        <td>Metal arm bent - holds radiator pack assembly</td>
-                        <td>Structural support compromised</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Rear Axle / Rear Beam</strong></td>
-                        <td>Visual damage, potential buckle</td>
-                        <td>Requires alignment jig checking</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h4 style="color: #f97316; margin: 30px 0 15px; display: flex; align-items: center; gap: 10px;">
-                <span class="priority-badge high">HIGH</span>
-                Fluid Lines / Safety Systems
-            </h4>
-            <table class="damage-table">
-                <thead>
-                    <tr>
-                        <th>Component</th>
-                        <th>Damage Description</th>
-                        <th>Risk</th>
-                        <th>Priority</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><strong>Brake Lines</strong></td>
-                        <td>Hit hard underneath - potentially compromised</td>
-                        <td style="color: #dc2626;">SAFETY CRITICAL - Inspect before operation</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Fuel Lines</strong></td>
-                        <td>Hit hard underneath - potentially compromised</td>
-                        <td style="color: #dc2626;">FIRE RISK - Inspect before operation</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Fuel Tank</strong></td>
-                        <td>Completely engraved and scraped</td>
-                        <td>Leak test required</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <div class="quote-box">
-                <div class="quote-text">
-                    "The only thing I could think of why that wouldn't start as of now is because of how this was pushed right into the pulley wheel system. I reckon the wheels locked tight preventing any kind of starting. And yeah, if that had started, it would have done further damage. I think this belt's locked the wheels tight to prevent it starting."
-                </div>
-                <div class="quote-author">— Assessor, Video Assessment</div>
+            <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 12px; padding: 20px; margin-top: 25px;">
+                <p style="color: #dc2626;">
+                    <strong>Final Assessment:</strong> Based on the observed damage and correlated diagnostic data, the vehicle is repairable but estimated costs (£3,950 - £7,600) exceed the vehicle's market value (£2,500 - £4,000), making repair economically unviable.
+                </p>
             </div>
         </div>
 
-        <!-- Definite Replacement Required -->
-        <div class="glass-card">
-            <div class="section-header">
-                <div class="section-icon red">🔧</div>
-                <div class="section-title">Definite Replacement Required</div>
+        <!-- Insurance Claim Assessment -->
+        <div class="card">
+            <div class="card-header">
+                <div class="card-icon orange">&#163;</div>
+                <div class="card-title">Insurance Claim Assessment - Economic Evaluation</div>
             </div>
 
-            <h4 style="margin: 20px 0 15px; color: #1a1a2e;">Front End Components</h4>
-            <table class="damage-table">
-                <thead>
-                    <tr>
-                        <th>Part Description</th>
-                        <th>Damage Assessment</th>
-                        <th>Status</th>
-                        <th>Priority</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="critical-row">
-                        <td><strong>Front Bumper (Complete)</strong></td>
-                        <td>Heavy impact damage - lower section destroyed, severe scraping</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>Front Bumper Reinforcement Bar / Crash Bar</strong></td>
-                        <td>Severely bent, displaced from mounting points</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>Main Support Leg Brackets (to Crash Bar)</strong></td>
-                        <td>Buckled from impact - structural mounting compromised</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Front Lower Grille</strong></td>
-                        <td>Damaged with missing sections</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Engine Undertray / Splash Guard</strong></td>
-                        <td>Missing or destroyed</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Front Wheel Arch Liner - Left</strong></td>
-                        <td>Broken and torn out from impact</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Front Wheel Arch Liner - Right</strong></td>
-                        <td>Broken and torn out from impact</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <h4 style="margin: 30px 0 15px; color: #1a1a2e;">Cooling / Radiator Pack Components</h4>
-            <table class="damage-table">
-                <thead>
-                    <tr>
-                        <th>Part Description</th>
-                        <th>Damage Assessment</th>
-                        <th>Status</th>
-                        <th>Priority</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="critical-row">
-                        <td><strong>Coolant Radiator</strong></td>
-                        <td>Buckled and leaking - severe impact damage</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>Full Radiator Pack Assembly</strong></td>
-                        <td>Broken - mounting points and frame damaged</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>A/C Condenser / Radiator</strong></td>
-                        <td>Impacted - fins bent and damaged</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>A/C Hoses</strong></td>
-                        <td>Impacted and damaged from collision</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Catalytic Converter Heat Shield</strong></td>
-                        <td>Dented and displaced</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge medium">Medium</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Exhaust Centre Heat Shield</strong></td>
-                        <td>Impact damage with deformation</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge medium">Medium</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Fuel Tank Heat Shield</strong></td>
-                        <td>Damaged and displaced</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge medium">Medium</span></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Inspection Required -->
-        <div class="glass-card">
-            <div class="section-header">
-                <div class="section-icon orange">🔍</div>
-                <div class="section-title">Professional Inspection Required</div>
-            </div>
-
-            <table class="damage-table">
-                <thead>
-                    <tr>
-                        <th>Component</th>
-                        <th>Concern</th>
-                        <th>Action Required</th>
-                        <th>Priority</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="critical-row">
-                        <td><strong>Fuel Tank</strong></td>
-                        <td>Visible scraping damage</td>
-                        <td>LEAK TEST REQUIRED</td>
-                        <td><span class="priority-badge critical">Critical</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Front Anti-Roll Bar</strong></td>
-                        <td>Appears bent</td>
-                        <td>Inspect & likely replace</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Engine Oil Pan</strong></td>
-                        <td>Confirmed impact, oil leak</td>
-                        <td>Replace</td>
-                        <td><span class="priority-badge high">High</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Anti-Roll Bar Drop Links (x2)</strong></td>
-                        <td>Potential stress damage</td>
-                        <td>Inspect</td>
-                        <td><span class="priority-badge medium">Medium</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Front Lower Control Arms (x2)</strong></td>
-                        <td>Impact exposure</td>
-                        <td>Inspect for deformation</td>
-                        <td><span class="priority-badge medium">Medium</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Tie Rod Ends (x2)</strong></td>
-                        <td>Potential impact damage</td>
-                        <td>Check for play</td>
-                        <td><span class="priority-badge medium">Medium</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Steering Rack Boots (x2)</strong></td>
-                        <td>Debris exposure</td>
-                        <td>Inspect for tears</td>
-                        <td><span class="priority-badge medium">Medium</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Rear Trailing Arms (x2)</strong></td>
-                        <td>Heavy debris impact</td>
-                        <td>Inspect for damage</td>
-                        <td><span class="priority-badge medium">Medium</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Floor Pan</strong></td>
-                        <td>Heavy scraping marks</td>
-                        <td>Structural assessment</td>
-                        <td><span class="priority-badge medium">Medium</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>CV Joint Boots (All 4)</strong></td>
-                        <td>Debris exposure</td>
-                        <td>Inspect</td>
-                        <td><span class="priority-badge medium">Medium</span></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Brake Components</strong></td>
-                        <td>Mud/debris contamination</td>
-                        <td>Clean & inspect</td>
-                        <td><span class="priority-badge low">Low</span></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Insurance Assessment -->
-        <div class="glass-card" style="border: 2px solid #7c3aed;">
-            <div class="section-header">
-                <div class="section-icon purple">💷</div>
-                <div class="section-title">Insurance Claim Assessment - Economic Evaluation</div>
-            </div>
-
-            <p style="background: #f5f3ff; padding: 15px; border-radius: 12px; margin-bottom: 25px; border-left: 4px solid #7c3aed;">
+            <p style="color: #64748b; margin-bottom: 25px; font-size: 0.9em;">
                 <strong>Purpose:</strong> To determine if repair costs exceed vehicle market value, which would classify this as an insurance write-off (Category B, S, or N depending on structural damage severity).
             </p>
 
-            <h4 style="margin: 20px 0 15px; color: #1a1a2e;">Estimated Repair Costs</h4>
-            <table class="damage-table">
-                <thead>
-                    <tr>
-                        <th>Repair Category</th>
-                        <th>Components</th>
-                        <th>Est. Parts</th>
-                        <th>Est. Labour</th>
-                        <th>Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="critical-row">
-                        <td><strong>Structural - Subframe</strong></td>
-                        <td>Subframe replacement, brackets, mounting points</td>
-                        <td>£800 - £1,200</td>
-                        <td>£400 - £600</td>
-                        <td><strong>£1,200 - £1,800</strong></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>Engine Bay - Locked Engine</strong></td>
-                        <td>A/C pipes, P/S pipes, auxiliary belt, pulleys, inspection</td>
-                        <td>£300 - £500</td>
-                        <td>£200 - £400</td>
-                        <td><strong>£500 - £900</strong></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>Cooling System</strong></td>
-                        <td>Coolant radiator, A/C condenser, rad pack assembly, hoses, coolant</td>
-                        <td>£400 - £700</td>
-                        <td>£200 - £350</td>
-                        <td><strong>£600 - £1,050</strong></td>
-                    </tr>
-                    <tr class="critical-row">
-                        <td><strong>Front End Body</strong></td>
-                        <td>Bumper complete, crash bar, support brackets, grilles, arch liners x2</td>
-                        <td>£400 - £650</td>
-                        <td>£150 - £300</td>
-                        <td><strong>£550 - £950</strong></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Oil System</strong></td>
-                        <td>Sump/oil pan replacement, oil & filter, gaskets</td>
-                        <td>£150 - £300</td>
-                        <td>£100 - £200</td>
-                        <td><strong>£250 - £500</strong></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Suspension</strong></td>
-                        <td>Anti-roll bar, drop links, inspection of control arms, tie rods</td>
-                        <td>£150 - £300</td>
-                        <td>£150 - £250</td>
-                        <td><strong>£300 - £550</strong></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Rear Axle</strong></td>
-                        <td>Rear beam alignment jig check, potential straightening/replacement</td>
-                        <td>£0 - £400</td>
-                        <td>£100 - £300</td>
-                        <td><strong>£100 - £700</strong></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Fuel System</strong></td>
-                        <td>Fuel tank inspection/leak test, potential replacement, fuel lines check</td>
-                        <td>£0 - £350</td>
-                        <td>£100 - £200</td>
-                        <td><strong>£100 - £550</strong></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Brake System</strong></td>
-                        <td>Brake line inspection, fluid flush, contamination clean</td>
-                        <td>£50 - £150</td>
-                        <td>£100 - £200</td>
-                        <td><strong>£150 - £350</strong></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Heat Shields & Undertrays</strong></td>
-                        <td>Cat shield, exhaust shield, fuel tank shield, engine undertray</td>
-                        <td>£100 - £200</td>
-                        <td>£50 - £100</td>
-                        <td><strong>£150 - £300</strong></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Final Procedures</strong></td>
-                        <td>4-wheel alignment, road test, diagnostic scan</td>
-                        <td>-</td>
-                        <td>£150 - £250</td>
-                        <td><strong>£150 - £250</strong></td>
-                    </tr>
-                </tbody>
-                <tfoot>
-                    <tr style="background: #1a1a1a; color: white;">
-                        <td colspan="4" style="text-align: right; padding: 15px;"><strong>TOTAL ESTIMATED REPAIR COST:</strong></td>
-                        <td style="padding: 15px; color: #30ff37;"><strong>£4,050 - £7,900</strong></td>
-                    </tr>
-                </tfoot>
-            </table>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-top: 30px;">
-                <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 25px; border-radius: 16px; border: 2px solid #f59e0b;">
-                    <h4 style="color: #92400e; margin-bottom: 15px;">📊 Vehicle Market Value</h4>
-                    <p style="color: #78350f; margin-bottom: 10px;"><strong>Vehicle:</strong> 2014 CITROEN C3 1.2L Petrol</p>
-                    <p style="color: #78350f; margin-bottom: 10px;"><strong>Age:</strong> ~12 years old (May 2014)</p>
-                    <p style="color: #78350f; margin-bottom: 10px;"><strong>Condition Pre-Incident:</strong> Assumed average</p>
-                    <p style="font-size: 1.4em; font-weight: 700; color: #92400e; margin-top: 15px;">Est. Value: £2,500 - £4,000</p>
-                    <p style="font-size: 0.85em; color: #a16207; margin-top: 5px;">Based on typical UK market values</p>
-                </div>
-
-                <div style="background: linear-gradient(135deg, #fecaca 0%, #fca5a5 100%); padding: 25px; border-radius: 16px; border: 2px solid #dc2626;">
-                    <h4 style="color: #991b1b; margin-bottom: 15px;">⚠️ Economic Assessment</h4>
-                    <p style="color: #7f1d1d; margin-bottom: 10px;"><strong>Minimum Repair Cost:</strong> £4,050</p>
-                    <p style="color: #7f1d1d; margin-bottom: 10px;"><strong>Maximum Vehicle Value:</strong> £4,000</p>
-                    <p style="color: #7f1d1d; margin-bottom: 10px;"><strong>Cost vs Value Ratio:</strong> 101% - 316%</p>
-                    <p style="font-size: 1.3em; font-weight: 700; color: #dc2626; margin-top: 15px; text-transform: uppercase;">Repair costs exceed vehicle value</p>
+            <!-- Repair Costs Table -->
+            <div style="margin-bottom: 30px;">
+                <h4 style="color: #16a34a; margin-bottom: 15px; font-size: 0.95em; text-transform: uppercase; letter-spacing: 1px;">Estimated Repair Costs</h4>
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.9em;">
+                        <thead>
+                            <tr style="background: #f1f5f9; border-bottom: 2px solid #e2e8f0;">
+                                <th style="padding: 12px 15px; text-align: left; color: #64748b;">Repair Category</th>
+                                <th style="padding: 12px 15px; text-align: left; color: #64748b;">Components</th>
+                                <th style="padding: 12px 15px; text-align: right; color: #64748b;">Est. Parts</th>
+                                <th style="padding: 12px 15px; text-align: right; color: #64748b;">Est. Labour</th>
+                                <th style="padding: 12px 15px; text-align: right; color: #64748b;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px 15px; font-weight: 600; color: #dc2626;">Engine & Drive System</td>
+                                <td style="padding: 12px 15px; color: #64748b;">A/C pipes, power steering pipes, auxiliary belt, pulleys</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£350 - £600</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£300 - £500</td>
+                                <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: #1e293b;">£650 - £1,100</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px 15px; font-weight: 600; color: #dc2626;">Cooling & A/C System</td>
+                                <td style="padding: 12px 15px; color: #64748b;">Coolant radiator, A/C radiator, full rad pack, hoses, coolant</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£400 - £700</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£200 - £400</td>
+                                <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: #1e293b;">£600 - £1,100</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px 15px; font-weight: 600; color: #ea580c;">Structural Repairs</td>
+                                <td style="padding: 12px 15px; color: #64748b;">Subframe, subframe brackets, radiator support, crash bar legs</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£600 - £1,200</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£500 - £1,000</td>
+                                <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: #1e293b;">£1,100 - £2,200</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px 15px; font-weight: 600; color: #ca8a04;">Undercarriage</td>
+                                <td style="padding: 12px 15px; color: #64748b;">Sump repair/replace, fuel tank inspection, anti-roll bar, rear axle check</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£300 - £600</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£250 - £500</td>
+                                <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: #1e293b;">£550 - £1,100</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px 15px; font-weight: 600; color: #dc2626;">Safety-Critical Lines</td>
+                                <td style="padding: 12px 15px; color: #64748b;">Brake lines inspection/replace, fuel lines inspection/replace</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£150 - £350</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£200 - £400</td>
+                                <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: #1e293b;">£350 - £750</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px 15px; font-weight: 600; color: #2563eb;">Body & Trim</td>
+                                <td style="padding: 12px 15px; color: #64748b;">Under-tray, bumper structure, wheel arch liners, trim panels, clips</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£200 - £400</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£150 - £300</td>
+                                <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: #1e293b;">£350 - £700</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px 15px; font-weight: 600; color: #7c3aed;">Diagnostics & Calibration</td>
+                                <td style="padding: 12px 15px; color: #64748b;">ECU fault reset, alternator check, full system diagnostic</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #94a3b8;">-</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£150 - £300</td>
+                                <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: #1e293b;">£150 - £300</td>
+                            </tr>
+                            <tr style="border-bottom: 1px solid #e2e8f0;">
+                                <td style="padding: 12px 15px; font-weight: 600; color: #16a34a;">Alignment & Testing</td>
+                                <td style="padding: 12px 15px; color: #64748b;">Subframe alignment, geometry check, road test</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #94a3b8;">-</td>
+                                <td style="padding: 12px 15px; text-align: right; color: #334155;">£200 - £350</td>
+                                <td style="padding: 12px 15px; text-align: right; font-weight: 600; color: #1e293b;">£200 - £350</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr style="background: #fef2f2; border-top: 2px solid #dc2626;">
+                                <td colspan="4" style="padding: 15px; font-weight: 700; color: #dc2626; font-size: 1em;">TOTAL ESTIMATED REPAIR COST VARIES:</td>
+                                <td style="padding: 15px; text-align: right; font-weight: 700; color: #dc2626; font-size: 1.1em;">£3,950 - £7,600</td>
+                            </tr>
+                        </tfoot>
+                    </table>
                 </div>
             </div>
 
-            <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); color: white; padding: 30px; border-radius: 16px; margin-top: 25px; text-align: center;">
-                <h3 style="font-size: 1.5em; margin-bottom: 15px;">RECOMMENDATION: INSURANCE WRITE-OFF</h3>
-                <p style="font-size: 1.1em; opacity: 0.95; margin-bottom: 15px;">Based on the extent of structural, mechanical, and safety-critical damage, repair costs significantly exceed the pre-accident market value of this vehicle.</p>
-                <div style="display: flex; justify-content: center; gap: 30px; flex-wrap: wrap; margin-top: 20px;">
-                    <div style="background: rgba(255,255,255,0.15); padding: 15px 25px; border-radius: 12px;">
-                        <div style="font-size: 0.8em; opacity: 0.8;">Likely Category</div>
-                        <div style="font-size: 1.3em; font-weight: 700;">Category S</div>
-                        <div style="font-size: 0.75em; opacity: 0.7;">Structural damage - repairable</div>
-                    </div>
-                    <div style="background: rgba(255,255,255,0.15); padding: 15px 25px; border-radius: 12px;">
-                        <div style="font-size: 0.8em; opacity: 0.8;">Alternative</div>
-                        <div style="font-size: 1.3em; font-weight: 700;">Category N</div>
-                        <div style="font-size: 0.75em; opacity: 0.7;">If subframe deemed non-structural</div>
+            <!-- Vehicle Value & Economic Assessment Grid -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 30px;">
+
+                <!-- Vehicle Market Value -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+                    <h4 style="color: #16a34a; margin-bottom: 15px; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">Vehicle Market Value</h4>
+                    <p style="color: #64748b; margin-bottom: 10px; font-size: 0.85em;">Vehicle: 2014 CITROEN C3 1199cc Petrol</p>
+                    <div style="font-size: 1.8em; font-weight: 700; color: #16a34a; margin-bottom: 10px;">£2,500 - £4,000</div>
+                    <p style="color: #94a3b8; font-size: 0.8em;">Based on typical UK market values</p>
+                </div>
+
+                <!-- Economic Assessment -->
+                <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+                    <h4 style="color: #16a34a; margin-bottom: 15px; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px;">Economic Assessment</h4>
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                            <span style="color: #64748b;">Minimum Repair Cost:</span>
+                            <span style="font-weight: 600; color: #dc2626;">£3,950</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                            <span style="color: #64748b;">Maximum Vehicle Value:</span>
+                            <span style="font-weight: 600; color: #16a34a;">£4,000</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                            <span style="color: #64748b;">Cost vs Value Ratio:</span>
+                            <span style="font-weight: 600; color: #ca8a04;">99% - 304%</span>
+                        </div>
+                        <div style="padding: 10px; background: #fef2f2; border-radius: 8px; margin-top: 5px;">
+                            <span style="color: #dc2626; font-weight: 600;">Repair costs meet or exceed vehicle value</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div style="background: #f8fafc; padding: 20px; border-radius: 12px; margin-top: 20px; border-left: 4px solid #64748b;">
-                <h4 style="color: #475569; margin-bottom: 10px;">Note on Estimates</h4>
-                <p style="color: #64748b; font-size: 0.9em;">Cost estimates are based on typical UK garage rates and parts prices. Actual costs may vary based on location, parts availability (OEM vs aftermarket), and workshop labour rates. Additional damage may be discovered during disassembly. These figures are provided for insurance assessment purposes only.</p>
+            <!-- Recommendation Banner -->
+            <div class="recommendation-banner" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); border-radius: 16px; padding: 20px; margin-bottom: 20px; text-align: center; color: #fff;">
+                <div style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 2px; opacity: 0.9; margin-bottom: 6px;">RECOMMENDATION</div>
+                <div style="font-size: 1.4em; font-weight: 700; margin-bottom: 12px;">INSURANCE WRITE-OFF</div>
+                <p style="opacity: 0.95; max-width: 700px; margin: 0 auto; line-height: 1.5; font-size: 0.9em;">
+                    Based on the extent of structural, mechanical, and safety-critical damage, repair costs significantly exceed the pre-accident market value of this vehicle. The combination of subframe deformation, auxiliary belt lock-up, cooling system failure, and potential brake/fuel line compromise makes economical repair unfeasible.
+                </p>
+            </div>
+
+            <!-- Category Badge -->
+            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                <div style="background: #fff7ed; border: 2px solid #ea580c; border-radius: 12px; padding: 15px 25px; text-align: center; width: 100%; max-width: 300px;">
+                    <div style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 5px;">Likely Category</div>
+                    <div style="font-size: 2em; font-weight: 700; color: #ea580c; margin-bottom: 3px;">Category S</div>
+                    <div style="color: #78716c; font-size: 0.8em;">Structural damage - repairable but uneconomical</div>
+                </div>
+            </div>
+
+            <!-- Note on Estimates -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
+                <h4 style="color: #64748b; margin-bottom: 10px; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px;">Note on Estimates</h4>
+                <p style="color: #475569; font-size: 0.9em; line-height: 1.7;">
+                    Cost estimates are based on typical UK garage rates and parts prices for a 2014 Citroen C3. Actual costs may vary based on location, parts availability (OEM vs aftermarket), and workshop labour rates. Additional hidden damage may be discovered during disassembly, particularly to brake and fuel lines which require physical inspection. These figures are provided for insurance assessment purposes only.
+                </p>
             </div>
         </div>
 
         <!-- Footer -->
         <div class="footer">
             <img src="https://autow-services.co.uk/logo.png" alt="AUTOW Services" class="footer-logo">
-            <p><strong>Vehicle Damage Assessment Report</strong></p>
-            <p>HN14 UWY | CITROEN 1199cc Petrol | Grey | May 2014</p>
-            <p style="margin-top: 10px;">Assessment Date: 03 January 2026 | Based on 31 photographs + video assessment</p>
-            <p style="margin-top: 5px; font-size: 0.85em;">MOT Valid: 28/11/2026 | Tax Valid: 01/07/2026 | Data verified via GOV.UK DVLA</p>
-            <p style="margin-top: 15px; font-size: 0.8em; opacity: 0.7;">
-                This report is based on photographic and video evidence review. A physical inspection by a qualified mechanic is recommended.
-            </p>
+            <p>Report Compiled: 03 January 2026</p>
+            <p>Assessment Method: Video Evidence Review</p>
+            <p style="margin-top: 10px; color: #94a3b8;">AUTOW Services - Professional Vehicle Damage Assessment</p>
         </div>
+
     </div>
 </body>
 </html>
