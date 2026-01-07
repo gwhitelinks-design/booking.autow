@@ -64,7 +64,8 @@ export default function SharedInvoicePage() {
     parts: 0,
     service: 0,
     labor: 0,
-    other: 0
+    other: 0,
+    discount: 0
   };
 
   invoice.line_items?.forEach((item) => {
@@ -75,6 +76,8 @@ export default function SharedInvoicePage() {
       breakdown.service += amount;
     } else if (item.item_type === 'labor') {
       breakdown.labor += amount;
+    } else if (item.item_type === 'discount') {
+      breakdown.discount += Math.abs(amount);
     } else {
       breakdown.other += amount;
     }
@@ -165,7 +168,7 @@ export default function SharedInvoicePage() {
                   <td style={styles.td}>
                     {item.description}
                     {item.item_type !== 'service' && (
-                      <span style={styles.itemType}> ({item.item_type})</span>
+                      <span style={item.item_type === 'discount' ? styles.discountType : styles.itemType}> ({item.item_type})</span>
                     )}
                   </td>
                   <td style={{ ...styles.td, textAlign: 'center' as const }}>
@@ -174,8 +177,8 @@ export default function SharedInvoicePage() {
                   <td style={{ ...styles.td, textAlign: 'center' as const }}>
                     {item.quantity}
                   </td>
-                  <td style={{ ...styles.td, textAlign: 'right' as const }}>
-                    £{parseFloat(item.amount.toString()).toFixed(2)}
+                  <td style={{ ...styles.td, textAlign: 'right' as const, ...(item.item_type === 'discount' ? { color: '#ff9800' } : {}) }}>
+                    {item.item_type === 'discount' ? '-' : ''}£{parseFloat(item.amount.toString()).toFixed(2)}
                   </td>
                 </tr>
               ))}
@@ -208,6 +211,12 @@ export default function SharedInvoicePage() {
               <div style={styles.breakdownRow}>
                 <span>Other Total</span>
                 <span>£{breakdown.other.toFixed(2)}</span>
+              </div>
+            )}
+            {breakdown.discount > 0 && (
+              <div style={styles.discountRow}>
+                <span>Discount</span>
+                <span>-£{breakdown.discount.toFixed(2)}</span>
               </div>
             )}
             <div style={styles.totalRow}>
@@ -399,6 +408,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#666',
     fontStyle: 'italic' as const,
   },
+  discountType: {
+    fontSize: '12px',
+    color: '#ff9800',
+    fontStyle: 'italic' as const,
+    fontWeight: '600' as const,
+  },
   totalsSection: {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -417,6 +432,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '8px 0',
     fontSize: '14px',
     color: '#666',
+  },
+  discountRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '8px 0',
+    fontSize: '14px',
+    color: '#ff9800',
+    fontWeight: '600' as const,
   },
   totalRow: {
     display: 'flex',

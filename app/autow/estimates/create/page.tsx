@@ -30,6 +30,8 @@ export default function CreateEstimatePage() {
   const [saving, setSaving] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [modalItem, setModalItem] = useState<LineItem | null>(null);
+  const [discountMode, setDiscountMode] = useState<'flat' | 'percentage'>('flat');
+  const [discountPercentage, setDiscountPercentage] = useState<number>(0);
 
   const defaultNotes = `We Provide Mobile mechanics and Recovery services,
 we have dedicated ramp spaces for works that are not suitable at roadside etc.
@@ -74,6 +76,7 @@ A/N: 20052044
     parts: 0,
     labor: 0,
     service: 0,
+    discount: 0,
     subtotal: 0,
     vat: 0,
     total: 0
@@ -179,6 +182,7 @@ A/N: 20052044
     let parts = 0;
     let labor = 0;
     let service = 0;
+    let discount = 0;
 
     lineItems.forEach(item => {
       const amount = item.rate * item.quantity;
@@ -188,14 +192,17 @@ A/N: 20052044
         labor += amount;
       } else if (item.item_type === 'service') {
         service += amount;
+      } else if (item.item_type === 'discount') {
+        // Discounts are stored as positive numbers but subtracted
+        discount += Math.abs(amount);
       }
     });
 
-    const subtotal = parts + labor + service;
+    const subtotal = parts + labor + service - discount;
     const vat = subtotal * (formData.vat_rate / 100);
     const total = subtotal + vat;
 
-    setTotals({ parts, labor, service, subtotal, vat, total });
+    setTotals({ parts, labor, service, discount, subtotal, vat, total });
   };
 
   const updateLineItem = (index: number, field: keyof LineItem, value: any) => {
@@ -210,9 +217,34 @@ A/N: 20052044
     setLineItems(updated);
   };
 
+  // Calculate subtotal of non-discount items (for percentage discount calculation)
+  const getNonDiscountSubtotal = () => {
+    let subtotal = 0;
+    lineItems.forEach(item => {
+      if (item.item_type !== 'discount') {
+        subtotal += item.rate * item.quantity;
+      }
+    });
+    return subtotal;
+  };
+
   const openEditModal = (index: number) => {
     setEditingIndex(index);
-    setModalItem({ ...lineItems[index] });
+    const item = lineItems[index];
+    setModalItem({ ...item });
+
+    // Detect if this is a percentage discount (description contains %)
+    if (item.item_type === 'discount' && item.description.includes('%')) {
+      setDiscountMode('percentage');
+      // Extract percentage from description (e.g., "10% Discount" -> 10)
+      const match = item.description.match(/(\d+(?:\.\d+)?)\s*%/);
+      if (match) {
+        setDiscountPercentage(parseFloat(match[1]));
+      }
+    } else {
+      setDiscountMode('flat');
+      setDiscountPercentage(0);
+    }
   };
 
   const closeModal = () => {
@@ -223,10 +255,27 @@ A/N: 20052044
   const saveModalItem = () => {
     if (editingIndex !== null && modalItem) {
       const updated = [...lineItems];
-      updated[editingIndex] = {
-        ...modalItem,
-        amount: modalItem.rate * modalItem.quantity
-      };
+
+      // Handle percentage discount
+      if (modalItem.item_type === 'discount' && discountMode === 'percentage') {
+        const subtotal = getNonDiscountSubtotal();
+        const discountAmount = (subtotal * discountPercentage) / 100;
+        updated[editingIndex] = {
+          ...modalItem,
+          description: modalItem.description.includes('%')
+            ? modalItem.description
+            : `${discountPercentage}% ${modalItem.description || 'Discount'}`,
+          rate: discountAmount,
+          quantity: 1,
+          amount: discountAmount
+        };
+      } else {
+        updated[editingIndex] = {
+          ...modalItem,
+          amount: modalItem.rate * modalItem.quantity
+        };
+      }
+
       setLineItems(updated);
       closeModal();
     }
@@ -242,6 +291,18 @@ A/N: 20052044
     setLineItems([...lineItems, {
       description: '',
       item_type: 'service',
+      rate: 0,
+      quantity: 1,
+      amount: 0,
+      sort_order: lineItems.length,
+      document_type: 'estimate'
+    }]);
+  };
+
+  const addDiscount = () => {
+    setLineItems([...lineItems, {
+      description: 'Discount',
+      item_type: 'discount',
       rate: 0,
       quantity: 1,
       amount: 0,
@@ -487,7 +548,7 @@ A/N: 20052044
                 <div style={styles.cardHeader}>
                   <span style={styles.cardTitle}>
                     {item.description || 'New Item'}
-                    <span style={styles.itemTypeBadge}>{item.item_type}</span>
+                    <span style={item.item_type === 'discount' ? styles.discountBadge : styles.itemTypeBadge}>{item.item_type}</span>
                   </span>
                   <button
                     type="button"
@@ -509,7 +570,9 @@ A/N: 20052044
                   </div>
                   <div style={styles.cardRow}>
                     <span style={styles.cardLabel}>Amount:</span>
-                    <span style={styles.cardAmount}>£{item.amount.toFixed(2)}</span>
+                    <span style={item.item_type === 'discount' ? styles.cardAmountDiscount : styles.cardAmount}>
+                      {item.item_type === 'discount' ? '-' : ''}£{item.amount.toFixed(2)}
+                    </span>
                   </div>
                 </div>
                 <button
@@ -544,7 +607,7 @@ A/N: 20052044
                   </div>
 
                   <div style={{ flex: 1 }}>
-                    <span style={styles.itemTypeBadge}>{item.item_type}</span>
+                    <span style={item.item_type === 'discount' ? styles.discountBadge : styles.itemTypeBadge}>{item.item_type}</span>
                   </div>
 
                   <div style={{ flex: 1 }}>
@@ -556,8 +619,8 @@ A/N: 20052044
                   </div>
 
                   <div style={{ flex: 1 }}>
-                    <div style={styles.amountDisplay}>
-                      £{item.amount.toFixed(2)}
+                    <div style={item.item_type === 'discount' ? styles.amountDisplayDiscount : styles.amountDisplay}>
+                      {item.item_type === 'discount' ? '-' : ''}£{item.amount.toFixed(2)}
                     </div>
                   </div>
 
@@ -583,13 +646,22 @@ A/N: 20052044
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={addLineItem}
-            style={styles.addButton}
-          >
-            + Add Line Item
-          </button>
+          <div style={styles.buttonRow}>
+            <button
+              type="button"
+              onClick={addLineItem}
+              style={styles.addButton}
+            >
+              + Add Line Item
+            </button>
+            <button
+              type="button"
+              onClick={addDiscount}
+              style={styles.addDiscountButton}
+            >
+              + Add Discount
+            </button>
+          </div>
         </div>
 
         {/* Totals */}
@@ -611,6 +683,12 @@ A/N: 20052044
               <div style={styles.breakdownRow}>
                 <span>Service Total:</span>
                 <span>£{totals.service.toFixed(2)}</span>
+              </div>
+            )}
+            {totals.discount > 0 && (
+              <div style={styles.discountRow}>
+                <span>Discount:</span>
+                <span>-£{totals.discount.toFixed(2)}</span>
               </div>
             )}
 
@@ -699,46 +777,109 @@ A/N: 20052044
                 <label style={styles.label}>Type</label>
                 <select
                   value={modalItem.item_type}
-                  onChange={(e) => updateModalItem('item_type', e.target.value)}
+                  onChange={(e) => {
+                    updateModalItem('item_type', e.target.value);
+                    if (e.target.value !== 'discount') {
+                      setDiscountMode('flat');
+                      setDiscountPercentage(0);
+                    }
+                  }}
                   style={styles.input}
                 >
                   <option value="service">Service</option>
                   <option value="part">Part</option>
                   <option value="labor">Labor</option>
                   <option value="other">Other</option>
+                  <option value="discount">Discount</option>
                 </select>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              {/* Discount Mode Toggle - only show when type is discount */}
+              {modalItem.item_type === 'discount' && (
                 <div style={styles.modalGroup}>
-                  <label style={styles.label}>Rate (£)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={modalItem.rate}
-                    onChange={(e) => updateModalItem('rate', parseFloat(e.target.value) || 0)}
-                    style={styles.input}
-                  />
+                  <label style={styles.label}>Discount Type</label>
+                  <div style={styles.discountModeToggle}>
+                    <button
+                      type="button"
+                      onClick={() => setDiscountMode('flat')}
+                      style={discountMode === 'flat' ? styles.discountModeActive : styles.discountModeBtn}
+                    >
+                      Flat Rate (£)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setDiscountMode('percentage')}
+                      style={discountMode === 'percentage' ? styles.discountModeActive : styles.discountModeBtn}
+                    >
+                      Percentage (%)
+                    </button>
+                  </div>
                 </div>
+              )}
 
-                <div style={styles.modalGroup}>
-                  <label style={styles.label}>Quantity</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={modalItem.quantity}
-                    onChange={(e) => updateModalItem('quantity', parseFloat(e.target.value) || 0)}
-                    style={styles.input}
-                  />
-                </div>
-              </div>
+              {/* Percentage input - show when discount + percentage mode */}
+              {modalItem.item_type === 'discount' && discountMode === 'percentage' ? (
+                <>
+                  <div style={styles.modalGroup}>
+                    <label style={styles.label}>Discount Percentage (%)</label>
+                    <input
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      max="100"
+                      value={discountPercentage}
+                      onChange={(e) => setDiscountPercentage(parseFloat(e.target.value) || 0)}
+                      style={styles.input}
+                      placeholder="e.g., 10"
+                    />
+                  </div>
+                  <div style={styles.discountPreview}>
+                    <span>Subtotal (excl. discounts):</span>
+                    <span>£{getNonDiscountSubtotal().toFixed(2)}</span>
+                  </div>
+                  <div style={styles.modalAmount}>
+                    <span>Discount Amount:</span>
+                    <span style={styles.discountAmountValue}>
+                      -£{((getNonDiscountSubtotal() * discountPercentage) / 100).toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                    <div style={styles.modalGroup}>
+                      <label style={styles.label}>{modalItem.item_type === 'discount' ? 'Discount Amount (£)' : 'Rate (£)'}</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={modalItem.rate}
+                        onChange={(e) => updateModalItem('rate', parseFloat(e.target.value) || 0)}
+                        style={styles.input}
+                      />
+                    </div>
 
-              <div style={styles.modalAmount}>
-                <span>Amount:</span>
-                <span style={styles.modalAmountValue}>
-                  £{(modalItem.rate * modalItem.quantity).toFixed(2)}
-                </span>
-              </div>
+                    {modalItem.item_type !== 'discount' && (
+                      <div style={styles.modalGroup}>
+                        <label style={styles.label}>Quantity</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={modalItem.quantity}
+                          onChange={(e) => updateModalItem('quantity', parseFloat(e.target.value) || 0)}
+                          style={styles.input}
+                        />
+                      </div>
+                    )}
+                  </div>
+
+                  <div style={modalItem.item_type === 'discount' ? styles.modalAmount : styles.modalAmount}>
+                    <span>Amount:</span>
+                    <span style={modalItem.item_type === 'discount' ? styles.discountAmountValue : styles.modalAmountValue}>
+                      {modalItem.item_type === 'discount' ? '-' : ''}£{(modalItem.rate * modalItem.quantity).toFixed(2)}
+                    </span>
+                  </div>
+                </>
+              )}
             </div>
 
             <div style={styles.modalFooter}>
@@ -1000,6 +1141,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#30ff37',
     fontWeight: '700' as const,
   },
+  cardAmountDiscount: {
+    color: '#ff9800',
+    fontWeight: '700' as const,
+  },
   cardEditBtn: {
     width: '100%',
     padding: '10px',
@@ -1014,6 +1159,16 @@ const styles: { [key: string]: React.CSSProperties } = {
   itemTypeBadge: {
     background: 'rgba(48, 255, 55, 0.15)',
     color: '#30ff37',
+    padding: '3px 8px',
+    borderRadius: '4px',
+    fontSize: '11px',
+    fontWeight: '600' as const,
+    textTransform: 'uppercase' as const,
+    marginLeft: '8px',
+  },
+  discountBadge: {
+    background: 'rgba(255, 152, 0, 0.15)',
+    color: '#ff9800',
     padding: '3px 8px',
     borderRadius: '4px',
     fontSize: '11px',
@@ -1048,6 +1203,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: '700' as const,
     textAlign: 'right' as const,
   },
+  amountDisplayDiscount: {
+    padding: '12px',
+    background: '#0a0a0a',
+    border: '1px solid rgba(255, 152, 0, 0.3)',
+    borderRadius: '6px',
+    color: '#ff9800',
+    fontSize: '14px',
+    fontWeight: '700' as const,
+    textAlign: 'right' as const,
+  },
   removeButton: {
     width: '40px',
     height: '40px',
@@ -1058,12 +1223,26 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
     fontSize: '18px',
   },
+  buttonRow: {
+    display: 'flex',
+    gap: '10px',
+    flexWrap: 'wrap' as const,
+  },
   addButton: {
     padding: '10px 20px',
     background: 'rgba(48, 255, 55, 0.1)',
     border: '1px solid rgba(48, 255, 55, 0.3)',
     borderRadius: '6px',
     color: '#30ff37',
+    cursor: 'pointer',
+    fontSize: '14px',
+  },
+  addDiscountButton: {
+    padding: '10px 20px',
+    background: 'rgba(255, 152, 0, 0.1)',
+    border: '1px solid rgba(255, 152, 0, 0.3)',
+    borderRadius: '6px',
+    color: '#ff9800',
     cursor: 'pointer',
     fontSize: '14px',
   },
@@ -1088,6 +1267,54 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '8px',
     fontSize: '14px',
     color: '#888',
+  },
+  discountRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    marginBottom: '8px',
+    fontSize: '14px',
+    color: '#ff9800',
+  },
+  discountModeToggle: {
+    display: 'flex',
+    gap: '10px',
+  },
+  discountModeBtn: {
+    flex: 1,
+    padding: '10px 15px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '6px',
+    color: '#888',
+    cursor: 'pointer',
+    fontSize: '14px',
+    transition: 'all 0.2s',
+  },
+  discountModeActive: {
+    flex: 1,
+    padding: '10px 15px',
+    background: 'rgba(255, 152, 0, 0.2)',
+    border: '1px solid #ff9800',
+    borderRadius: '6px',
+    color: '#ff9800',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600' as const,
+  },
+  discountPreview: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '10px 15px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: '6px',
+    marginBottom: '10px',
+    fontSize: '14px',
+    color: '#888',
+  },
+  discountAmountValue: {
+    fontSize: '20px',
+    fontWeight: '700' as const,
+    color: '#ff9800',
   },
   totalRow: {
     display: 'flex',
