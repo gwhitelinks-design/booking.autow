@@ -51,7 +51,7 @@ export interface LineItem {
   document_type: 'estimate' | 'invoice';
   document_id?: number;
   description: string;
-  item_type: 'service' | 'part' | 'labor' | 'other';
+  item_type: 'service' | 'part' | 'labor' | 'other' | 'discount';
   rate: number;
   quantity: number;
   amount: number;
