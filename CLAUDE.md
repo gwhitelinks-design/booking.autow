@@ -175,9 +175,10 @@ All `/api/autow/*` endpoints require `Authorization: Bearer <token>` header. Sha
 
 **`line_items`**
 - Shared by both estimates and invoices
-- Fields: description, item_type (part/service/labor/other), rate, quantity, amount
+- Fields: description, item_type (part/service/labor/other/discount), rate, quantity, amount
 - Polymorphic: `document_type` (estimate/invoice) + `document_id`
 - Supports sorting via `sort_order`
+- **Discount type**: Stored as positive amounts but subtracted from subtotal
 
 **`business_settings`**
 - Company information for documents
@@ -653,7 +654,7 @@ interface LineItem {
   document_type: 'estimate' | 'invoice';
   document_id: number;
   description: string;
-  item_type: 'part' | 'service' | 'labor' | 'other';
+  item_type: 'part' | 'service' | 'labor' | 'other' | 'discount';
   rate: number;
   quantity: number;
   amount: number;             // rate * quantity
@@ -712,11 +713,22 @@ Statistics are calculated from the bookings array:
 - **Telegram Notification**: Sends notification immediately after booking created
 
 ### Estimates & Invoices
-- **Line Items**: Add multiple items with different types (parts, service, labor, other)
+- **Line Items**: Add multiple items with different types (parts, service, labor, other, discount)
 - **Auto-Calculate**: Subtotal, VAT (20%), and total calculated automatically
 - **Status Tracking**: Track document lifecycle (draft → sent → accepted/paid)
 - **Convert to Invoice**: Estimates can be converted to invoices with one click
 - **Mark as Paid**: Invoices can be marked as paid to track payment status
+
+### Discount System
+- **Add Discount Button**: Orange button next to "Add Line Item" for quick discount entry
+- **Discount Types**: Two modes available in edit modal:
+  - **Flat Rate (£)**: Enter fixed discount amount
+  - **Percentage (%)**: Enter percentage, auto-calculates from non-discount subtotal
+- **Visual Styling**: Discounts displayed in orange (#ff9800) throughout UI
+- **Calculation**: Discounts stored as positive amounts, subtracted from subtotal before VAT
+- **Edit Modal**: Click edit button (✎) on any line item to open modal with discount mode toggle
+- **Live Preview**: Percentage mode shows subtotal and calculated discount amount in real-time
+- **Share Pages**: Customer-facing share links display discounts with proper styling
 
 ### Smart Jotter
 - **Camera Input**: Take photo of handwritten notes or documents
@@ -1140,6 +1152,49 @@ Special styling for interactive damage markers on assessment diagrams:
 ```
 
 ## Recent Session Notes
+
+### Session: 2026-01-07 - Discount Feature Implementation
+
+**Features Built:**
+
+1. **Discount Line Item Type**
+   - Added 'discount' to `item_type` union in `lib/types.ts`
+   - Discounts displayed in orange (#ff9800) throughout UI
+   - Stored as positive amounts, subtracted from subtotal before VAT
+
+2. **Add Discount Button**
+   - Orange "Add Discount" button next to green "Add Line Item"
+   - Available on both estimates and invoices create pages
+
+3. **Discount Mode Toggle (Edit Modal)**
+   - Flat Rate (£): Enter fixed discount amount with rate/quantity
+   - Percentage (%): Enter percentage, auto-calculates from non-discount subtotal
+   - Live preview shows subtotal and calculated discount amount
+   - Toggle buttons with active state styling
+
+4. **Files Modified:**
+   - `lib/types.ts` - Added 'discount' to LineItem.item_type
+   - `app/autow/estimates/create/page.tsx` - Full discount feature with modal
+   - `app/autow/invoices/create/page.tsx` - Full discount feature with modal
+   - `app/autow/estimates/view/page.tsx` - Discount display in totals
+   - `app/autow/invoices/view/page.tsx` - Discount display in totals
+   - `app/share/estimate/[token]/page.tsx` - Customer-facing discount display
+   - `app/share/invoice/[token]/page.tsx` - Customer-facing discount display
+
+5. **New Styles Added:**
+   - `discountRow`, `discountType`, `discountBadge` - Orange text/badges
+   - `addDiscountButton` - Orange button styling
+   - `amountDisplayDiscount` - Orange amount display
+   - `discountModeToggle`, `discountModeBtn`, `discountModeActive` - Toggle UI
+   - `discountPreview`, `discountAmountValue` - Preview section
+
+**Commits:**
+- `57a7710` - Add discount feature with flat rate and percentage options
+- `8ccaca9` - Add discount to LineItem type definition
+
+**Deployed to:** https://booking.autow-services.co.uk
+
+---
 
 ### Session: 2026-01-05 (Part 2) - Smart Jotter & Notes System
 
