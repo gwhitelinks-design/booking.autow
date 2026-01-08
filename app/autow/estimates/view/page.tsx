@@ -286,19 +286,19 @@ export default function ViewEstimatePage() {
 
         {/* Notes */}
         {estimate.notes && (
-          <div style={styles.notesSection}>
+          <div style={styles.notesSection} className="notes-section">
             <h3 style={styles.notesTitle}>Notes</h3>
             <p style={styles.notesText}>{estimate.notes}</p>
           </div>
         )}
 
         {/* Footer */}
-        <div style={styles.footer}>
+        <div style={styles.footer} className="footer">
           <p>Thank you for your business!</p>
           <p style={styles.footerSmall}>
             This is an estimate. Final costs may vary based on actual work performed.
           </p>
-          <div style={styles.disclaimer}>
+          <div style={styles.disclaimer} className="disclaimer">
             <p style={styles.disclaimerText}>
               AUTOW Services provides mobile mechanics and recovery services.
               Parts are subject to manufacturer warranty. Payment terms: Parts and/or vehicle collection/recovery required upfront,
@@ -335,7 +335,7 @@ export default function ViewEstimatePage() {
         @media (max-width: 900px) {
           /* Document responsive */
           .document {
-            padding: 30px 10px !important;
+            padding: 30px 15px !important;
           }
 
           .doc-header {
@@ -350,10 +350,91 @@ export default function ViewEstimatePage() {
           }
           .table-container {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
           }
           .totals-box {
             min-width: auto !important;
             width: 100%;
+          }
+        }
+
+        /* Small mobile (480px and below) */
+        @media (max-width: 480px) {
+          .document {
+            padding: 20px 12px !important;
+            border-radius: 8px !important;
+          }
+          .doc-header h1 {
+            font-size: 28px !important;
+          }
+          .doc-header img {
+            width: 120px !important;
+          }
+          .parties {
+            gap: 20px !important;
+          }
+          .parties p {
+            font-size: 13px !important;
+            word-break: break-word;
+          }
+          .table-container table {
+            font-size: 12px !important;
+          }
+          .table-container th,
+          .table-container td {
+            padding: 8px 6px !important;
+          }
+          .totals-box {
+            padding: 15px !important;
+          }
+          .totals-box span {
+            font-size: 13px !important;
+          }
+          .notes-section {
+            padding: 15px !important;
+          }
+          .notes-section p {
+            font-size: 13px !important;
+          }
+          .footer p {
+            font-size: 12px !important;
+          }
+          .disclaimer p {
+            font-size: 8px !important;
+          }
+        }
+
+        /* Extra small mobile (360px and below) */
+        @media (max-width: 360px) {
+          .document {
+            padding: 15px 10px !important;
+          }
+          .doc-header h1 {
+            font-size: 24px !important;
+          }
+          .doc-header img {
+            width: 100px !important;
+          }
+          .parties p {
+            font-size: 12px !important;
+          }
+          .table-container th,
+          .table-container td {
+            padding: 6px 4px !important;
+            font-size: 11px !important;
+          }
+          .totals-box span {
+            font-size: 12px !important;
+          }
+        }
+
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+          .document {
+            -webkit-text-size-adjust: 100%;
+          }
+          .table-container {
+            -webkit-overflow-scrolling: touch;
           }
         }
       `}</style>
