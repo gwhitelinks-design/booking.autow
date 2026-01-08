@@ -3,27 +3,27 @@ import type { Metadata } from 'next';
 export const metadata: Metadata = {
   title: 'AUTOW Services - Document',
   description: 'View your estimate or invoice from AUTOW Services - Professional automotive services in Cornwall.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://booking.autow-services.co.uk'),
   openGraph: {
     type: 'website',
     locale: 'en_GB',
     siteName: 'AUTOW Services',
-    title: 'AUTOW Services - Document',
-    description: 'View your estimate or invoice from AUTOW Services',
+    title: 'AUTOW Services - Your Document',
+    description: 'View your estimate or invoice from AUTOW Services - Professional mobile mechanic services in Cornwall.',
     images: [
       {
-        url: '/og-image.png',
-        width: 1200,
-        height: 630,
+        url: 'https://autow-services.co.uk/logo.png',
+        width: 512,
+        height: 512,
         alt: 'AUTOW Services Logo',
       },
     ],
   },
   twitter: {
-    card: 'summary_large_image',
-    title: 'AUTOW Services - Document',
+    card: 'summary',
+    title: 'AUTOW Services - Your Document',
     description: 'View your estimate or invoice from AUTOW Services',
-    images: ['/og-image.png'],
+    images: ['https://autow-services.co.uk/logo.png'],
   },
   icons: {
     icon: '/favicon.ico',
