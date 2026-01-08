@@ -325,6 +325,8 @@ CREATE TRIGGER calculate_line_item_amount_trigger
 CREATE OR REPLACE FUNCTION recalculate_estimate_totals(estimate_id_param INTEGER)
 RETURNS VOID AS $$
 DECLARE
+    items_total DECIMAL(10, 2);
+    discount_total DECIMAL(10, 2);
     calc_subtotal DECIMAL(10, 2);
     calc_vat DECIMAL(10, 2);
     calc_total DECIMAL(10, 2);
@@ -333,10 +335,20 @@ BEGIN
     -- Get VAT rate for this estimate
     SELECT vat_rate INTO vat_rate_value FROM estimates WHERE id = estimate_id_param;
 
-    -- Calculate subtotal from line items
-    SELECT COALESCE(SUM(amount), 0) INTO calc_subtotal
+    -- Calculate total of non-discount items
+    SELECT COALESCE(SUM(amount), 0) INTO items_total
     FROM line_items
-    WHERE document_type = 'estimate' AND document_id = estimate_id_param;
+    WHERE document_type = 'estimate' AND document_id = estimate_id_param
+    AND (item_type IS NULL OR item_type != 'discount');
+
+    -- Calculate total of discount items (stored as positive, need to subtract)
+    SELECT COALESCE(SUM(ABS(amount)), 0) INTO discount_total
+    FROM line_items
+    WHERE document_type = 'estimate' AND document_id = estimate_id_param
+    AND item_type = 'discount';
+
+    -- Subtotal = items minus discounts
+    calc_subtotal := items_total - discount_total;
 
     -- Calculate VAT and total
     calc_vat := ROUND(calc_subtotal * (vat_rate_value / 100), 2);
@@ -355,6 +367,8 @@ $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION recalculate_invoice_totals(invoice_id_param INTEGER)
 RETURNS VOID AS $$
 DECLARE
+    items_total DECIMAL(10, 2);
+    discount_total DECIMAL(10, 2);
     calc_subtotal DECIMAL(10, 2);
     calc_vat DECIMAL(10, 2);
     calc_total DECIMAL(10, 2);
@@ -366,10 +380,20 @@ BEGIN
     FROM invoices
     WHERE id = invoice_id_param;
 
-    -- Calculate subtotal from line items
-    SELECT COALESCE(SUM(amount), 0) INTO calc_subtotal
+    -- Calculate total of non-discount items
+    SELECT COALESCE(SUM(amount), 0) INTO items_total
     FROM line_items
-    WHERE document_type = 'invoice' AND document_id = invoice_id_param;
+    WHERE document_type = 'invoice' AND document_id = invoice_id_param
+    AND (item_type IS NULL OR item_type != 'discount');
+
+    -- Calculate total of discount items (stored as positive, need to subtract)
+    SELECT COALESCE(SUM(ABS(amount)), 0) INTO discount_total
+    FROM line_items
+    WHERE document_type = 'invoice' AND document_id = invoice_id_param
+    AND item_type = 'discount';
+
+    -- Subtotal = items minus discounts
+    calc_subtotal := items_total - discount_total;
 
     -- Calculate VAT and total
     calc_vat := ROUND(calc_subtotal * (vat_rate_value / 100), 2);

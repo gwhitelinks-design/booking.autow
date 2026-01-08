@@ -1,5 +1,13 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import './globals.css';
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  viewportFit: 'cover', // Enable safe-area-inset for notched devices
+};
 
 export const metadata: Metadata = {
   title: 'AUTOW Services',
@@ -8,6 +16,9 @@ export const metadata: Metadata = {
   authors: [{ name: 'AUTOW Services' }],
   creator: 'AUTOW Services',
   publisher: 'AUTOW Services',
+  formatDetection: {
+    telephone: false, // Prevent iOS auto-linking phone numbers
+  },
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'),
   openGraph: {
     type: 'website',

@@ -94,16 +94,16 @@ export default function SharedInvoicePage() {
   };
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="invoice-container">
       {/* Print Button (don't print) */}
       <div style={styles.actionBar} className="no-print">
-        <button onClick={handlePrint} style={styles.printBtn}>
+        <button onClick={handlePrint} style={styles.printBtn} className="print-btn">
           🖨️ Print / Save as PDF
         </button>
       </div>
 
       {/* Document */}
-      <div style={styles.document}>
+      <div style={styles.document} className="invoice-document">
         {/* Header */}
         <div style={styles.docHeader} className="doc-header">
           <div>
@@ -144,7 +144,7 @@ export default function SharedInvoicePage() {
 
         {/* Vehicle Info */}
         {invoice.vehicle_reg && (
-          <div style={styles.vehicleInfo}>
+          <div style={styles.vehicleInfo} className="vehicle-info">
             <strong>Vehicle:</strong> {invoice.vehicle_reg}
             {invoice.vehicle_make && ` - ${invoice.vehicle_make}`}
             {invoice.vehicle_model && ` ${invoice.vehicle_model}`}
@@ -187,7 +187,7 @@ export default function SharedInvoicePage() {
         </div>
 
         {/* Totals */}
-        <div style={styles.totalsSection}>
+        <div style={styles.totalsSection} className="totals-section">
           <div style={styles.totalsBox} className="totals-box">
             {breakdown.parts > 0 && (
               <div style={styles.breakdownRow}>
@@ -236,7 +236,7 @@ export default function SharedInvoicePage() {
 
         {/* Notes */}
         {invoice.notes && (
-          <div style={styles.notesSection}>
+          <div style={styles.notesSection} className="notes-section">
             <h3 style={styles.notesTitle}>Notes</h3>
             <p style={styles.notesText}>{invoice.notes}</p>
           </div>
@@ -278,10 +278,103 @@ export default function SharedInvoicePage() {
           }
           .table-container {
             overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
           }
           .totals-box {
             min-width: auto !important;
             width: 100%;
+          }
+        }
+
+        /* iOS Safari Mobile Fixes */
+        @media (max-width: 480px) {
+          .invoice-document {
+            padding: 15px !important;
+            border-radius: 8px !important;
+            margin: 0 !important;
+          }
+          .invoice-container {
+            padding: 10px !important;
+          }
+          .doc-header {
+            flex-direction: column !important;
+            gap: 15px !important;
+            margin-bottom: 20px !important;
+            padding-bottom: 15px !important;
+          }
+          .doc-header h1 {
+            font-size: 24px !important;
+          }
+          .doc-header img {
+            width: 100px !important;
+            height: auto !important;
+          }
+          .parties {
+            display: block !important;
+            gap: 0 !important;
+          }
+          .parties > div {
+            margin-bottom: 15px !important;
+          }
+          .parties p {
+            font-size: 13px !important;
+            margin: 3px 0 !important;
+            line-height: 1.4 !important;
+          }
+          .vehicle-info {
+            padding: 10px !important;
+            font-size: 12px !important;
+            margin-bottom: 15px !important;
+          }
+          .table-container {
+            margin: 0 -10px !important;
+            padding: 0 10px !important;
+          }
+          .table-container table {
+            font-size: 11px !important;
+          }
+          .table-container th,
+          .table-container td {
+            padding: 8px 4px !important;
+          }
+          .totals-section {
+            justify-content: stretch !important;
+          }
+          .totals-box {
+            width: 100% !important;
+            padding: 12px !important;
+          }
+          .totals-box > div {
+            font-size: 13px !important;
+          }
+          .bank-details {
+            padding: 12px !important;
+            font-size: 12px !important;
+          }
+          .notes-section {
+            padding: 12px !important;
+            font-size: 12px !important;
+          }
+          .print-btn {
+            padding: 10px 16px !important;
+            font-size: 12px !important;
+            width: 100% !important;
+          }
+        }
+
+        /* Extra small screens */
+        @media (max-width: 360px) {
+          .invoice-document {
+            padding: 10px !important;
+          }
+          .doc-header h1 {
+            font-size: 20px !important;
+          }
+          .table-container table {
+            font-size: 10px !important;
+          }
+          .totals-box > div {
+            font-size: 12px !important;
           }
         }
       `}</style>
