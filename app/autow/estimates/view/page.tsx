@@ -339,11 +339,27 @@ export default function ViewEstimatePage() {
           }
 
           .doc-header {
-            flex-direction: column !important;
-            gap: 20px;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: flex-start !important;
+            gap: 10px;
+          }
+          .doc-header > div:first-child {
+            flex: 1;
           }
           .doc-header > div:last-child {
-            text-align: left !important;
+            text-align: right !important;
+            flex-shrink: 0;
+          }
+          .doc-header img {
+            width: 80px !important;
+          }
+          .doc-header h1 {
+            font-size: 24px !important;
+            margin-bottom: 5px !important;
+          }
+          .doc-header p {
+            font-size: 12px !important;
           }
           .parties {
             grid-template-columns: 1fr !important;
