@@ -208,28 +208,28 @@ export default function ViewInvoicePage() {
         <table style={styles.table}>
           <thead>
             <tr>
-              <th style={{ ...styles.th, textAlign: 'left' as const }}>DESCRIPTION</th>
-              <th style={styles.th}>RATE</th>
-              <th style={styles.th}>QTY</th>
-              <th style={{ ...styles.th, textAlign: 'right' as const }}>AMOUNT</th>
+              <th style={{ ...styles.th, textAlign: 'left' as const }} className="desc-col">DESCRIPTION</th>
+              <th style={styles.th} className="rate-col">RATE</th>
+              <th style={styles.th} className="qty-col">QTY</th>
+              <th style={{ ...styles.th, textAlign: 'right' as const }} className="amount-col">AMOUNT</th>
             </tr>
           </thead>
           <tbody>
             {invoice.line_items && invoice.line_items.map((item, index) => (
               <tr key={index}>
-                <td style={styles.td}>
+                <td style={styles.td} className="desc-col">
                   {item.description}
                   {item.item_type !== 'service' && (
                     <span style={item.item_type === 'discount' ? styles.discountType : styles.itemType}> ({item.item_type})</span>
                   )}
                 </td>
-                <td style={{ ...styles.td, textAlign: 'center' as const }}>
+                <td style={{ ...styles.td, textAlign: 'center' as const }} className="rate-col">
                   £{parseFloat(item.rate.toString()).toFixed(2)}
                 </td>
-                <td style={{ ...styles.td, textAlign: 'center' as const }}>
+                <td style={{ ...styles.td, textAlign: 'center' as const }} className="qty-col">
                   {item.quantity}
                 </td>
-                <td style={{ ...styles.td, textAlign: 'right' as const, ...(item.item_type === 'discount' ? { color: '#ff9800' } : {}) }}>
+                <td style={{ ...styles.td, textAlign: 'right' as const, ...(item.item_type === 'discount' ? { color: '#ff9800' } : {}) }} className="amount-col">
                   {item.item_type === 'discount' ? '-' : ''}£{parseFloat(item.amount.toString()).toFixed(2)}
                 </td>
               </tr>
@@ -401,10 +401,36 @@ export default function ViewInvoicePage() {
           }
           .table-container table {
             font-size: 12px !important;
+            table-layout: fixed !important;
+            width: 100% !important;
+          }
+          .table-container th.desc-col,
+          .table-container td.desc-col {
+            width: 55% !important;
+            word-wrap: break-word !important;
+            white-space: normal !important;
+          }
+          .table-container th.rate-col,
+          .table-container td.rate-col {
+            width: 15% !important;
+            font-size: 10px !important;
+            padding: 8px 2px !important;
+          }
+          .table-container th.qty-col,
+          .table-container td.qty-col {
+            width: 10% !important;
+            font-size: 10px !important;
+            padding: 8px 2px !important;
+          }
+          .table-container th.amount-col,
+          .table-container td.amount-col {
+            width: 20% !important;
+            font-size: 10px !important;
+            padding: 8px 2px !important;
           }
           .table-container th,
           .table-container td {
-            padding: 8px 6px !important;
+            padding: 8px 4px !important;
           }
           .totals-box {
             padding: 15px !important;
@@ -444,10 +470,24 @@ export default function ViewInvoicePage() {
           .parties p {
             font-size: 12px !important;
           }
+          .table-container th.desc-col,
+          .table-container td.desc-col {
+            width: 50% !important;
+            font-size: 10px !important;
+          }
+          .table-container th.rate-col,
+          .table-container td.rate-col,
+          .table-container th.qty-col,
+          .table-container td.qty-col,
+          .table-container th.amount-col,
+          .table-container td.amount-col {
+            font-size: 9px !important;
+            padding: 6px 1px !important;
+          }
           .table-container th,
           .table-container td {
-            padding: 6px 4px !important;
-            font-size: 11px !important;
+            padding: 6px 2px !important;
+            font-size: 10px !important;
           }
           .totals-box span {
             font-size: 12px !important;
