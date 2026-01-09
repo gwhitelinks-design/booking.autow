@@ -348,3 +348,42 @@ export interface JotterNote {
   updated_at?: string;
   converted_at?: string;
 }
+
+// ============================================
+// RECEIPTS TYPES
+// ============================================
+
+export interface Receipt {
+  id?: number;
+  receipt_number: string;
+  receipt_date: string;
+
+  // Receipt Details
+  supplier: string;
+  description?: string;
+  amount: number;
+  category?: 'fuel' | 'parts' | 'tools' | 'supplies' | 'misc';
+
+  // Google Drive Reference
+  gdrive_file_id?: string;
+  gdrive_file_url?: string;
+  gdrive_folder_path?: string;
+  original_filename?: string;
+
+  // Status
+  status: 'pending' | 'processed' | 'archived';
+
+  // Metadata
+  created_by: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ReceiptFormData {
+  supplier: string;
+  description?: string;
+  amount: number;
+  receipt_date: string;
+  category?: 'fuel' | 'parts' | 'tools' | 'supplies' | 'misc';
+  imageData: string;
+}

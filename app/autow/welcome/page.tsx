@@ -105,6 +105,15 @@ export default function WelcomePage() {
             <h2 style={styles.optionTitle}>Jotter Notes</h2>
             <p style={styles.optionDescription}>View and manage saved notes</p>
           </button>
+
+          <button
+            onClick={() => router.push('/autow/receipts')}
+            style={{...styles.optionCard, borderColor: 'rgba(255, 152, 0, 0.4)'}}
+          >
+            <div style={styles.optionIcon}>🧾</div>
+            <h2 style={styles.optionTitle}>Receipts</h2>
+            <p style={styles.optionDescription}>Upload and manage receipts</p>
+          </button>
         </div>
 
         <button onClick={handleLogout} style={styles.logoutButton}>
