@@ -1,12 +1,23 @@
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 const BUCKET_NAME = 'receipts';
+
+// Lazy-initialize Supabase client to avoid build-time errors
+let supabaseInstance: SupabaseClient | null = null;
+
+function getSupabaseClient(): SupabaseClient {
+  if (!supabaseInstance) {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error('Supabase environment variables not configured');
+    }
+
+    supabaseInstance = createClient(supabaseUrl, supabaseKey);
+  }
+  return supabaseInstance;
+}
 
 /**
  * Generate a unique filename for a receipt image
@@ -61,6 +72,7 @@ export async function uploadReceiptImage(
   }
 
   // Upload to Supabase Storage
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase.storage
     .from(BUCKET_NAME)
     .upload(fullPath, buffer, {
@@ -89,6 +101,7 @@ export async function uploadReceiptImage(
  * @param path - The file path in storage (e.g., '2026-01/RECEIPT_20260109_123456_Shell.jpg')
  */
 export async function deleteReceiptImage(path: string): Promise<void> {
+  const supabase = getSupabaseClient();
   const { error } = await supabase.storage
     .from(BUCKET_NAME)
     .remove([path]);
@@ -104,6 +117,7 @@ export async function deleteReceiptImage(path: string): Promise<void> {
  * @param monthPath - The month folder path (e.g., '2026-01')
  */
 export async function listReceiptImages(monthPath: string): Promise<{ name: string; url: string }[]> {
+  const supabase = getSupabaseClient();
   const { data, error } = await supabase.storage
     .from(BUCKET_NAME)
     .list(monthPath, {
