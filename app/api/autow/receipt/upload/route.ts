@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { uploadReceiptImage as uploadToSupabase, getMonthlyFolderPath } from '@/lib/supabase-storage';
 import { uploadReceiptImage as uploadToGoogleDrive } from '@/lib/google-drive';
+import { getMonthlyFolderPath } from '@/lib/supabase-storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,33 +36,17 @@ export async function POST(request: NextRequest) {
 
     const finalReceiptDate = receipt_date || new Date().toISOString().slice(0, 10);
 
-    // Storage results
-    let supabaseResult: { url: string; path: string } | null = null;
-    let driveResult: { fileId: string; webViewLink: string; folderPath: string } | null = null;
-    const errors: string[] = [];
+    // Upload image to Google Drive ONLY (saves storage costs)
+    // Metadata is stored in Supabase database, images in Google Drive Shared Drive
+    let driveResult: { fileId: string; webViewLink: string; folderPath: string };
 
-    // 1. Upload to Supabase Storage (primary/reliable)
-    try {
-      supabaseResult = await uploadToSupabase(imageData, supplier);
-      console.log('Supabase Storage upload successful:', supabaseResult.url);
-    } catch (supabaseError: any) {
-      console.error('Supabase Storage upload failed:', supabaseError);
-      errors.push(`Supabase: ${supabaseError.message}`);
-    }
-
-    // 2. Upload to Google Drive (secondary)
     try {
       driveResult = await uploadToGoogleDrive(imageData, supplier, finalReceiptDate);
       console.log('Google Drive upload successful:', driveResult.webViewLink);
     } catch (driveError: any) {
       console.error('Google Drive upload failed:', driveError);
-      errors.push(`Google Drive: ${driveError.message}`);
-    }
-
-    // Check if at least one storage succeeded
-    if (!supabaseResult && !driveResult) {
       return NextResponse.json(
-        { error: 'Failed to upload to any storage', details: errors.join('; ') },
+        { error: 'Failed to upload image to Google Drive', details: driveError.message },
         { status: 500 }
       );
     }
@@ -71,15 +55,14 @@ export async function POST(request: NextRequest) {
     const numberResult = await pool.query('SELECT generate_receipt_number() as receipt_number');
     const receipt_number = numberResult.rows[0].receipt_number;
 
-    // Insert receipt record with both storage URLs
+    // Insert receipt METADATA into Supabase database (no image data stored here)
     const result = await pool.query(
       `INSERT INTO receipts (
         receipt_number, receipt_date, supplier, description, amount, category,
         gdrive_file_id, gdrive_file_url, gdrive_folder_path,
-        supabase_file_path, supabase_file_url,
         status, created_by
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending', $12
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending', $10
       ) RETURNING *`,
       [
         receipt_number,
@@ -88,26 +71,17 @@ export async function POST(request: NextRequest) {
         description || null,
         amount,
         category || null,
-        driveResult?.fileId || null,
-        driveResult?.webViewLink || null,
-        driveResult?.folderPath || getMonthlyFolderPath(),
-        supabaseResult?.path || null,
-        supabaseResult?.url || null,
+        driveResult.fileId,
+        driveResult.webViewLink,
+        driveResult.folderPath,
         created_by
       ]
     );
 
-    // Build response with storage status
-    const storageStatus = {
-      supabase: supabaseResult ? 'success' : 'failed',
-      googleDrive: driveResult ? 'success' : 'failed',
-    };
-
     return NextResponse.json({
       message: 'Receipt uploaded successfully',
       receipt: result.rows[0],
-      storageStatus,
-      warnings: errors.length > 0 ? errors : undefined,
+      storage: 'Google Drive (image) + Supabase (metadata)',
     }, { status: 201 });
 
   } catch (error: any) {
