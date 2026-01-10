@@ -77,6 +77,8 @@ psql $DATABASE_URL -f database/schema.sql
 /autow/notes                   → List all jotter notes (protected)
 /autow/notes/view?id=X         → View note details (protected)
 /autow/notes/edit?id=X         → Edit note with freeform jot area (protected)
+/autow/receipts                → List all receipts with filters (protected)
+/autow/receipts/upload         → Camera/file upload for receipts (protected)
 /share/estimate/[token]        → Public estimate view (no auth)
 /share/invoice/[token]         → Public invoice view (no auth)
 ```
@@ -138,6 +140,15 @@ POST /api/autow/note/delete          → Delete note
 POST /api/autow/note/convert-to-booking → Convert note to booking
 ```
 
+**Receipts**
+```
+POST /api/autow/receipt/upload       → Upload receipt image to Google Drive + save metadata
+GET  /api/autow/receipt/list         → List all receipts (optional month/category filter)
+GET  /api/autow/receipt/get?id=X     → Get single receipt
+POST /api/autow/receipt/delete       → Delete receipt (removes from DB and Drive)
+POST /api/autow/receipt/parse        → AI-powered receipt parsing (Gemini Vision)
+```
+
 **Public Share Links (No Auth Required)**
 ```
 GET  /api/share/estimate/[token]     → Get estimate by share token
@@ -191,6 +202,14 @@ All `/api/autow/*` endpoints require `Authorization: Bearer <token>` header. Sha
 - Stores raw input text and AI confidence score
 - Can be converted to bookings
 - Auto-generated note_number (JN-YYYYMMDD-XXX)
+
+**`receipts`**
+- Business expense receipt images and metadata
+- Fields: receipt_number (REC-YYYYMMDD-XXX), receipt_date, supplier, description, amount, category
+- Google Drive integration: gdrive_file_id, gdrive_file_url, gdrive_folder_path
+- Status: pending, processed, matched
+- Categories: fuel, parts, tools, supplies, misc
+- Auto-organized in monthly folders (e.g., '2026-01')
 
 **Share Link System**:
 - Uses UUID tokens stored in `share_token` column
@@ -524,13 +543,14 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 TELEGRAM_BOT_TOKEN=xxx        # Active: sends new booking notifications
 TELEGRAM_CHAT_ID=xxx          # Active: recipient for notifications
 OPENAI_API_KEY=xxx            # Active: Smart Jotter OCR parsing (GPT-4o-mini vision)
+GOOGLE_DRIVE_FOLDER_ID=xxx    # Active: receipts storage root folder
+GOOGLE_CLIENT_EMAIL=xxx       # Active: Google service account for Drive API
+GOOGLE_PRIVATE_KEY=xxx        # Active: Google service account private key
 ```
 
 ### Optional (placeholders, not implemented)
 ```env
-GOOGLE_CLIENT_EMAIL=...       # For calendar sync
-GOOGLE_PRIVATE_KEY=...
-GOOGLE_CALENDAR_ID=...
+GOOGLE_CALENDAR_ID=...        # For calendar sync (future feature)
 EMAIL_FROM=...                # For email notifications
 SMTP_HOST=...
 ```
@@ -546,6 +566,14 @@ SMTP_HOST=...
   - Notifications include: client details, vehicle info, amounts, timestamps
   - Non-blocking (doesn't fail if Telegram fails)
   - Uses same bot token for both notification types
+
+- **Google Drive** (`lib/google-drive.ts`): Receipt image storage:
+  - Uses service account authentication (GOOGLE_CLIENT_EMAIL + GOOGLE_PRIVATE_KEY)
+  - Auto-creates monthly folders (e.g., '2026-01', '2026-02')
+  - Uploads receipt images with naming: `RECEIPT_YYYYMMDD_HHMMSS_supplier.jpg`
+  - Sets public read permissions for viewable links
+  - Root folder: GOOGLE_DRIVE_FOLDER_ID
+  - Helper functions: ensureMonthlyFolder, uploadReceiptImage, deleteFile
 
 ### Placeholder (Not Implemented)
 - **Google Calendar**: Schema has `calendar_event_id` field but no active code
@@ -753,6 +781,7 @@ Statistics are calculated from the bookings array:
 - `lib/db.ts` - Database connection pool (modify for different database)
 - `lib/types.ts` - TypeScript interfaces (modify when schema changes)
 - `lib/telegram.ts` - Telegram notification functions (booking + share links)
+- `lib/google-drive.ts` - Google Drive API helper functions (receipt uploads)
 - `database/schema.sql` - Complete database schema with functions and indexes
 - `.env.local` - Local configuration (never commit this)
 
@@ -785,8 +814,20 @@ Statistics are calculated from the bookings array:
 - `app/autow/notes/view/page.tsx` - View note details
 - `app/autow/notes/edit/page.tsx` - Edit note with freeform jot area
 
+**Receipts Pages**
+- `app/autow/receipts/page.tsx` - Receipts list with month/category filters
+- `app/autow/receipts/upload/page.tsx` - Camera/file upload with form fields
+
+**Receipts API**
+- `app/api/autow/receipt/upload/route.ts` - Upload to Drive + save metadata
+- `app/api/autow/receipt/list/route.ts` - List receipts with filters
+- `app/api/autow/receipt/get/route.ts` - Get single receipt details
+- `app/api/autow/receipt/delete/route.ts` - Delete from DB and Drive
+- `app/api/autow/receipt/parse/route.ts` - AI-powered receipt OCR
+
 **Database Migrations**
 - `migrations/create_jotter_notes_table.sql` - Jotter notes table schema
+- `database/migrations/create_receipts_table.sql` - Receipts table schema
 
 **Share Pages**
 - `app/share/estimate/[token]/page.tsx` - Customer-facing estimate page
@@ -1152,6 +1193,51 @@ Special styling for interactive damage markers on assessment diagrams:
 ```
 
 ## Recent Session Notes
+
+### Session: 2026-01-10 - Receipts Feature Implementation
+
+**Features Built:**
+
+1. **Receipt Upload System**
+   - Camera capture and file upload for receipt images
+   - Auto-upload to Google Drive in monthly folders (YYYY-MM)
+   - File naming: `RECEIPT_YYYYMMDD_HHMMSS_supplier.jpg`
+   - Form fields: Supplier, Amount, Date, Description, Category
+
+2. **Google Drive Integration** (`lib/google-drive.ts`)
+   - Service account authentication
+   - Auto-create monthly folders if not exist
+   - Upload with public read permissions
+   - Delete files when receipts are deleted
+   - Helper functions: ensureMonthlyFolder, uploadReceiptImage, findFolderByName
+
+3. **Receipts List Page** (`app/autow/receipts/page.tsx`)
+   - Month filter dropdown
+   - Category filter
+   - Receipt cards with: date, supplier, amount, category
+   - "View in Drive" link opens Google Drive file
+   - Delete with confirmation
+
+4. **API Routes**
+   - `POST /api/autow/receipt/upload` - Upload to Drive + save metadata
+   - `GET /api/autow/receipt/list` - List with optional month/category filters
+   - `GET /api/autow/receipt/get?id=X` - Get single receipt
+   - `POST /api/autow/receipt/delete` - Delete from DB and Drive
+   - `POST /api/autow/receipt/parse` - AI-powered OCR (Gemini Vision)
+
+5. **Database**
+   - Created `receipts` table
+   - Migration file: `database/migrations/create_receipts_table.sql`
+
+6. **Navigation**
+   - Added "Receipts" to welcome menu
+   - Accessible from main dashboard
+
+**Environment Variables Added:**
+- `GOOGLE_DRIVE_FOLDER_ID` - Root folder for receipt storage
+- (Uses existing GOOGLE_CLIENT_EMAIL and GOOGLE_PRIVATE_KEY)
+
+---
 
 ### Session: 2026-01-07 - Discount Feature Implementation
 

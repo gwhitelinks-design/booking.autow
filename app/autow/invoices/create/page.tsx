@@ -35,6 +35,12 @@ export default function CreateInvoicePage() {
   const [modalItem, setModalItem] = useState<LineItem | null>(null);
   const [discountMode, setDiscountMode] = useState<'flat' | 'percentage'>('flat');
   const [discountPercentage, setDiscountPercentage] = useState<number>(0);
+  const [manualInvoiceNumber, setManualInvoiceNumber] = useState(false); // Track if user manually edited invoice number
+
+  // Vehicle reg popup for new invoices
+  const [showVehicleRegModal, setShowVehicleRegModal] = useState(false);
+  const [vehicleRegInput, setVehicleRegInput] = useState('');
+  const [fetchingNumber, setFetchingNumber] = useState(false);
 
   const defaultNotes = `We Provide Mobile mechanics and Recovery services,
 we have dedicated ramp spaces for works that are not suitable at roadside etc.
@@ -86,6 +92,29 @@ A/N: 20052044
     total: 0
   });
 
+  // Fetch preview document number based on vehicle reg
+  const fetchDocumentNumber = async (vehicleReg: string, force: boolean = false) => {
+    // Don't overwrite if user has manually edited the invoice number (unless forced)
+    if (manualInvoiceNumber && !force) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(
+        `/api/autow/document-number/preview?vehicle_reg=${encodeURIComponent(vehicleReg)}&type=invoice`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({ ...prev, invoice_number: data.document_number }));
+      }
+    } catch (error) {
+      console.error('Error fetching document number:', error);
+    }
+  };
+
   // Auto-fill from booking or estimate
   useEffect(() => {
     if (bookingId) {
@@ -95,9 +124,64 @@ A/N: 20052044
     } else if (invoiceId) {
       fetchInvoice(invoiceId);
     } else {
+      // New invoice without source - show vehicle reg modal first
+      setShowVehicleRegModal(true);
       setLoading(false);
     }
   }, [bookingId, estimateId, invoiceId]);
+
+  // Handle vehicle reg modal submit
+  const handleVehicleRegSubmit = async () => {
+    const upperReg = vehicleRegInput.trim().toUpperCase();
+    setFetchingNumber(true);
+
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(
+        `/api/autow/document-number/preview?vehicle_reg=${encodeURIComponent(upperReg)}&type=invoice`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({
+          ...prev,
+          vehicle_reg: upperReg,
+          invoice_number: data.document_number
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching document number:', error);
+    } finally {
+      setFetchingNumber(false);
+      setShowVehicleRegModal(false);
+    }
+  };
+
+  // Skip vehicle reg modal (for invoices without vehicle)
+  const handleSkipVehicleReg = async () => {
+    setFetchingNumber(true);
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(
+        `/api/autow/document-number/preview?vehicle_reg=&type=invoice`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({
+          ...prev,
+          invoice_number: data.document_number
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching document number:', error);
+    } finally {
+      setFetchingNumber(false);
+      setShowVehicleRegModal(false);
+    }
+  };
 
   // Auto-calculate totals when line items change
   useEffect(() => {
@@ -114,6 +198,7 @@ A/N: 20052044
       if (response.ok) {
         const data = await response.json();
         const booking = data.booking;
+        const vehicleReg = booking.vehicle_reg || '';
 
         const today = new Date().toISOString().split('T')[0];
         const dueDate = new Date();
@@ -121,7 +206,7 @@ A/N: 20052044
         const dueDateStr = dueDate.toISOString().split('T')[0];
 
         setFormData({
-          invoice_number: '',
+          invoice_number: '', // Will be set by fetchDocumentNumber
           invoice_date: today,
           due_date: dueDateStr,
           client_name: booking.customer_name || '',
@@ -131,10 +216,13 @@ A/N: 20052044
           client_mobile: '',
           vehicle_make: booking.vehicle_make || '',
           vehicle_model: booking.vehicle_model || '',
-          vehicle_reg: booking.vehicle_reg || '',
+          vehicle_reg: vehicleReg,
           notes: `Service: ${booking.service_type}\n\nIssue: ${booking.issue_description}${booking.notes ? `\n\nNotes: ${booking.notes}` : ''}\n\n---\n\n${defaultNotes}`,
           vat_rate: 0
         });
+
+        // Fetch the auto-generated invoice number based on vehicle reg
+        await fetchDocumentNumber(vehicleReg);
       }
     } catch (error) {
       console.error('Error fetching booking:', error);
@@ -154,6 +242,7 @@ A/N: 20052044
       if (response.ok) {
         const data = await response.json();
         const estimate = data.estimate;
+        const vehicleReg = estimate.vehicle_reg || '';
 
         const today = new Date().toISOString().split('T')[0];
         const dueDate = new Date();
@@ -161,7 +250,7 @@ A/N: 20052044
         const dueDateStr = dueDate.toISOString().split('T')[0];
 
         setFormData({
-          invoice_number: '',
+          invoice_number: '', // Will be set by fetchDocumentNumber
           invoice_date: today,
           due_date: dueDateStr,
           client_name: estimate.client_name || '',
@@ -171,7 +260,7 @@ A/N: 20052044
           client_mobile: estimate.client_mobile || '',
           vehicle_make: estimate.vehicle_make || '',
           vehicle_model: estimate.vehicle_model || '',
-          vehicle_reg: estimate.vehicle_reg || '',
+          vehicle_reg: vehicleReg,
           notes: estimate.notes || '',
           vat_rate: estimate.vat_rate || 20.00
         });
@@ -187,6 +276,9 @@ A/N: 20052044
             document_type: 'invoice'
           })));
         }
+
+        // Fetch the auto-generated invoice number based on vehicle reg
+        await fetchDocumentNumber(vehicleReg);
       }
     } catch (error) {
       console.error('Error fetching estimate:', error);
@@ -487,13 +579,21 @@ A/N: 20052044
           <h2 style={styles.sectionTitle}>Invoice Details</h2>
           <div style={styles.formGrid} className="form-grid">
             <div style={styles.formGroup}>
-              <label style={styles.label}>Invoice Number *</label>
+              <label style={styles.label}>Invoice Number {mode === 'create' && !manualInvoiceNumber ? '(Auto-generated)' : ''}</label>
               <input
                 type="text"
                 value={formData.invoice_number}
-                onChange={(e) => setFormData({ ...formData, invoice_number: e.target.value })}
-                style={styles.input}
-                placeholder="e.g., ABC-001"
+                onChange={(e) => {
+                  setFormData({ ...formData, invoice_number: e.target.value });
+                  if (mode === 'create') {
+                    setManualInvoiceNumber(true); // User is manually editing
+                  }
+                }}
+                style={{
+                  ...styles.input,
+                  ...(mode === 'create' && !manualInvoiceNumber ? { background: '#1a1a1a', color: '#30ff37', fontWeight: '600' } : {})
+                }}
+                placeholder={mode === 'create' ? 'Auto-generated or enter custom' : 'e.g., ABC-001'}
                 required
               />
             </div>
@@ -585,7 +685,6 @@ A/N: 20052044
                 type="text"
                 value={formData.vehicle_reg}
                 onChange={(e) => setFormData({ ...formData, vehicle_reg: e.target.value.toUpperCase() })}
-                onBlur={(e) => setFormData({ ...formData, vehicle_reg: e.target.value.toUpperCase() })}
                 style={styles.input}
               />
             </div>
@@ -618,26 +717,26 @@ A/N: 20052044
 
           <div style={styles.lineItemsTable}>
             <div style={styles.tableHeader}>
-              <div style={{ flex: 3 }}>Description</div>
-              <div style={{ flex: 1 }}>Type</div>
-              <div style={{ flex: 1 }}>Rate (£)</div>
-              <div style={{ flex: 1 }}>Qty</div>
-              <div style={{ flex: 1 }}>Amount (£)</div>
-              <div style={{ width: '100px' }}>Actions</div>
+              <div style={{ flex: 3, minWidth: 0 }}>Description</div>
+              <div style={{ flex: 1, minWidth: '80px', flexShrink: 0 }}>Type</div>
+              <div style={{ flex: 1, minWidth: '80px', flexShrink: 0 }}>Rate (£)</div>
+              <div style={{ flex: 1, minWidth: '60px', flexShrink: 0 }}>Qty</div>
+              <div style={{ flex: 1, minWidth: '90px', flexShrink: 0 }}>Amount (£)</div>
+              <div style={{ width: '100px', flexShrink: 0 }}>Actions</div>
             </div>
 
             {lineItems.map((item, index) => (
               <div key={index} style={styles.lineItemRow}>
-                <div style={{ flex: 3 }}>
+                <div style={{ flex: 3, minWidth: 0, overflow: 'hidden' }}>
                   <textarea
                     value={item.description}
                     onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                    style={{ ...styles.input, minHeight: '50px', width: '100%' }}
+                    style={{ ...styles.input, minHeight: '50px', width: '100%', resize: 'vertical' as const }}
                     placeholder="Enter description..."
                   />
                 </div>
 
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: '80px', flexShrink: 0 }}>
                   <select
                     value={item.item_type}
                     onChange={(e) => updateLineItem(index, 'item_type', e.target.value)}
@@ -651,7 +750,7 @@ A/N: 20052044
                   </select>
                 </div>
 
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: '80px', flexShrink: 0 }}>
                   <input
                     type="number"
                     step="0.01"
@@ -661,7 +760,7 @@ A/N: 20052044
                   />
                 </div>
 
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: '60px', flexShrink: 0 }}>
                   <input
                     type="number"
                     step="0.01"
@@ -671,13 +770,13 @@ A/N: 20052044
                   />
                 </div>
 
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: '90px', flexShrink: 0 }}>
                   <div style={item.item_type === 'discount' ? styles.amountDisplayDiscount : styles.amountDisplay}>
                     {item.item_type === 'discount' ? '-' : ''}£{(item.rate * item.quantity).toFixed(2)}
                   </div>
                 </div>
 
-                <div style={{ width: '100px', display: 'flex', gap: '5px' }}>
+                <div style={{ width: '100px', display: 'flex', gap: '5px', flexShrink: 0 }}>
                   <button
                     type="button"
                     onClick={() => openEditModal(index)}
@@ -935,6 +1034,55 @@ A/N: 20052044
                 style={styles.submitButton}
               >
                 Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Vehicle Registration Modal for New Invoices */}
+      {showVehicleRegModal && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.vehicleRegModal}>
+            <h3 style={styles.modalTitle}>Enter Vehicle Registration</h3>
+            <p style={styles.vehicleRegDescription}>
+              Enter the vehicle registration to auto-generate a sequential invoice number.
+            </p>
+
+            <div style={styles.modalField}>
+              <label style={styles.label}>Vehicle Registration</label>
+              <input
+                type="text"
+                value={vehicleRegInput}
+                onChange={(e) => setVehicleRegInput(e.target.value.toUpperCase())}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleVehicleRegSubmit();
+                  }
+                }}
+                style={styles.vehicleRegInput}
+                placeholder="e.g., AB12 CDE"
+                autoFocus
+              />
+            </div>
+
+            <div style={styles.vehicleRegButtons}>
+              <button
+                type="button"
+                onClick={handleSkipVehicleReg}
+                style={styles.skipButton}
+                disabled={fetchingNumber}
+              >
+                Skip (No Vehicle)
+              </button>
+              <button
+                type="button"
+                onClick={handleVehicleRegSubmit}
+                style={styles.submitButton}
+                disabled={fetchingNumber || !vehicleRegInput.trim()}
+              >
+                {fetchingNumber ? 'Loading...' : 'Continue'}
               </button>
             </div>
           </div>
@@ -1342,5 +1490,49 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#ff9800',
     fontWeight: '700' as const,
     fontSize: '16px',
+  },
+  vehicleRegModal: {
+    background: '#1a1a1a',
+    borderRadius: '12px',
+    padding: '30px',
+    maxWidth: '400px',
+    width: '100%',
+    border: '1px solid rgba(48, 255, 55, 0.3)',
+    textAlign: 'center' as const,
+  },
+  vehicleRegDescription: {
+    color: '#888',
+    fontSize: '14px',
+    marginBottom: '20px',
+    lineHeight: 1.5,
+  },
+  vehicleRegInput: {
+    padding: '16px 20px',
+    background: '#0a0a0a',
+    border: '2px solid rgba(48, 255, 55, 0.3)',
+    borderRadius: '8px',
+    color: '#fff',
+    fontSize: '20px',
+    textAlign: 'center' as const,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '2px',
+    width: '100%',
+    boxSizing: 'border-box' as const,
+    outline: 'none',
+  },
+  vehicleRegButtons: {
+    display: 'flex',
+    gap: '10px',
+    justifyContent: 'center',
+    marginTop: '20px',
+  },
+  skipButton: {
+    padding: '12px 24px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '8px',
+    color: '#888',
+    cursor: 'pointer',
+    fontSize: '14px',
   },
 };

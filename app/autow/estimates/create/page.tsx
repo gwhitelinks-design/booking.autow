@@ -32,6 +32,12 @@ export default function CreateEstimatePage() {
   const [modalItem, setModalItem] = useState<LineItem | null>(null);
   const [discountMode, setDiscountMode] = useState<'flat' | 'percentage'>('flat');
   const [discountPercentage, setDiscountPercentage] = useState<number>(0);
+  const [manualEstimateNumber, setManualEstimateNumber] = useState(false); // Track if user manually edited estimate number
+
+  // Vehicle reg popup for new estimates
+  const [showVehicleRegModal, setShowVehicleRegModal] = useState(false);
+  const [vehicleRegInput, setVehicleRegInput] = useState('');
+  const [fetchingNumber, setFetchingNumber] = useState(false);
 
   const defaultNotes = `We Provide Mobile mechanics and Recovery services,
 we have dedicated ramp spaces for works that are not suitable at roadside etc.
@@ -82,16 +88,94 @@ A/N: 20052044
     total: 0
   });
 
-  // Auto-fill from booking
+  // Fetch preview document number based on vehicle reg
+  const fetchDocumentNumber = async (vehicleReg: string, force: boolean = false) => {
+    // Don't overwrite if user has manually edited the estimate number (unless forced)
+    if (manualEstimateNumber && !force) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(
+        `/api/autow/document-number/preview?vehicle_reg=${encodeURIComponent(vehicleReg)}&type=estimate`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({ ...prev, estimate_number: data.document_number }));
+      }
+    } catch (error) {
+      console.error('Error fetching document number:', error);
+    }
+  };
+
+  // Auto-fill from booking or show vehicle reg modal for new estimates
   useEffect(() => {
     if (bookingId) {
       fetchBooking(bookingId);
     } else if (estimateId) {
       fetchEstimate(estimateId);
     } else {
+      // New estimate without booking - show vehicle reg modal first
+      setShowVehicleRegModal(true);
       setLoading(false);
     }
   }, [bookingId, estimateId]);
+
+  // Handle vehicle reg modal submit
+  const handleVehicleRegSubmit = async () => {
+    const upperReg = vehicleRegInput.trim().toUpperCase();
+    setFetchingNumber(true);
+
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(
+        `/api/autow/document-number/preview?vehicle_reg=${encodeURIComponent(upperReg)}&type=estimate`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({
+          ...prev,
+          vehicle_reg: upperReg,
+          estimate_number: data.document_number
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching document number:', error);
+    } finally {
+      setFetchingNumber(false);
+      setShowVehicleRegModal(false);
+    }
+  };
+
+  // Skip vehicle reg modal (for estimates without vehicle)
+  const handleSkipVehicleReg = async () => {
+    setFetchingNumber(true);
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(
+        `/api/autow/document-number/preview?vehicle_reg=&type=estimate`,
+        { headers: { 'Authorization': `Bearer ${token}` } }
+      );
+
+      if (response.ok) {
+        const data = await response.json();
+        setFormData(prev => ({
+          ...prev,
+          estimate_number: data.document_number
+        }));
+      }
+    } catch (error) {
+      console.error('Error fetching document number:', error);
+    } finally {
+      setFetchingNumber(false);
+      setShowVehicleRegModal(false);
+    }
+  };
 
   // Auto-calculate totals when line items change
   useEffect(() => {
@@ -108,9 +192,10 @@ A/N: 20052044
       if (response.ok) {
         const data = await response.json();
         const booking = data.booking;
+        const vehicleReg = booking.vehicle_reg || '';
 
         setFormData({
-          estimate_number: '',
+          estimate_number: '', // Will be set by fetchDocumentNumber
           estimate_date: new Date().toISOString().split('T')[0],
           client_name: booking.customer_name || '',
           client_email: booking.customer_email || '',
@@ -119,10 +204,13 @@ A/N: 20052044
           client_mobile: '',
           vehicle_make: booking.vehicle_make || '',
           vehicle_model: booking.vehicle_model || '',
-          vehicle_reg: booking.vehicle_reg || '',
+          vehicle_reg: vehicleReg,
           notes: `Service: ${booking.service_type}\n\nIssue: ${booking.issue_description}${booking.notes ? `\n\nNotes: ${booking.notes}` : ''}\n\n---\n\n${defaultNotes}`,
           vat_rate: 0
         });
+
+        // Fetch the auto-generated estimate number based on vehicle reg
+        await fetchDocumentNumber(vehicleReg);
       }
     } catch (error) {
       console.error('Error fetching booking:', error);
@@ -385,6 +473,54 @@ A/N: 20052044
 
   return (
     <div style={styles.container}>
+      {/* Vehicle Registration Modal - shown first for new estimates */}
+      {showVehicleRegModal && (
+        <div style={styles.vehicleRegModalOverlay}>
+          <div style={styles.vehicleRegModalContent}>
+            <h2 style={styles.vehicleRegModalTitle}>New Estimate</h2>
+            <p style={styles.vehicleRegModalSubtitle}>
+              Enter the vehicle registration to generate the estimate number
+            </p>
+
+            <div style={styles.vehicleRegInputGroup}>
+              <label style={styles.vehicleRegLabel}>Vehicle Registration</label>
+              <input
+                type="text"
+                value={vehicleRegInput}
+                onChange={(e) => setVehicleRegInput(e.target.value.toUpperCase())}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && vehicleRegInput.trim()) {
+                    handleVehicleRegSubmit();
+                  }
+                }}
+                placeholder="e.g., AB12 CDE"
+                style={styles.vehicleRegInput}
+                autoFocus
+              />
+            </div>
+
+            <div style={styles.vehicleRegModalButtons}>
+              <button
+                type="button"
+                onClick={handleSkipVehicleReg}
+                style={styles.vehicleRegSkipBtn}
+                disabled={fetchingNumber}
+              >
+                Skip (No Vehicle)
+              </button>
+              <button
+                type="button"
+                onClick={handleVehicleRegSubmit}
+                style={styles.vehicleRegSubmitBtn}
+                disabled={!vehicleRegInput.trim() || fetchingNumber}
+              >
+                {fetchingNumber ? 'Loading...' : 'Continue'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header at Top */}
       <div style={styles.header}>
         <h1 style={styles.title}>{mode === 'edit' ? 'Edit' : 'Create'} Estimate</h1>
@@ -421,13 +557,21 @@ A/N: 20052044
           <h2 style={styles.sectionTitle}>Estimate Details</h2>
           <div style={styles.formGrid} className="form-grid">
             <div style={styles.formGroup}>
-              <label style={styles.label}>Estimate Number *</label>
+              <label style={styles.label}>Estimate Number {mode === 'create' && !manualEstimateNumber ? '(Auto-generated)' : ''}</label>
               <input
                 type="text"
                 value={formData.estimate_number}
-                onChange={(e) => setFormData({ ...formData, estimate_number: e.target.value })}
-                style={styles.input}
-                placeholder="e.g., ABC-001"
+                onChange={(e) => {
+                  setFormData({ ...formData, estimate_number: e.target.value });
+                  if (mode === 'create') {
+                    setManualEstimateNumber(true); // User is manually editing
+                  }
+                }}
+                style={{
+                  ...styles.input,
+                  ...(mode === 'create' && !manualEstimateNumber ? { background: '#1a1a1a', color: '#30ff37', fontWeight: '600' } : {})
+                }}
+                placeholder={mode === 'create' ? 'Auto-generated or enter custom' : 'e.g., ABC-001'}
                 required
               />
             </div>
@@ -510,7 +654,6 @@ A/N: 20052044
                 type="text"
                 value={formData.vehicle_reg}
                 onChange={(e) => setFormData({ ...formData, vehicle_reg: e.target.value.toUpperCase() })}
-                onBlur={(e) => setFormData({ ...formData, vehicle_reg: e.target.value.toUpperCase() })}
                 style={styles.input}
               />
             </div>
@@ -590,41 +733,41 @@ A/N: 20052044
           <div className="desktop-line-items">
             <div style={styles.lineItemsTable}>
               <div style={styles.tableHeader}>
-                <div style={{ flex: 3 }}>Description</div>
-                <div style={{ flex: 1 }}>Type</div>
-                <div style={{ flex: 1 }}>Rate (£)</div>
-                <div style={{ flex: 1 }}>Qty</div>
-                <div style={{ flex: 1 }}>Amount (£)</div>
-                <div style={{ width: '100px' }}></div>
+                <div style={{ flex: 3, minWidth: 0 }}>Description</div>
+                <div style={{ flex: 1, minWidth: '70px', flexShrink: 0 }}>Type</div>
+                <div style={{ flex: 1, minWidth: '70px', flexShrink: 0 }}>Rate (£)</div>
+                <div style={{ flex: 1, minWidth: '50px', flexShrink: 0 }}>Qty</div>
+                <div style={{ flex: 1, minWidth: '90px', flexShrink: 0 }}>Amount (£)</div>
+                <div style={{ width: '100px', flexShrink: 0 }}></div>
               </div>
 
               {lineItems.map((item, index) => (
                 <div key={index} style={styles.lineItemRow}>
-                  <div style={{ flex: 3 }}>
+                  <div style={{ flex: 3, minWidth: 0, overflow: 'hidden' }}>
                     <div style={styles.descPreview}>
                       {item.description || 'Click edit to add description'}
                     </div>
                   </div>
 
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: '70px', flexShrink: 0 }}>
                     <span style={item.item_type === 'discount' ? styles.discountBadge : styles.itemTypeBadge}>{item.item_type}</span>
                   </div>
 
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: '70px', flexShrink: 0 }}>
                     £{item.rate.toFixed(2)}
                   </div>
 
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: '50px', flexShrink: 0 }}>
                     {item.quantity}
                   </div>
 
-                  <div style={{ flex: 1 }}>
+                  <div style={{ flex: 1, minWidth: '90px', flexShrink: 0 }}>
                     <div style={item.item_type === 'discount' ? styles.amountDisplayDiscount : styles.amountDisplay}>
                       {item.item_type === 'discount' ? '-' : ''}£{item.amount.toFixed(2)}
                     </div>
                   </div>
 
-                  <div style={{ width: '100px', display: 'flex', gap: '5px' }}>
+                  <div style={{ width: '100px', display: 'flex', gap: '5px', flexShrink: 0 }}>
                     <button
                       type="button"
                       onClick={() => openEditModal(index)}
@@ -969,6 +1112,92 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: '#000',
     minHeight: '100vh',
     padding: '20px',
+  },
+  // Vehicle Registration Modal Styles
+  vehicleRegModalOverlay: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.95)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 2000,
+    padding: '20px',
+  },
+  vehicleRegModalContent: {
+    background: '#1a1a1a',
+    borderRadius: '16px',
+    border: '2px solid rgba(48, 255, 55, 0.3)',
+    padding: '40px',
+    maxWidth: '450px',
+    width: '100%',
+    textAlign: 'center' as const,
+  },
+  vehicleRegModalTitle: {
+    color: '#30ff37',
+    fontSize: '28px',
+    fontWeight: '700' as const,
+    margin: '0 0 10px 0',
+  },
+  vehicleRegModalSubtitle: {
+    color: '#888',
+    fontSize: '14px',
+    margin: '0 0 30px 0',
+  },
+  vehicleRegInputGroup: {
+    textAlign: 'left' as const,
+    marginBottom: '30px',
+  },
+  vehicleRegLabel: {
+    color: '#888',
+    fontSize: '12px',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '1px',
+    marginBottom: '10px',
+    display: 'block',
+  },
+  vehicleRegInput: {
+    width: '100%',
+    padding: '18px 20px',
+    background: '#0a0a0a',
+    border: '2px solid rgba(48, 255, 55, 0.3)',
+    borderRadius: '10px',
+    color: '#30ff37',
+    fontSize: '24px',
+    fontWeight: '700' as const,
+    textAlign: 'center' as const,
+    textTransform: 'uppercase' as const,
+    letterSpacing: '3px',
+    outline: 'none',
+    boxSizing: 'border-box' as const,
+  },
+  vehicleRegModalButtons: {
+    display: 'flex',
+    gap: '15px',
+  },
+  vehicleRegSkipBtn: {
+    flex: 1,
+    padding: '15px 20px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '10px',
+    color: '#888',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  vehicleRegSubmitBtn: {
+    flex: 2,
+    padding: '15px 20px',
+    background: '#30ff37',
+    border: 'none',
+    borderRadius: '10px',
+    color: '#000',
+    fontSize: '16px',
+    fontWeight: '700' as const,
+    cursor: 'pointer',
     color: '#fff',
   },
   businessHeader: {
@@ -1086,7 +1315,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     gap: '10px',
     marginBottom: '15px',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     padding: '12px',
     background: '#0a0a0a',
     borderRadius: '6px',
@@ -1179,9 +1408,9 @@ const styles: { [key: string]: React.CSSProperties } = {
   descPreview: {
     fontSize: '14px',
     color: '#fff',
-    whiteSpace: 'nowrap' as const,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
+    whiteSpace: 'pre-wrap' as const,
+    wordBreak: 'break-word' as const,
+    lineHeight: 1.4,
   },
   editButton: {
     width: '40px',

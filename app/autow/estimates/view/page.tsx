@@ -158,6 +158,7 @@ export default function ViewEstimatePage() {
         <div style={styles.docHeader} className="doc-header">
           <div>
             <h1 style={styles.docTitle}>ESTIMATE</h1>
+            <p style={styles.docNumber}><strong>{estimate.estimate_number}</strong></p>
             <p style={styles.docDate}>Date: {new Date(estimate.estimate_date).toLocaleDateString('en-GB')}</p>
           </div>
           <div style={{ textAlign: 'right' as const }}>
@@ -174,21 +175,21 @@ export default function ViewEstimatePage() {
           <div style={styles.party}>
             <h3 style={styles.partyTitle}>From</h3>
             <p style={styles.businessName}>{settings.business_name}</p>
-            <p>Email: {settings.email}</p>
-            <p>Address: {settings.address}</p>
-            {settings.workshop_location && <p>{settings.workshop_location}</p>}
-            <p>Phone: {settings.phone}</p>
-            <p>Website: {settings.website}</p>
-            {settings.owner && <p>Owner: {settings.owner}</p>}
+            <p style={styles.partyText}>Email: {settings.email}</p>
+            <p style={styles.partyText}>Address: {settings.address}</p>
+            {settings.workshop_location && <p style={styles.partyText}>{settings.workshop_location}</p>}
+            <p style={styles.partyText}>Phone: {settings.phone}</p>
+            <p style={styles.partyText}>Website: {settings.website}</p>
+            {settings.owner && <p style={styles.partyText}>Owner: {settings.owner}</p>}
           </div>
 
           <div style={styles.party}>
             <h3 style={styles.partyTitle}>Bill To</h3>
             <p style={styles.clientName}>{estimate.client_name}</p>
-            {estimate.client_email && <p>{estimate.client_email}</p>}
-            {estimate.client_address && <p>{estimate.client_address}</p>}
-            {estimate.client_phone && <p>Phone: {estimate.client_phone}</p>}
-            {estimate.client_mobile && <p>Mobile: {estimate.client_mobile}</p>}
+            {estimate.client_email && <p style={styles.partyText}>{estimate.client_email}</p>}
+            {estimate.client_address && <p style={styles.partyText}>{estimate.client_address}</p>}
+            {estimate.client_phone && <p style={styles.partyText}>Phone: {estimate.client_phone}</p>}
+            {estimate.client_mobile && <p style={styles.partyText}>Mobile: {estimate.client_mobile}</p>}
           </div>
         </div>
 
@@ -588,6 +589,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#666',
     margin: '0',
   },
+  docNumber: {
+    fontSize: '18px',
+    color: '#30ff37',
+    margin: '5px 0',
+    fontFamily: 'monospace',
+  },
   logo: {
     width: '150px',
     height: 'auto',
@@ -595,29 +602,36 @@ const styles: { [key: string]: React.CSSProperties } = {
   parties: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '40px',
-    marginBottom: '30px',
+    gap: '30px',
+    marginBottom: '20px',
   },
   party: {
-    lineHeight: 1.8,
+    lineHeight: 1.4,
+    fontSize: '12px',
   },
   partyTitle: {
-    fontSize: '14px',
+    fontSize: '11px',
     fontWeight: '700' as const,
     textTransform: 'uppercase' as const,
     color: '#666',
-    marginBottom: '10px',
-    margin: '0 0 10px 0',
+    marginBottom: '6px',
+    margin: '0 0 6px 0',
+    letterSpacing: '0.5px',
   },
   businessName: {
-    fontSize: '18px',
+    fontSize: '13px',
     fontWeight: '700' as const,
-    margin: '0 0 5px 0',
+    margin: '0 0 2px 0',
   },
   clientName: {
-    fontSize: '18px',
+    fontSize: '13px',
     fontWeight: '700' as const,
-    margin: '0 0 5px 0',
+    margin: '0 0 2px 0',
+  },
+  partyText: {
+    fontSize: '11px',
+    margin: '0 0 1px 0',
+    color: '#444',
   },
   vehicleInfo: {
     background: '#f8f8f8',

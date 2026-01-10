@@ -41,24 +41,29 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'Estimate already converted to invoice' }, { status: 400 });
       }
 
-      // Generate invoice number
-      const numberResult = await client.query('SELECT generate_invoice_number()');
-      const invoice_number = numberResult.rows[0].generate_invoice_number;
+      // Generate invoice number (per-vehicle sequence)
+      const numberResult = await client.query(
+        'SELECT * FROM generate_invoice_number($1)',
+        [estimate.vehicle_reg || null]
+      );
+      const invoice_number = numberResult.rows[0].invoice_number;
+      const sequence_number = numberResult.rows[0].sequence_num;
 
       // Create invoice from estimate
       const invoiceResult = await client.query(
         `INSERT INTO invoices (
-          invoice_number, client_name, client_email, client_address,
+          invoice_number, sequence_number, client_name, client_email, client_address,
           client_phone, client_mobile, client_fax,
           vehicle_make, vehicle_model, vehicle_reg,
           notes, vat_rate, estimate_id, booking_id, created_by,
           subtotal, vat_amount, total, balance_due, status
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
-          $16, $17, $18, $18, 'pending'
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
+          $17, $18, $19, $19, 'pending'
         ) RETURNING *`,
         [
           invoice_number,
+          sequence_number,
           estimate.client_name,
           estimate.client_email,
           estimate.client_address,

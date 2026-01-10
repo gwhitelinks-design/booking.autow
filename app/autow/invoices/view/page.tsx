@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Invoice } from '@/lib/types';
+import { Invoice, InvoiceExpense } from '@/lib/types';
 
 
 export default function ViewInvoicePage() {
@@ -13,6 +13,30 @@ export default function ViewInvoicePage() {
   const [loading, setLoading] = useState(true);
   const [invoice, setInvoice] = useState<Invoice | null>(null);
   const [businessSettings, setBusinessSettings] = useState<any>(null);
+
+  // Expenses state
+  const [expenses, setExpenses] = useState<InvoiceExpense[]>([]);
+  const [expenseTotals, setExpenseTotals] = useState({ parts: 0, labour: 0, total: 0 });
+  const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [expenseImageData, setExpenseImageData] = useState<string | null>(null);
+  const [scanningExpense, setScanningExpense] = useState(false);
+  const [savingExpense, setSavingExpense] = useState(false);
+  const [expenseScanned, setExpenseScanned] = useState(false);
+  const [expenseConfidence, setExpenseConfidence] = useState<number | null>(null);
+  const [autoFilledFields, setAutoFilledFields] = useState<Set<string>>(new Set());
+
+  // Expense form fields
+  const [expenseSupplier, setExpenseSupplier] = useState('');
+  const [expenseRefNumber, setExpenseRefNumber] = useState('');
+  const [expenseDate, setExpenseDate] = useState(new Date().toISOString().slice(0, 10));
+  const [expenseDescription, setExpenseDescription] = useState('');
+  const [expensePartsAmount, setExpensePartsAmount] = useState('0');
+  const [expenseLabourAmount, setExpenseLabourAmount] = useState('0');
+  const [expenseCategory, setExpenseCategory] = useState('general');
+
+  // Refs
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!id) {
@@ -83,6 +107,215 @@ export default function ViewInvoicePage() {
     window.print();
   };
 
+  // Fetch expenses for this invoice
+  const fetchExpenses = async () => {
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(`/api/autow/invoice/expense/list?invoice_id=${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        setExpenses(data.expenses || []);
+        setExpenseTotals(data.totals || { parts: 0, labour: 0, total: 0 });
+      }
+    } catch (error) {
+      console.error('Error fetching expenses:', error);
+    }
+  };
+
+  // Parse expense image with OCR
+  const parseExpenseImage = async (imgData: string) => {
+    setScanningExpense(true);
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/invoice/expense/parse', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ imageData: imgData }),
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        const extracted = data.data;
+        const filledFields = new Set<string>();
+
+        if (extracted.supplier) {
+          setExpenseSupplier(extracted.supplier);
+          filledFields.add('supplier');
+        }
+        if (extracted.reference_number) {
+          setExpenseRefNumber(extracted.reference_number);
+          filledFields.add('reference_number');
+        }
+        if (extracted.expense_date) {
+          setExpenseDate(extracted.expense_date);
+          filledFields.add('expense_date');
+        }
+        if (extracted.description) {
+          setExpenseDescription(extracted.description);
+          filledFields.add('description');
+        }
+        if (extracted.parts_amount > 0) {
+          setExpensePartsAmount(extracted.parts_amount.toString());
+          filledFields.add('parts_amount');
+        }
+        if (extracted.labour_amount > 0) {
+          setExpenseLabourAmount(extracted.labour_amount.toString());
+          filledFields.add('labour_amount');
+        }
+        if (extracted.category) {
+          setExpenseCategory(extracted.category);
+          filledFields.add('category');
+        }
+
+        setAutoFilledFields(filledFields);
+        setExpenseConfidence(extracted.confidence);
+        setExpenseScanned(true);
+      }
+    } catch (error) {
+      console.error('Error parsing expense:', error);
+      setExpenseScanned(true);
+    } finally {
+      setScanningExpense(false);
+    }
+  };
+
+  // Handle file selection for expense
+  const handleExpenseFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const imgData = event.target?.result as string;
+        setExpenseImageData(imgData);
+        await parseExpenseImage(imgData);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Reset expense form - pre-populate with invoice data
+  const resetExpenseForm = () => {
+    setExpenseImageData(null);
+
+    // Calculate breakdown from invoice line items (parts and labour/services combined)
+    let partsTotal = 0;
+    let labourTotal = 0; // Includes labour and services
+
+    invoice?.line_items?.forEach((item: any) => {
+      const amount = parseFloat(item.amount?.toString() || '0');
+      if (item.item_type === 'part') {
+        partsTotal += amount;
+      } else if (item.item_type !== 'discount') {
+        // labour, service, and other all go to labour
+        labourTotal += amount;
+      }
+    });
+
+    // Pre-populate fields from invoice
+    setExpenseSupplier('');
+    setExpenseRefNumber(invoice?.invoice_number || '');
+
+    // Use invoice date if available, otherwise today's date
+    const invoiceDate = invoice?.invoice_date
+      ? new Date(invoice.invoice_date).toISOString().slice(0, 10)
+      : new Date().toISOString().slice(0, 10);
+    setExpenseDate(invoiceDate);
+
+    setExpenseDescription(invoice?.client_name ? `Invoice for ${invoice.client_name}` : '');
+    setExpensePartsAmount(partsTotal.toFixed(2));
+    setExpenseLabourAmount(labourTotal.toFixed(2));
+    setExpenseCategory('mixed');
+    setExpenseScanned(false);
+    setExpenseConfidence(null);
+    setAutoFilledFields(new Set(['reference_number', 'expense_date', 'parts_amount', 'labour_amount', 'description']));
+    if (cameraInputRef.current) cameraInputRef.current.value = '';
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  // Save expense
+  const handleSaveExpense = async () => {
+    setSavingExpense(true);
+    try {
+      const token = localStorage.getItem('autow_token');
+      const totalAmount =
+        parseFloat(expensePartsAmount) +
+        parseFloat(expenseLabourAmount);
+
+      const response = await fetch('/api/autow/invoice/expense/create', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          invoice_id: id,
+          expense_date: expenseDate || null,
+          supplier: expenseSupplier || null,
+          reference_number: expenseRefNumber || null,
+          description: expenseDescription || null,
+          parts_amount: parseFloat(expensePartsAmount) || 0,
+          labour_amount: parseFloat(expenseLabourAmount) || 0,
+          total_amount: totalAmount,
+          category: expenseCategory,
+          confidence_score: expenseConfidence,
+        }),
+      });
+
+      if (response.ok) {
+        alert('Expense saved successfully!');
+        setShowExpenseModal(false);
+        resetExpenseForm();
+        fetchExpenses();
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error saving expense:', error);
+      alert('Failed to save expense');
+    } finally {
+      setSavingExpense(false);
+    }
+  };
+
+  // Delete expense
+  const handleDeleteExpense = async (expenseId: number) => {
+    if (!confirm('Delete this expense?')) return;
+
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/invoice/expense/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ id: expenseId }),
+      });
+
+      if (response.ok) {
+        fetchExpenses();
+      } else {
+        alert('Failed to delete expense');
+      }
+    } catch (error) {
+      console.error('Error deleting expense:', error);
+    }
+  };
+
+  // Fetch expenses when invoice loads
+  useEffect(() => {
+    if (id && !loading) {
+      fetchExpenses();
+    }
+  }, [id, loading]);
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -145,11 +378,225 @@ export default function ViewInvoicePage() {
               ✓ Mark as Paid
             </button>
           )}
+          <button onClick={() => { resetExpenseForm(); setShowExpenseModal(true); }} style={styles.expenseBtn}>
+            💰 Add Expenses
+          </button>
           <button onClick={handlePrint} style={styles.printBtn}>
             🖨️ Print / PDF
           </button>
         </div>
       </div>
+
+      {/* Hidden file inputs for expense capture */}
+      <input
+        ref={cameraInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleExpenseFileSelect}
+        style={{ display: 'none' }}
+      />
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleExpenseFileSelect}
+        style={{ display: 'none' }}
+      />
+
+      {/* Expense Modal */}
+      {showExpenseModal && (
+        <div style={styles.expenseModal}>
+          <div style={styles.expenseModalContent}>
+            <div style={styles.expenseModalHeader}>
+              <h2 style={styles.expenseModalTitle}>Add Expense</h2>
+              <button
+                onClick={() => { setShowExpenseModal(false); resetExpenseForm(); }}
+                style={styles.expenseModalClose}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Loading overlay */}
+            {scanningExpense && (
+              <div style={styles.scanningOverlay}>
+                <div style={styles.spinner}></div>
+                <p style={{ color: '#30ff37', marginTop: '15px' }}>Scanning document...</p>
+              </div>
+            )}
+
+            {/* Image capture section */}
+            {!expenseImageData ? (
+              <div style={styles.captureSection}>
+                <p style={{ color: '#888', marginBottom: '20px' }}>
+                  Capture or upload a supplier invoice/receipt to auto-extract data
+                </p>
+                <div style={styles.captureButtons}>
+                  <button
+                    onClick={() => cameraInputRef.current?.click()}
+                    style={styles.captureBtn}
+                  >
+                    📷 Take Photo
+                  </button>
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    style={styles.uploadBtn}
+                  >
+                    📁 Upload File
+                  </button>
+                </div>
+                <p style={{ color: '#666', fontSize: '12px', marginTop: '20px' }}>
+                  Or fill in the form manually below
+                </p>
+              </div>
+            ) : (
+              <div style={styles.imagePreviewSection}>
+                <img src={expenseImageData} alt="Expense" style={styles.expenseImagePreview} />
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
+                  <button onClick={resetExpenseForm} style={styles.clearImageBtn}>
+                    Clear
+                  </button>
+                  <button onClick={() => parseExpenseImage(expenseImageData)} style={styles.rescanBtn}>
+                    Re-scan
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Confidence banner */}
+            {expenseScanned && expenseConfidence !== null && (
+              <div style={styles.confidenceBanner}>
+                <span>AI extracted data</span>
+                <span style={styles.confidenceScore}>{Math.round(expenseConfidence * 100)}%</span>
+              </div>
+            )}
+
+            {/* Expense form */}
+            <div style={styles.expenseForm}>
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    Supplier {autoFilledFields.has('supplier') && <span style={styles.autoFillBadge}>Auto</span>}
+                  </label>
+                  <input
+                    type="text"
+                    value={expenseSupplier}
+                    onChange={(e) => setExpenseSupplier(e.target.value)}
+                    placeholder="e.g., GSF Car Parts"
+                    style={autoFilledFields.has('supplier') ? styles.inputAutoFilled : styles.formInput}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    Reference # {autoFilledFields.has('reference_number') && <span style={styles.autoFillBadge}>Auto</span>}
+                  </label>
+                  <input
+                    type="text"
+                    value={expenseRefNumber}
+                    onChange={(e) => setExpenseRefNumber(e.target.value)}
+                    placeholder="Invoice number"
+                    style={autoFilledFields.has('reference_number') ? styles.inputAutoFilled : styles.formInput}
+                  />
+                </div>
+              </div>
+
+              <div style={styles.formRow}>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    Date {autoFilledFields.has('expense_date') && <span style={styles.autoFillBadge}>Auto</span>}
+                  </label>
+                  <input
+                    type="date"
+                    value={expenseDate}
+                    onChange={(e) => setExpenseDate(e.target.value)}
+                    style={autoFilledFields.has('expense_date') ? styles.inputAutoFilled : styles.formInput}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>Category</label>
+                  <select
+                    value={expenseCategory}
+                    onChange={(e) => setExpenseCategory(e.target.value)}
+                    style={styles.formSelect}
+                  >
+                    <option value="general">General</option>
+                    <option value="parts">Parts</option>
+                    <option value="labour">Labour</option>
+                    <option value="mixed">Mixed</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style={styles.formGroup}>
+                <label style={styles.formLabel}>
+                  Description {autoFilledFields.has('description') && <span style={styles.autoFillBadge}>Auto</span>}
+                </label>
+                <input
+                  type="text"
+                  value={expenseDescription}
+                  onChange={(e) => setExpenseDescription(e.target.value)}
+                  placeholder="Brief description of expense"
+                  style={autoFilledFields.has('description') ? styles.inputAutoFilled : styles.formInput}
+                />
+              </div>
+
+              <div style={styles.amountsGrid}>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    Parts £ {autoFilledFields.has('parts_amount') && <span style={styles.autoFillBadge}>Auto</span>}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={expensePartsAmount}
+                    onChange={(e) => setExpensePartsAmount(e.target.value)}
+                    style={autoFilledFields.has('parts_amount') ? styles.inputAutoFilled : styles.formInput}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.formLabel}>
+                    Labour £ {autoFilledFields.has('labour_amount') && <span style={styles.autoFillBadge}>Auto</span>}
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    value={expenseLabourAmount}
+                    onChange={(e) => setExpenseLabourAmount(e.target.value)}
+                    style={autoFilledFields.has('labour_amount') ? styles.inputAutoFilled : styles.formInput}
+                  />
+                </div>
+              </div>
+
+              <div style={styles.expenseTotalRow}>
+                <span>Total:</span>
+                <span style={{ color: '#30ff37', fontWeight: 'bold' }}>
+                  £{(
+                    parseFloat(expensePartsAmount || '0') +
+                    parseFloat(expenseLabourAmount || '0')
+                  ).toFixed(2)}
+                </span>
+              </div>
+
+              <div style={styles.modalActions}>
+                <button
+                  onClick={() => { setShowExpenseModal(false); resetExpenseForm(); }}
+                  style={styles.cancelBtn}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveExpense}
+                  disabled={savingExpense}
+                  style={styles.saveExpenseBtn}
+                >
+                  {savingExpense ? 'Saving...' : 'Save Expense'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Document */}
       <div style={styles.document} className="document">
@@ -157,6 +604,7 @@ export default function ViewInvoicePage() {
         <div style={styles.docHeader} className="doc-header">
           <div>
             <h1 style={styles.docTitle}>INVOICE</h1>
+            <p style={styles.docNumber}><strong>{invoice.invoice_number}</strong></p>
             <p style={styles.docDate}>Date: {new Date(invoice.invoice_date).toLocaleDateString('en-GB')}</p>
             {invoice.due_date && (
               <p style={styles.docDate}>Due: {new Date(invoice.due_date).toLocaleDateString('en-GB')}</p>
@@ -176,21 +624,21 @@ export default function ViewInvoicePage() {
           <div style={styles.party}>
             <h3 style={styles.partyTitle}>From</h3>
             <p style={styles.businessName}>{settings.business_name}</p>
-            <p>Email: {settings.email}</p>
-            <p>Address: {settings.address}</p>
-            {settings.workshop_location && <p>{settings.workshop_location}</p>}
-            <p>Phone: {settings.phone}</p>
-            <p>Website: {settings.website}</p>
-            {settings.owner && <p>Owner: {settings.owner}</p>}
+            <p style={styles.partyText}>Email: {settings.email}</p>
+            <p style={styles.partyText}>Address: {settings.address}</p>
+            {settings.workshop_location && <p style={styles.partyText}>{settings.workshop_location}</p>}
+            <p style={styles.partyText}>Phone: {settings.phone}</p>
+            <p style={styles.partyText}>Website: {settings.website}</p>
+            {settings.owner && <p style={styles.partyText}>Owner: {settings.owner}</p>}
           </div>
 
           <div style={styles.party}>
             <h3 style={styles.partyTitle}>Bill To</h3>
             <p style={styles.clientName}>{invoice.client_name}</p>
-            {invoice.client_email && <p>{invoice.client_email}</p>}
-            {invoice.client_address && <p>{invoice.client_address}</p>}
-            {invoice.client_phone && <p>Phone: {invoice.client_phone}</p>}
-            {invoice.client_mobile && <p>Mobile: {invoice.client_mobile}</p>}
+            {invoice.client_email && <p style={styles.partyText}>{invoice.client_email}</p>}
+            {invoice.client_address && <p style={styles.partyText}>{invoice.client_address}</p>}
+            {invoice.client_phone && <p style={styles.partyText}>Phone: {invoice.client_phone}</p>}
+            {invoice.client_mobile && <p style={styles.partyText}>Mobile: {invoice.client_mobile}</p>}
           </div>
         </div>
 
@@ -330,7 +778,113 @@ export default function ViewInvoicePage() {
         </div>
       </div>
 
+      {/* Expenses Section (Staff only - don't print) */}
+      {expenses.length > 0 && (
+        <div style={styles.expensesSection} className="no-print">
+          <h2 style={styles.expensesSectionTitle}>💰 Linked Expenses</h2>
+          <p style={styles.expensesSectionSubtitle}>
+            Supplier invoices and receipts linked to this job
+          </p>
+
+          <div style={styles.expensesList}>
+            {expenses.map((expense) => (
+              <div key={expense.id} style={styles.expenseCard}>
+                <div style={styles.expenseCardHeader}>
+                  <div>
+                    <span style={styles.expenseSupplier}>{expense.supplier || 'Unknown Supplier'}</span>
+                    {expense.reference_number && (
+                      <span style={styles.expenseRef}> #{expense.reference_number}</span>
+                    )}
+                  </div>
+                  <span style={styles.expenseDate}>
+                    {expense.expense_date
+                      ? new Date(expense.expense_date).toLocaleDateString('en-GB')
+                      : 'No date'}
+                  </span>
+                </div>
+
+                {expense.description && (
+                  <p style={styles.expenseDescription}>{expense.description}</p>
+                )}
+
+                <div style={styles.expenseAmounts}>
+                  {parseFloat(String(expense.parts_amount)) > 0 && (
+                    <span style={styles.expenseAmountItem}>
+                      Parts: £{parseFloat(String(expense.parts_amount)).toFixed(2)}
+                    </span>
+                  )}
+                  {parseFloat(String(expense.labour_amount)) > 0 && (
+                    <span style={styles.expenseAmountItem}>
+                      Labour: £{parseFloat(String(expense.labour_amount)).toFixed(2)}
+                    </span>
+                  )}
+                </div>
+
+                <div style={styles.expenseCardFooter}>
+                  <span style={styles.expenseTotal}>
+                    Total: £{parseFloat(String(expense.total_amount)).toFixed(2)}
+                  </span>
+                  <button
+                    onClick={() => handleDeleteExpense(expense.id!)}
+                    style={styles.deleteExpenseBtn}
+                  >
+                    Delete
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Expenses Summary */}
+          <div style={styles.expensesSummary}>
+            <div style={styles.summaryRow}>
+              <span>Total Parts Cost:</span>
+              <span>£{expenseTotals.parts.toFixed(2)}</span>
+            </div>
+            <div style={styles.summaryRow}>
+              <span>Total Labour Cost:</span>
+              <span>£{expenseTotals.labour.toFixed(2)}</span>
+            </div>
+            <div style={{ ...styles.summaryRow, ...styles.summaryTotal }}>
+              <span>Total Expenses:</span>
+              <span>£{expenseTotals.total.toFixed(2)}</span>
+            </div>
+            <div style={styles.profitRow}>
+              <span>Invoice Total:</span>
+              <span>£{parseFloat(invoice.total.toString()).toFixed(2)}</span>
+            </div>
+            <div style={styles.profitRow}>
+              <span>Estimated Profit:</span>
+              <span style={{
+                color: parseFloat(invoice.total.toString()) - expenseTotals.total >= 0 ? '#30ff37' : '#ff4444'
+              }}>
+                £{(parseFloat(invoice.total.toString()) - expenseTotals.total).toFixed(2)}
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Expense Button when no expenses */}
+      {expenses.length === 0 && (
+        <div style={styles.noExpensesSection} className="no-print">
+          <p style={{ color: '#888', marginBottom: '15px' }}>No expenses linked to this invoice</p>
+          <button
+            onClick={() => { resetExpenseForm(); setShowExpenseModal(true); }}
+            style={styles.addFirstExpenseBtn}
+          >
+            💰 Add First Expense
+          </button>
+        </div>
+      )}
+
+
       <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
         @media print {
           .no-print {
             display: none !important;
@@ -618,6 +1172,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#666',
     margin: '0',
   },
+  docNumber: {
+    fontSize: '18px',
+    color: '#30ff37',
+    margin: '5px 0',
+    fontFamily: 'monospace',
+  },
   logo: {
     width: '150px',
     height: 'auto',
@@ -625,29 +1185,36 @@ const styles: { [key: string]: React.CSSProperties } = {
   parties: {
     display: 'grid',
     gridTemplateColumns: '1fr 1fr',
-    gap: '40px',
-    marginBottom: '30px',
+    gap: '30px',
+    marginBottom: '20px',
   },
   party: {
-    lineHeight: 1.8,
+    lineHeight: 1.4,
+    fontSize: '12px',
   },
   partyTitle: {
-    fontSize: '14px',
+    fontSize: '11px',
     fontWeight: '700' as const,
     textTransform: 'uppercase' as const,
     color: '#666',
-    marginBottom: '10px',
-    margin: '0 0 10px 0',
+    marginBottom: '6px',
+    margin: '0 0 6px 0',
+    letterSpacing: '0.5px',
   },
   businessName: {
-    fontSize: '18px',
+    fontSize: '13px',
     fontWeight: '700' as const,
-    margin: '0 0 5px 0',
+    margin: '0 0 2px 0',
   },
   clientName: {
-    fontSize: '18px',
+    fontSize: '13px',
     fontWeight: '700' as const,
-    margin: '0 0 5px 0',
+    margin: '0 0 2px 0',
+  },
+  partyText: {
+    fontSize: '11px',
+    margin: '0 0 1px 0',
+    color: '#444',
   },
   vehicleInfo: {
     background: '#f8f8f8',
@@ -793,5 +1360,398 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '24px',
     textAlign: 'center' as const,
     padding: '60px 20px',
+  },
+  // Expense Button
+  expenseBtn: {
+    padding: '10px 20px',
+    background: 'rgba(255, 152, 0, 0.2)',
+    border: '1px solid rgba(255, 152, 0, 0.4)',
+    borderRadius: '8px',
+    color: '#ff9800',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600' as const,
+  },
+  // Expense Modal Styles
+  expenseModal: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.95)',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'flex-start',
+    padding: '20px',
+    overflowY: 'auto' as const,
+    zIndex: 1000,
+  },
+  expenseModalContent: {
+    background: '#111',
+    borderRadius: '12px',
+    width: '100%',
+    maxWidth: '500px',
+    padding: '25px',
+    marginTop: '20px',
+    marginBottom: '20px',
+  },
+  expenseModalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '20px',
+    paddingBottom: '15px',
+    borderBottom: '1px solid #333',
+  },
+  expenseModalTitle: {
+    color: '#ff9800',
+    fontSize: '20px',
+    fontWeight: '700' as const,
+    margin: 0,
+  },
+  expenseModalClose: {
+    background: 'transparent',
+    border: 'none',
+    color: '#888',
+    fontSize: '24px',
+    cursor: 'pointer',
+    padding: '5px',
+  },
+  scanningOverlay: {
+    position: 'absolute' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.9)',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: '12px',
+    zIndex: 10,
+  },
+  spinner: {
+    width: '40px',
+    height: '40px',
+    border: '3px solid #333',
+    borderTopColor: '#30ff37',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+  captureSection: {
+    textAlign: 'center' as const,
+    padding: '30px 20px',
+    border: '2px dashed #333',
+    borderRadius: '10px',
+    marginBottom: '20px',
+  },
+  captureButtons: {
+    display: 'flex',
+    gap: '15px',
+    justifyContent: 'center',
+    flexWrap: 'wrap' as const,
+  },
+  captureBtn: {
+    background: '#30ff37',
+    color: '#000',
+    border: 'none',
+    padding: '15px 25px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '15px',
+    fontWeight: '700' as const,
+  },
+  uploadBtn: {
+    background: '#333',
+    color: '#fff',
+    border: '1px solid #555',
+    padding: '15px 25px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '15px',
+  },
+  imagePreviewSection: {
+    textAlign: 'center' as const,
+    marginBottom: '20px',
+  },
+  expenseImagePreview: {
+    maxWidth: '100%',
+    maxHeight: '200px',
+    borderRadius: '8px',
+    marginBottom: '15px',
+  },
+  clearImageBtn: {
+    background: '#ff4444',
+    color: '#fff',
+    border: 'none',
+    padding: '8px 20px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '13px',
+  },
+  rescanBtn: {
+    background: '#333',
+    color: '#fff',
+    border: '1px solid #555',
+    padding: '8px 20px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '13px',
+  },
+  confidenceBanner: {
+    background: 'rgba(48, 255, 55, 0.1)',
+    border: '1px solid rgba(48, 255, 55, 0.3)',
+    borderRadius: '8px',
+    padding: '10px 15px',
+    marginBottom: '20px',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    color: '#30ff37',
+    fontSize: '13px',
+  },
+  confidenceScore: {
+    background: '#30ff37',
+    color: '#000',
+    padding: '3px 10px',
+    borderRadius: '12px',
+    fontSize: '12px',
+    fontWeight: '700' as const,
+  },
+  autoFillBadge: {
+    background: 'rgba(48, 255, 55, 0.2)',
+    color: '#30ff37',
+    fontSize: '9px',
+    padding: '2px 6px',
+    borderRadius: '8px',
+    marginLeft: '8px',
+    textTransform: 'uppercase' as const,
+    fontWeight: '700' as const,
+  },
+  expenseForm: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '15px',
+  },
+  formRow: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '15px',
+  },
+  formGroup: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '6px',
+  },
+  formLabel: {
+    color: '#888',
+    fontSize: '12px',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '0.5px',
+  },
+  formInput: {
+    background: '#1a1a1a',
+    border: '1px solid #333',
+    borderRadius: '6px',
+    padding: '12px',
+    color: '#fff',
+    fontSize: '14px',
+  },
+  inputAutoFilled: {
+    background: '#1a1a1a',
+    border: '1px solid rgba(48, 255, 55, 0.4)',
+    borderRadius: '6px',
+    padding: '12px',
+    color: '#fff',
+    fontSize: '14px',
+  },
+  formSelect: {
+    background: '#1a1a1a',
+    border: '1px solid #333',
+    borderRadius: '6px',
+    padding: '12px',
+    color: '#fff',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  amountsGrid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '15px',
+  },
+  expenseTotalRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '15px',
+    background: '#1a1a1a',
+    borderRadius: '8px',
+    fontSize: '16px',
+    color: '#fff',
+  },
+  modalActions: {
+    display: 'flex',
+    gap: '15px',
+    marginTop: '10px',
+  },
+  cancelBtn: {
+    flex: 1,
+    background: '#333',
+    color: '#fff',
+    border: 'none',
+    padding: '15px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '15px',
+  },
+  saveExpenseBtn: {
+    flex: 1,
+    background: '#ff9800',
+    color: '#000',
+    border: 'none',
+    padding: '15px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '15px',
+    fontWeight: '700' as const,
+  },
+  // Expenses Section Styles
+  expensesSection: {
+    maxWidth: '900px',
+    margin: '30px auto 0',
+    background: '#1a1a1a',
+    borderRadius: '12px',
+    padding: '25px',
+    border: '1px solid rgba(255, 152, 0, 0.3)',
+  },
+  expensesSectionTitle: {
+    color: '#ff9800',
+    fontSize: '20px',
+    margin: '0 0 5px 0',
+  },
+  expensesSectionSubtitle: {
+    color: '#888',
+    fontSize: '14px',
+    margin: '0 0 20px 0',
+  },
+  expensesList: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '15px',
+    marginBottom: '25px',
+  },
+  expenseCard: {
+    background: '#111',
+    border: '1px solid #333',
+    borderRadius: '10px',
+    padding: '15px',
+  },
+  expenseCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: '10px',
+  },
+  expenseSupplier: {
+    color: '#fff',
+    fontSize: '16px',
+    fontWeight: '600' as const,
+  },
+  expenseRef: {
+    color: '#888',
+    fontSize: '14px',
+  },
+  expenseDate: {
+    color: '#888',
+    fontSize: '13px',
+  },
+  expenseDescription: {
+    color: '#aaa',
+    fontSize: '13px',
+    marginBottom: '10px',
+    fontStyle: 'italic' as const,
+  },
+  expenseAmounts: {
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    gap: '10px',
+    marginBottom: '10px',
+  },
+  expenseAmountItem: {
+    background: '#222',
+    padding: '4px 10px',
+    borderRadius: '5px',
+    fontSize: '12px',
+    color: '#ccc',
+  },
+  expenseCardFooter: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingTop: '10px',
+    borderTop: '1px solid #333',
+  },
+  expenseTotal: {
+    color: '#ff9800',
+    fontSize: '16px',
+    fontWeight: '700' as const,
+  },
+  deleteExpenseBtn: {
+    background: 'transparent',
+    color: '#ff4444',
+    border: '1px solid #ff4444',
+    padding: '5px 15px',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    fontSize: '12px',
+  },
+  expensesSummary: {
+    background: '#111',
+    borderRadius: '10px',
+    padding: '20px',
+    border: '1px solid #333',
+  },
+  summaryRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '8px 0',
+    color: '#ccc',
+    fontSize: '14px',
+  },
+  summaryTotal: {
+    borderTop: '2px solid #ff9800',
+    paddingTop: '15px',
+    marginTop: '10px',
+    color: '#ff9800',
+    fontWeight: '700' as const,
+    fontSize: '16px',
+  },
+  profitRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '8px 0',
+    color: '#fff',
+    fontSize: '15px',
+    fontWeight: '600' as const,
+  },
+  noExpensesSection: {
+    maxWidth: '900px',
+    margin: '30px auto 0',
+    textAlign: 'center' as const,
+    padding: '30px',
+    background: '#1a1a1a',
+    borderRadius: '12px',
+    border: '1px dashed #333',
+  },
+  addFirstExpenseBtn: {
+    background: 'rgba(255, 152, 0, 0.2)',
+    color: '#ff9800',
+    border: '1px solid rgba(255, 152, 0, 0.4)',
+    padding: '12px 25px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '15px',
+    fontWeight: '600' as const,
   },
 };

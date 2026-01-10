@@ -387,3 +387,46 @@ export interface ReceiptFormData {
   category?: 'fuel' | 'parts' | 'tools' | 'supplies' | 'misc';
   imageData: string;
 }
+
+// ============================================
+// INVOICE EXPENSES TYPES
+// ============================================
+
+export interface InvoiceExpense {
+  id?: number;
+  invoice_id: number;
+
+  // Extracted OCR Data
+  expense_date?: string;
+  supplier?: string;
+  reference_number?: string;
+  description?: string;
+
+  // Amount Breakdown (Parts + Labour/Services combined)
+  parts_amount: number;
+  labour_amount: number;
+  total_amount: number;
+
+  // Category
+  category?: 'parts' | 'labour' | 'mixed' | 'general';
+
+  // OCR Metadata
+  raw_ocr_text?: string;
+  confidence_score?: number;
+
+  // Metadata
+  created_by: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface InvoiceExpenseFormData {
+  invoice_id: number;
+  expense_date?: string;
+  supplier?: string;
+  reference_number?: string;
+  description?: string;
+  parts_amount: number;
+  labour_amount: number;
+  category?: 'parts' | 'labour' | 'mixed' | 'general';
+}

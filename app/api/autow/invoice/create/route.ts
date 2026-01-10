@@ -43,9 +43,13 @@ export async function POST(request: NextRequest) {
     try {
       await client.query('BEGIN');
 
-      // Generate invoice number
-      const numberResult = await client.query('SELECT generate_invoice_number()');
-      const invoice_number = numberResult.rows[0].generate_invoice_number;
+      // Generate invoice number (per-vehicle sequence)
+      const numberResult = await client.query(
+        'SELECT * FROM generate_invoice_number($1)',
+        [vehicle_reg || null]
+      );
+      const invoice_number = numberResult.rows[0].invoice_number;
+      const sequence_number = numberResult.rows[0].sequence_num;
 
       // Get created_by from request or default to 'Admin'
       const created_by = body.created_by || 'Admin';
@@ -53,15 +57,15 @@ export async function POST(request: NextRequest) {
       // Insert invoice
       const invoiceResult = await client.query(
         `INSERT INTO invoices (
-          invoice_number, client_name, client_email, client_address,
+          invoice_number, sequence_number, client_name, client_email, client_address,
           client_phone, client_mobile, client_fax,
           vehicle_make, vehicle_model, vehicle_reg,
           notes, due_date, vat_rate, estimate_id, booking_id, created_by, status
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, 'pending'
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, 'pending'
         ) RETURNING *`,
         [
-          invoice_number, client_name, client_email, client_address,
+          invoice_number, sequence_number, client_name, client_email, client_address,
           client_phone, client_mobile, client_fax,
           vehicle_make, vehicle_model, vehicle_reg,
           notes, due_date, vat_rate, estimate_id, booking_id, created_by
