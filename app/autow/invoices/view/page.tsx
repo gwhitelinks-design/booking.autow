@@ -1162,11 +1162,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#30ff37',
     margin: '0 0 10px 0',
   },
-  docNumber: {
-    fontSize: '18px',
-    fontWeight: '600' as const,
-    margin: '0 0 5px 0',
-  },
   docDate: {
     fontSize: '14px',
     color: '#666',
