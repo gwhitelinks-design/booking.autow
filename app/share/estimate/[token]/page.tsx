@@ -1,60 +1,65 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import pool from '@/lib/db';
 import { Estimate } from '@/lib/types';
+import PrintButton from './PrintButton';
 
-export default function SharedEstimatePage() {
-  const params = useParams();
-  const token = params.token as string;
+async function getEstimateData(token: string) {
+  const client = await pool.connect();
 
-  const [loading, setLoading] = useState(true);
-  const [estimate, setEstimate] = useState<Estimate | null>(null);
-  const [businessSettings, setBusinessSettings] = useState<any>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (token) {
-      fetchSharedEstimate();
-    }
-  }, [token]);
-
-  const fetchSharedEstimate = async () => {
-    try {
-      const response = await fetch(`/api/share/estimate/${token}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setEstimate(data.estimate);
-        setBusinessSettings(data.business_settings);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || errorData.details || 'Estimate not found or link has expired');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError(`Failed to load estimate: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  if (loading) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.loadingText}>Loading estimate...</div>
-      </div>
+  try {
+    const result = await client.query(
+      `SELECT e.*,
+        json_agg(
+          json_build_object(
+            'id', li.id,
+            'description', li.description,
+            'item_type', li.item_type,
+            'rate', li.rate,
+            'quantity', li.quantity,
+            'amount', li.amount,
+            'sort_order', li.sort_order
+          ) ORDER BY li.sort_order
+        ) FILTER (WHERE li.id IS NOT NULL) as line_items
+       FROM estimates e
+       LEFT JOIN line_items li ON li.document_type = 'estimate' AND li.document_id = e.id
+       WHERE e.share_token = $1
+       GROUP BY e.id`,
+      [token]
     );
-  }
 
-  if (error || !estimate) {
+    if (result.rows.length === 0) {
+      return { estimate: null, businessSettings: null };
+    }
+
+    const estimate = result.rows[0];
+
+    let businessSettings = null;
+    try {
+      const settingsResult = await client.query(
+        'SELECT * FROM business_settings LIMIT 1'
+      );
+      businessSettings = settingsResult.rows[0] || null;
+    } catch (settingsError) {
+      console.error('Business settings query failed:', settingsError);
+    }
+
+    return { estimate, businessSettings };
+  } finally {
+    client.release();
+  }
+}
+
+export default async function SharedEstimatePage({
+  params,
+}: {
+  params: { token: string };
+}) {
+  const { token } = params;
+  const { estimate, businessSettings } = await getEstimateData(token);
+
+  if (!estimate) {
     return (
       <div style={styles.container}>
-        <div style={styles.errorText}>{error || 'Estimate not found'}</div>
+        <div style={styles.errorText}>Estimate not found or link has expired</div>
       </div>
     );
   }
@@ -68,7 +73,7 @@ export default function SharedEstimatePage() {
     discount: 0
   };
 
-  estimate.line_items?.forEach((item) => {
+  estimate.line_items?.forEach((item: any) => {
     const amount = parseFloat(item.amount.toString());
     if (item.item_type === 'part') {
       breakdown.parts += amount;
@@ -97,9 +102,7 @@ export default function SharedEstimatePage() {
     <div style={styles.container} className="estimate-container">
       {/* Print Button (don't print) */}
       <div style={styles.actionBar} className="no-print">
-        <button onClick={handlePrint} style={styles.printBtn} className="print-btn">
-          🖨️ Print / Save as PDF
-        </button>
+        <PrintButton />
       </div>
 
       {/* Document */}
@@ -163,7 +166,7 @@ export default function SharedEstimatePage() {
               </tr>
             </thead>
             <tbody>
-              {estimate.line_items && estimate.line_items.map((item, index) => (
+              {estimate.line_items && estimate.line_items.map((item: any, index: number) => (
                 <tr key={index}>
                   <td style={styles.td} className="desc-col">
                     {item.description}
@@ -463,16 +466,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     justifyContent: 'flex-end',
   },
-  printBtn: {
-    padding: '12px 24px',
-    background: '#30ff37',
-    border: 'none',
-    borderRadius: '8px',
-    color: '#000',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '600' as const,
-  },
   document: {
     maxWidth: '900px',
     margin: '0 auto',
@@ -666,12 +659,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0',
     lineHeight: 1.4,
     textAlign: 'justify' as const,
-  },
-  loadingText: {
-    fontSize: '18px',
-    textAlign: 'center' as const,
-    padding: '60px 20px',
-    color: '#666',
   },
   errorText: {
     fontSize: '18px',

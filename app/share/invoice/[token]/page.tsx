@@ -1,60 +1,65 @@
-'use client';
-
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import pool from '@/lib/db';
 import { Invoice } from '@/lib/types';
+import PrintButton from './PrintButton';
 
-export default function SharedInvoicePage() {
-  const params = useParams();
-  const token = params.token as string;
+async function getInvoiceData(token: string) {
+  const client = await pool.connect();
 
-  const [loading, setLoading] = useState(true);
-  const [invoice, setInvoice] = useState<Invoice | null>(null);
-  const [businessSettings, setBusinessSettings] = useState<any>(null);
-  const [error, setError] = useState('');
-
-  useEffect(() => {
-    if (token) {
-      fetchSharedInvoice();
-    }
-  }, [token]);
-
-  const fetchSharedInvoice = async () => {
-    try {
-      const response = await fetch(`/api/share/invoice/${token}`);
-
-      if (response.ok) {
-        const data = await response.json();
-        setInvoice(data.invoice);
-        setBusinessSettings(data.business_settings);
-      } else {
-        const errorData = await response.json();
-        setError(errorData.error || errorData.details || 'Invoice not found or link has expired');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setError(`Failed to load invoice: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
-  if (loading) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.loadingText}>Loading invoice...</div>
-      </div>
+  try {
+    const result = await client.query(
+      `SELECT i.*,
+        json_agg(
+          json_build_object(
+            'id', li.id,
+            'description', li.description,
+            'item_type', li.item_type,
+            'rate', li.rate,
+            'quantity', li.quantity,
+            'amount', li.amount,
+            'sort_order', li.sort_order
+          ) ORDER BY li.sort_order
+        ) FILTER (WHERE li.id IS NOT NULL) as line_items
+       FROM invoices i
+       LEFT JOIN line_items li ON li.document_type = 'invoice' AND li.document_id = i.id
+       WHERE i.share_token = $1
+       GROUP BY i.id`,
+      [token]
     );
-  }
 
-  if (error || !invoice) {
+    if (result.rows.length === 0) {
+      return { invoice: null, businessSettings: null };
+    }
+
+    const invoice = result.rows[0];
+
+    let businessSettings = null;
+    try {
+      const settingsResult = await client.query(
+        'SELECT * FROM business_settings LIMIT 1'
+      );
+      businessSettings = settingsResult.rows[0] || null;
+    } catch (settingsError) {
+      console.error('Business settings query failed:', settingsError);
+    }
+
+    return { invoice, businessSettings };
+  } finally {
+    client.release();
+  }
+}
+
+export default async function SharedInvoicePage({
+  params,
+}: {
+  params: { token: string };
+}) {
+  const { token } = params;
+  const { invoice, businessSettings } = await getInvoiceData(token);
+
+  if (!invoice) {
     return (
       <div style={styles.container}>
-        <div style={styles.errorText}>{error || 'Invoice not found'}</div>
+        <div style={styles.errorText}>Invoice not found or link has expired</div>
       </div>
     );
   }
@@ -68,7 +73,7 @@ export default function SharedInvoicePage() {
     discount: 0
   };
 
-  invoice.line_items?.forEach((item) => {
+  invoice.line_items?.forEach((item: any) => {
     const amount = parseFloat(item.amount.toString());
     if (item.item_type === 'part') {
       breakdown.parts += amount;
@@ -97,9 +102,7 @@ export default function SharedInvoicePage() {
     <div style={styles.container} className="invoice-container">
       {/* Print Button (don't print) */}
       <div style={styles.actionBar} className="no-print">
-        <button onClick={handlePrint} style={styles.printBtn} className="print-btn">
-          🖨️ Print / Save as PDF
-        </button>
+        <PrintButton />
       </div>
 
       {/* Document */}
@@ -163,7 +166,7 @@ export default function SharedInvoicePage() {
               </tr>
             </thead>
             <tbody>
-              {invoice.line_items && invoice.line_items.map((item, index) => (
+              {invoice.line_items && invoice.line_items.map((item: any, index: number) => (
                 <tr key={index}>
                   <td style={styles.td} className="desc-col">
                     {item.description}
@@ -460,16 +463,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     justifyContent: 'flex-end',
   },
-  printBtn: {
-    padding: '12px 24px',
-    background: '#30ff37',
-    border: 'none',
-    borderRadius: '8px',
-    color: '#000',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '600' as const,
-  },
   document: {
     maxWidth: '900px',
     margin: '0 auto',
@@ -648,10 +641,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderTop: '1px solid #e0e0e0',
     color: '#666',
   },
-  footerSmall: {
-    fontSize: '12px',
-    marginTop: '10px',
-  },
   disclaimer: {
     marginTop: '20px',
     paddingTop: '20px',
@@ -663,12 +652,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0',
     lineHeight: 1.4,
     textAlign: 'justify' as const,
-  },
-  loadingText: {
-    fontSize: '18px',
-    textAlign: 'center' as const,
-    padding: '60px 20px',
-    color: '#666',
   },
   errorText: {
     fontSize: '18px',
