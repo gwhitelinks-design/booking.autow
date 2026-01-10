@@ -12,18 +12,18 @@ export const metadata: Metadata = {
     description: 'View your estimate or invoice from AUTOW Services - Professional mobile mechanic services in Cornwall.',
     images: [
       {
-        url: 'https://autow-services.co.uk/logo.png',
-        width: 512,
-        height: 512,
+        url: 'https://booking.autow-services.co.uk/latest2.png',
+        width: 800,
+        height: 800,
         alt: 'AUTOW Services Logo',
       },
     ],
   },
   twitter: {
-    card: 'summary',
+    card: 'summary_large_image',
     title: 'AUTOW Services - Your Document',
     description: 'View your estimate or invoice from AUTOW Services',
-    images: ['https://autow-services.co.uk/logo.png'],
+    images: ['https://booking.autow-services.co.uk/latest2.png'],
   },
   icons: {
     icon: '/favicon.ico',
