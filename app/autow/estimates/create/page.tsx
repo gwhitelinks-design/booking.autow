@@ -1198,7 +1198,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '16px',
     fontWeight: '700' as const,
     cursor: 'pointer',
-    color: '#fff',
   },
   businessHeader: {
     background: '#1a1a1a',
