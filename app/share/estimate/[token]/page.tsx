@@ -156,28 +156,28 @@ export default function SharedEstimatePage() {
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={{ ...styles.th, textAlign: 'left' as const }}>DESCRIPTION</th>
-                <th style={styles.th}>RATE</th>
-                <th style={styles.th}>QTY</th>
-                <th style={{ ...styles.th, textAlign: 'right' as const }}>AMOUNT</th>
+                <th style={{ ...styles.th, textAlign: 'left' as const }} className="desc-col">DESCRIPTION</th>
+                <th style={styles.th} className="rate-col">RATE</th>
+                <th style={styles.th} className="qty-col">QTY</th>
+                <th style={{ ...styles.th, textAlign: 'right' as const }} className="amount-col">AMOUNT</th>
               </tr>
             </thead>
             <tbody>
               {estimate.line_items && estimate.line_items.map((item, index) => (
                 <tr key={index}>
-                  <td style={styles.td}>
+                  <td style={styles.td} className="desc-col">
                     {item.description}
                     {item.item_type !== 'service' && (
                       <span style={item.item_type === 'discount' ? styles.discountType : styles.itemType}> ({item.item_type})</span>
                     )}
                   </td>
-                  <td style={{ ...styles.td, textAlign: 'center' as const }}>
+                  <td style={{ ...styles.td, textAlign: 'center' as const }} className="rate-col">
                     £{parseFloat(item.rate.toString()).toFixed(2)}
                   </td>
-                  <td style={{ ...styles.td, textAlign: 'center' as const }}>
+                  <td style={{ ...styles.td, textAlign: 'center' as const }} className="qty-col">
                     {item.quantity}
                   </td>
-                  <td style={{ ...styles.td, textAlign: 'right' as const, ...(item.item_type === 'discount' ? { color: '#ff9800' } : {}) }}>
+                  <td style={{ ...styles.td, textAlign: 'right' as const, ...(item.item_type === 'discount' ? { color: '#ff9800' } : {}) }} className="amount-col">
                     {item.item_type === 'discount' ? '-' : ''}£{parseFloat(item.amount.toString()).toFixed(2)}
                   </td>
                 </tr>
@@ -243,12 +243,12 @@ export default function SharedEstimatePage() {
         )}
 
         {/* Footer */}
-        <div style={styles.footer}>
+        <div style={styles.footer} className="footer">
           <p>Thank you for your business!</p>
           <p style={styles.footerSmall}>
             This is an estimate. Additional works or parts will incur further costs - you will be notified.
           </p>
-          <div style={styles.disclaimer}>
+          <div style={styles.disclaimer} className="disclaimer">
             <p style={styles.disclaimerText}>
               AUTOW Services provides mobile mechanics and recovery services.
               Parts are subject to manufacturer warranty. Payment terms: Parts and/or vehicle collection/recovery required upfront,
@@ -269,12 +269,32 @@ export default function SharedEstimatePage() {
         }
 
         @media (max-width: 900px) {
+          /* Document responsive */
+          .estimate-document {
+            padding: 30px 15px !important;
+          }
           .doc-header {
-            flex-direction: column !important;
-            gap: 20px;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: flex-start !important;
+            gap: 10px;
+          }
+          .doc-header > div:first-child {
+            flex: 1;
           }
           .doc-header > div:last-child {
-            text-align: left !important;
+            text-align: right !important;
+            flex-shrink: 0;
+          }
+          .doc-header img {
+            width: 80px !important;
+          }
+          .doc-header h1 {
+            font-size: 24px !important;
+            margin-bottom: 5px !important;
+          }
+          .doc-header p {
+            font-size: 12px !important;
           }
           .parties {
             grid-template-columns: 1fr !important;
@@ -289,70 +309,87 @@ export default function SharedEstimatePage() {
           }
         }
 
-        /* iOS Safari Mobile Fixes */
+        /* Small mobile (480px and below) */
         @media (max-width: 480px) {
           .estimate-document {
-            padding: 15px !important;
+            padding: 20px 12px !important;
             border-radius: 8px !important;
-            margin: 0 !important;
           }
           .estimate-container {
             padding: 10px !important;
           }
-          .doc-header {
-            flex-direction: column !important;
-            gap: 15px !important;
-            margin-bottom: 20px !important;
-            padding-bottom: 15px !important;
-          }
           .doc-header h1 {
-            font-size: 24px !important;
+            font-size: 28px !important;
           }
           .doc-header img {
-            width: 100px !important;
-            height: auto !important;
+            width: 120px !important;
           }
           .parties {
-            display: block !important;
-            gap: 0 !important;
-          }
-          .parties > div {
-            margin-bottom: 15px !important;
+            gap: 20px !important;
           }
           .parties p {
             font-size: 13px !important;
-            margin: 3px 0 !important;
-            line-height: 1.4 !important;
+            word-break: break-word;
+          }
+          .table-container table {
+            font-size: 12px !important;
+            table-layout: fixed !important;
+            width: 100% !important;
+          }
+          .table-container th.desc-col,
+          .table-container td.desc-col {
+            width: 55% !important;
+            word-wrap: break-word !important;
+            white-space: normal !important;
+          }
+          .table-container th.rate-col,
+          .table-container td.rate-col {
+            width: 15% !important;
+            font-size: 10px !important;
+            padding: 8px 2px !important;
+          }
+          .table-container th.qty-col,
+          .table-container td.qty-col {
+            width: 10% !important;
+            font-size: 10px !important;
+            padding: 8px 2px !important;
+          }
+          .table-container th.amount-col,
+          .table-container td.amount-col {
+            width: 20% !important;
+            font-size: 10px !important;
+            padding: 8px 2px !important;
+          }
+          .table-container th,
+          .table-container td {
+            padding: 8px 4px !important;
           }
           .vehicle-info {
             padding: 10px !important;
             font-size: 12px !important;
             margin-bottom: 15px !important;
           }
-          .table-container {
-            margin: 0 -10px !important;
-            padding: 0 10px !important;
-          }
-          .table-container table {
-            font-size: 11px !important;
-          }
-          .table-container th,
-          .table-container td {
-            padding: 8px 4px !important;
-          }
           .totals-section {
             justify-content: stretch !important;
           }
           .totals-box {
             width: 100% !important;
-            padding: 12px !important;
+            padding: 15px !important;
           }
-          .totals-box > div {
+          .totals-box span {
             font-size: 13px !important;
           }
           .notes-section {
-            padding: 12px !important;
+            padding: 15px !important;
+          }
+          .notes-section p {
+            font-size: 13px !important;
+          }
+          .footer p {
             font-size: 12px !important;
+          }
+          .disclaimer p {
+            font-size: 8px !important;
           }
           .print-btn {
             padding: 10px 16px !important;
@@ -361,19 +398,51 @@ export default function SharedEstimatePage() {
           }
         }
 
-        /* Extra small screens */
+        /* Extra small mobile (360px and below) */
         @media (max-width: 360px) {
           .estimate-document {
-            padding: 10px !important;
+            padding: 15px 10px !important;
           }
           .doc-header h1 {
-            font-size: 20px !important;
+            font-size: 24px !important;
           }
-          .table-container table {
+          .doc-header img {
+            width: 100px !important;
+          }
+          .parties p {
+            font-size: 12px !important;
+          }
+          .table-container th.desc-col,
+          .table-container td.desc-col {
+            width: 50% !important;
             font-size: 10px !important;
           }
-          .totals-box > div {
+          .table-container th.rate-col,
+          .table-container td.rate-col,
+          .table-container th.qty-col,
+          .table-container td.qty-col,
+          .table-container th.amount-col,
+          .table-container td.amount-col {
+            font-size: 9px !important;
+            padding: 6px 1px !important;
+          }
+          .table-container th,
+          .table-container td {
+            padding: 6px 2px !important;
+            font-size: 10px !important;
+          }
+          .totals-box span {
             font-size: 12px !important;
+          }
+        }
+
+        /* iOS Safari specific fixes */
+        @supports (-webkit-touch-callout: none) {
+          .estimate-document {
+            -webkit-text-size-adjust: 100%;
+          }
+          .table-container {
+            -webkit-overflow-scrolling: touch;
           }
         }
       `}</style>
