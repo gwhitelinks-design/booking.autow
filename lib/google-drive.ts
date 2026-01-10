@@ -5,17 +5,8 @@ function getDriveClient(): drive_v3.Drive {
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
   const privateKey = process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n');
 
-  // Debug logging for Vercel
-  console.log('Google Drive config check:', {
-    hasClientEmail: !!clientEmail,
-    clientEmailLength: clientEmail?.length || 0,
-    hasPrivateKey: !!privateKey,
-    privateKeyLength: privateKey?.length || 0,
-    privateKeyStart: privateKey?.substring(0, 27) || 'missing',
-  });
-
   if (!clientEmail || !privateKey) {
-    throw new Error(`Google Drive credentials not configured. clientEmail: ${!!clientEmail}, privateKey: ${!!privateKey}`);
+    throw new Error('Google Drive credentials not configured. Set GOOGLE_CLIENT_EMAIL and GOOGLE_PRIVATE_KEY in environment variables.');
   }
 
   const auth = new google.auth.GoogleAuth({
