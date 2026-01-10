@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { uploadReceiptImage as uploadToGoogleDrive } from '@/lib/google-drive';
 import { getMonthlyFolderPath } from '@/lib/supabase-storage';
+import { uploadReceiptImage as uploadToGoogleDrive } from '@/lib/google-drive';
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,9 +36,8 @@ export async function POST(request: NextRequest) {
 
     const finalReceiptDate = receipt_date || new Date().toISOString().slice(0, 10);
 
-    // Upload image to Google Drive ONLY (saves storage costs)
-    // Metadata is stored in Supabase database, images in Google Drive Shared Drive
-    let driveResult: { fileId: string; webViewLink: string; folderPath: string };
+    // Upload image to Google Drive only (no Supabase Storage to save quota)
+    let driveResult: { fileId: string; webViewLink: string; folderPath: string } | null = null;
 
     try {
       driveResult = await uploadToGoogleDrive(imageData, supplier, finalReceiptDate);
@@ -46,7 +45,7 @@ export async function POST(request: NextRequest) {
     } catch (driveError: any) {
       console.error('Google Drive upload failed:', driveError);
       return NextResponse.json(
-        { error: 'Failed to upload image to Google Drive', details: driveError.message },
+        { error: 'Failed to upload to Google Drive', details: driveError.message },
         { status: 500 }
       );
     }
@@ -55,7 +54,7 @@ export async function POST(request: NextRequest) {
     const numberResult = await pool.query('SELECT generate_receipt_number() as receipt_number');
     const receipt_number = numberResult.rows[0].receipt_number;
 
-    // Insert receipt METADATA into Supabase database (no image data stored here)
+    // Insert receipt metadata into database (image is in Google Drive only)
     const result = await pool.query(
       `INSERT INTO receipts (
         receipt_number, receipt_date, supplier, description, amount, category,
@@ -71,9 +70,9 @@ export async function POST(request: NextRequest) {
         description || null,
         amount,
         category || null,
-        driveResult.fileId,
-        driveResult.webViewLink,
-        driveResult.folderPath,
+        driveResult?.fileId || null,
+        driveResult?.webViewLink || null,
+        driveResult?.folderPath || getMonthlyFolderPath(),
         created_by
       ]
     );
@@ -81,7 +80,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: 'Receipt uploaded successfully',
       receipt: result.rows[0],
-      storage: 'Google Drive (image) + Supabase (metadata)',
+      storage: 'Google Drive (image) + Database (metadata)',
     }, { status: 201 });
 
   } catch (error: any) {
