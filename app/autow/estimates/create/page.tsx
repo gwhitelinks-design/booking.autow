@@ -543,7 +543,7 @@ Company Number: 16952633`;
           style={styles.headerLogo}
         />
         <div style={styles.businessInfo}>
-          <h2 style={styles.businessName}>AUTOW SERVICES</h2>
+          <h2 style={styles.businessName}>AUTOW SERVICES LTD</h2>
           <p style={styles.businessDetails}>
             Email: info@autow-services.co.uk | Phone: 07352968276
             <br />

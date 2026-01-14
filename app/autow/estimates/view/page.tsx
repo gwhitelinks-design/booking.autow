@@ -121,7 +121,7 @@ export default function ViewEstimatePage() {
   });
 
   const settings = businessSettings || {
-    business_name: 'AUTOW Services',
+    business_name: 'AUTOW SERVICES LTD',
     email: 'info@autow-services.co.uk',
     address: 'Alverton, Penzance, TR18 4QB',
     workshop_location: 'WORKSHOP LOCATION PENZANCE',
