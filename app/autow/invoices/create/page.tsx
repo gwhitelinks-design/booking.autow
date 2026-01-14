@@ -53,14 +53,17 @@ LABOUR ON COMPLETION
 
 Best Regards
 
-G, AuToW Services
+Gavin
+AuToW Services
 
 
 BACS DETAILS:
-Account Name: Gavin White
+Account Name: Autow Services LTD
 S/C: 04-06-05
-A/N: 20052044
-(Business Account)`;
+A/N: 29892012
+(Business Account)
+
+Company Number: 16952633`;
 
   const [formData, setFormData] = useState<FormData>({
     invoice_number: '',
