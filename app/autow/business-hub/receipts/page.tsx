@@ -66,7 +66,7 @@ export default function ReceiptsSummaryPage() {
   const fetchReceipts = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('staffToken');
+      const token = localStorage.getItem('autow_token');
       let url = '/api/autow/receipt/list?';
 
       if (categoryFilter !== 'all') {
@@ -170,6 +170,7 @@ export default function ReceiptsSummaryPage() {
 
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       minHeight: '100vh',
       backgroundColor: '#000',
       padding: '20px',

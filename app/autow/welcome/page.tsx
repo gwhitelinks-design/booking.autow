@@ -44,12 +44,12 @@ export default function WelcomePage() {
 
         <div style={styles.optionsGrid}>
           <button
-            onClick={() => router.push('/autow/booking')}
-            style={styles.optionCard}
+            onClick={() => router.push('/autow/business-hub')}
+            style={{...styles.optionCard, borderColor: 'rgba(0, 200, 255, 0.4)'}}
           >
-            <div style={styles.optionIcon}>📅</div>
-            <h2 style={styles.optionTitle}>New Booking</h2>
-            <p style={styles.optionDescription}>Create a new customer booking</p>
+            <div style={styles.optionIcon}>💼</div>
+            <h2 style={styles.optionTitle}>Business Hub</h2>
+            <p style={styles.optionDescription}>Mileage, Expenses & Financials</p>
           </button>
 
           <button
@@ -57,8 +57,17 @@ export default function WelcomePage() {
             style={styles.optionCard}
           >
             <div style={styles.optionIcon}>📊</div>
-            <h2 style={styles.optionTitle}>View Dashboard</h2>
+            <h2 style={styles.optionTitle}>Booking Dashboard</h2>
             <p style={styles.optionDescription}>Manage existing bookings</p>
+          </button>
+
+          <button
+            onClick={() => router.push('/autow/booking')}
+            style={styles.optionCard}
+          >
+            <div style={styles.optionIcon}>📅</div>
+            <h2 style={styles.optionTitle}>New Booking</h2>
+            <p style={styles.optionDescription}>Create a new customer booking</p>
           </button>
 
           <button
@@ -113,15 +122,6 @@ export default function WelcomePage() {
             <div style={styles.optionIcon}>🧾</div>
             <h2 style={styles.optionTitle}>Receipts</h2>
             <p style={styles.optionDescription}>Upload and manage receipts</p>
-          </button>
-
-          <button
-            onClick={() => router.push('/autow/business-hub')}
-            style={{...styles.optionCard, borderColor: 'rgba(0, 200, 255, 0.4)'}}
-          >
-            <div style={styles.optionIcon}>📊</div>
-            <h2 style={styles.optionTitle}>Business Hub</h2>
-            <p style={styles.optionDescription}>Mileage, Expenses & Financials</p>
           </button>
         </div>
 

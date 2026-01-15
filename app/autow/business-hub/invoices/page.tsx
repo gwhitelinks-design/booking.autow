@@ -43,7 +43,7 @@ export default function InvoicesSummaryPage() {
   const fetchInvoices = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('staffToken');
+      const token = localStorage.getItem('autow_token');
       const response = await fetch('/api/autow/invoice/list?status=paid&limit=500', {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -145,6 +145,7 @@ export default function InvoicesSummaryPage() {
 
   const styles: { [key: string]: React.CSSProperties } = {
     container: {
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       minHeight: '100vh',
       backgroundColor: '#000',
       padding: '20px',
