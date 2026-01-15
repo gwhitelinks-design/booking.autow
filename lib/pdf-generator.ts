@@ -2,7 +2,9 @@ import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
 
 // Configure chromium for serverless environment
+// @ts-ignore - These properties exist at runtime
 chromium.setHeadlessMode = true;
+// @ts-ignore - These properties exist at runtime
 chromium.setGraphicsMode = false;
 
 /**
