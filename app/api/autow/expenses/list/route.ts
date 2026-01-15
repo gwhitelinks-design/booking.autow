@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
 
-    let query = 'SELECT * FROM expenses';
+    let query = 'SELECT * FROM business_expenses';
     const params: string[] = [];
 
     if (category && category !== 'all') {
@@ -35,10 +35,13 @@ export async function GET(request: NextRequest) {
       const amount = parseFloat(row.amount) || 0;
       const vat = parseFloat(row.vat) || 0;
       const deductiblePercent = row.tax_deductible_percent || 100;
+      const allowable = row.allowable_for_tax !== false;
 
       totalAmount += amount;
       totalVat += vat;
-      totalDeductible += amount * (deductiblePercent / 100);
+      if (allowable) {
+        totalDeductible += amount * (deductiblePercent / 100);
+      }
     });
 
     return NextResponse.json({

@@ -22,7 +22,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     const result = await pool.query(
-      'DELETE FROM expenses WHERE id = $1 RETURNING *',
+      'DELETE FROM business_expenses WHERE id = $1 RETURNING *',
       [id]
     );
 

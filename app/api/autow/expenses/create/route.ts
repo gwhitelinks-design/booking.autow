@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
       payment_method,
       tax_deductible_percent,
       is_recurring,
+      allowable_for_tax,
+      notes,
     } = body;
 
     // Validate required fields
@@ -34,10 +36,11 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await pool.query(`
-      INSERT INTO expenses (
+      INSERT INTO business_expenses (
         date, category, subcategory, description, supplier,
-        amount, vat, payment_method, tax_deductible_percent, is_recurring
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
+        amount, vat, payment_method, tax_deductible_percent, is_recurring,
+        allowable_for_tax, notes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
       RETURNING *
     `, [
       date,
@@ -50,6 +53,8 @@ export async function POST(request: NextRequest) {
       payment_method || '',
       tax_deductible_percent || 100,
       is_recurring || false,
+      allowable_for_tax !== false,
+      notes || '',
     ]);
 
     return NextResponse.json({

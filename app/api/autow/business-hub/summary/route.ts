@@ -33,30 +33,30 @@ export async function GET(request: NextRequest) {
 
     const receiptStats = receiptsResult.rows[0];
 
-    // Get expenses total (check if table exists first)
+    // Get expenses total (from autow-services-ltd database)
     let expensesTotal = 0;
     try {
       const expensesResult = await pool.query(`
         SELECT COALESCE(SUM(amount), 0) as total
-        FROM expenses
+        FROM business_expenses
       `);
       expensesTotal = parseFloat(expensesResult.rows[0]?.total || 0);
     } catch (e) {
       // Table might not exist yet
-      console.log('Expenses table not found, using 0');
+      console.log('business_expenses table not found, using 0');
     }
 
-    // Get mileage claim total (check if table exists first)
+    // Get mileage claim total (from autow-services-ltd database)
     let mileageClaim = 0;
     try {
       const mileageResult = await pool.query(`
         SELECT COALESCE(SUM(claim_amount), 0) as total
-        FROM mileage_entries
+        FROM business_mileage
       `);
       mileageClaim = parseFloat(mileageResult.rows[0]?.total || 0);
     } catch (e) {
       // Table might not exist yet
-      console.log('Mileage table not found, using 0');
+      console.log('business_mileage table not found, using 0');
     }
 
     return NextResponse.json({

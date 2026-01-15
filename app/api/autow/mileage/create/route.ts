@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
+// HMRC Mileage Rates 2025/26
+const RATE_FIRST_10K = 0.45;
+const RATE_AFTER_10K = 0.25;
+
 export async function POST(request: NextRequest) {
   try {
     // Check authorization
@@ -20,6 +24,7 @@ export async function POST(request: NextRequest) {
       purpose,
       miles,
       claim_amount,
+      notes,
     } = body;
 
     // Validate required fields
@@ -30,12 +35,39 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Calculate rate applied based on YTD miles
+    const ytdResult = await pool.query(`
+      SELECT COALESCE(SUM(miles), 0) as total_miles
+      FROM business_mileage
+      WHERE EXTRACT(YEAR FROM date) = EXTRACT(YEAR FROM $1::date)
+    `, [date]);
+
+    const ytdMiles = parseFloat(ytdResult.rows[0]?.total_miles || 0);
+    const milesNum = parseFloat(miles);
+
+    let rateApplied = RATE_FIRST_10K;
+    let calculatedClaim = milesNum * RATE_FIRST_10K;
+
+    if (ytdMiles >= 10000) {
+      // All at lower rate
+      rateApplied = RATE_AFTER_10K;
+      calculatedClaim = milesNum * RATE_AFTER_10K;
+    } else if (ytdMiles + milesNum > 10000) {
+      // Split rate
+      const milesAt45p = 10000 - ytdMiles;
+      const milesAt25p = milesNum - milesAt45p;
+      calculatedClaim = (milesAt45p * RATE_FIRST_10K) + (milesAt25p * RATE_AFTER_10K);
+      rateApplied = calculatedClaim / milesNum;
+    }
+
+    const finalClaim = claim_amount !== undefined ? claim_amount : Math.round(calculatedClaim * 100) / 100;
+
     const result = await pool.query(`
-      INSERT INTO mileage_entries (
-        date, vehicle, start_location, destination, purpose, miles, claim_amount
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+      INSERT INTO business_mileage (
+        date, vehicle, start_location, destination, purpose, miles, rate_applied, claim_amount, notes
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
       RETURNING *
-    `, [date, vehicle, start_location, destination, purpose || '', miles, claim_amount || 0]);
+    `, [date, vehicle, start_location, destination, purpose || '', miles, Math.round(rateApplied * 100) / 100, finalClaim, notes || '']);
 
     return NextResponse.json({
       entry: result.rows[0],

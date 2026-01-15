@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     const result = await pool.query(`
-      SELECT * FROM mileage_entries
+      SELECT * FROM business_mileage
       ORDER BY date DESC, id DESC
     `);
 
