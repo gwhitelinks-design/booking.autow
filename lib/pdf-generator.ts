@@ -1,12 +1,6 @@
 import puppeteer from 'puppeteer-core';
 import chromium from '@sparticuz/chromium';
 
-// Configure chromium for serverless environment
-// @ts-ignore - These properties exist at runtime
-chromium.setHeadlessMode = true;
-// @ts-ignore - These properties exist at runtime
-chromium.setGraphicsMode = false;
-
 /**
  * Generate a PDF from a URL (typically a share link)
  * Returns the PDF as a Buffer for direct upload to Google Drive
@@ -18,23 +12,27 @@ export async function generatePdfFromUrl(url: string): Promise<Buffer> {
     // Determine if we're running locally or in serverless
     const isLocal = process.env.NODE_ENV === 'development' || !process.env.VERCEL;
 
-    const launchOptions = isLocal
-      ? {
-          // Local development - use installed Chrome
-          executablePath: process.platform === 'win32'
-            ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
-            : process.platform === 'darwin'
-            ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
-            : '/usr/bin/google-chrome',
-          headless: true,
-          args: ['--no-sandbox', '--disable-setuid-sandbox'],
-        }
-      : {
-          // Serverless (Vercel) - use @sparticuz/chromium
-          executablePath: await chromium.executablePath(),
-          headless: chromium.headless,
-          args: chromium.args,
-        };
+    let launchOptions: any;
+
+    if (isLocal) {
+      // Local development - use installed Chrome
+      launchOptions = {
+        executablePath: process.platform === 'win32'
+          ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe'
+          : process.platform === 'darwin'
+          ? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
+          : '/usr/bin/google-chrome',
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      };
+    } else {
+      // Serverless (Vercel) - use @sparticuz/chromium
+      launchOptions = {
+        executablePath: await chromium.executablePath(),
+        headless: true,
+        args: chromium.args,
+      };
+    }
 
     browser = await puppeteer.launch(launchOptions);
     const page = await browser.newPage();
