@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { deleteFile } from '@/lib/google-drive';
 import { google } from 'googleapis';
 
 // Helper to get Drive client for folder deletion
@@ -47,10 +46,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invoice ID is required' }, { status: 400 });
     }
 
-    // First, get the invoice to check status and get Drive folder ID
+    // First, get the invoice to check status
     const invoiceQuery = await pool.query(
-      `SELECT id, status, gdrive_folder_id, gdrive_pdf_id
-       FROM invoices WHERE id = $1`,
+      `SELECT id, status FROM invoices WHERE id = $1`,
       [id]
     );
 
@@ -64,43 +62,81 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invoice is not marked as paid' }, { status: 400 });
     }
 
-    // Delete the Google Drive folder (this deletes the PDF inside too)
+    // Try to get Google Drive folder ID if column exists
     let driveDeleted = false;
-    if (invoice.gdrive_folder_id) {
-      try {
-        await deleteFolder(invoice.gdrive_folder_id);
-        driveDeleted = true;
-        console.log('Deleted Google Drive folder:', invoice.gdrive_folder_id);
-      } catch (driveError: any) {
-        console.error('Error deleting Google Drive folder:', driveError);
-        // Continue anyway - folder might have been manually deleted
+    try {
+      const driveQuery = await pool.query(
+        `SELECT gdrive_folder_id FROM invoices WHERE id = $1`,
+        [id]
+      );
+      const gdriveFolderId = driveQuery.rows[0]?.gdrive_folder_id;
+
+      if (gdriveFolderId) {
+        try {
+          await deleteFolder(gdriveFolderId);
+          driveDeleted = true;
+          console.log('Deleted Google Drive folder:', gdriveFolderId);
+        } catch (driveError: any) {
+          console.error('Error deleting Google Drive folder:', driveError);
+          // Continue anyway - folder might have been manually deleted
+        }
       }
+    } catch (columnError) {
+      // gdrive_folder_id column doesn't exist yet - skip Drive deletion
+      console.log('gdrive_folder_id column not found, skipping Drive deletion');
     }
 
-    // Mark invoice as unpaid and clear payment/drive fields
-    const result = await pool.query(
-      `UPDATE invoices
-       SET status = 'pending',
-           payment_method = NULL,
-           payment_reference = NULL,
-           payment_date = NULL,
-           paid_at = NULL,
-           amount_paid = 0,
-           balance_due = total,
-           gdrive_folder_id = NULL,
-           gdrive_folder_name = NULL,
-           gdrive_pdf_id = NULL,
-           gdrive_pdf_url = NULL
-       WHERE id = $1
-       RETURNING *`,
-      [id]
-    );
+    // Mark invoice as unpaid and clear payment fields
+    // Use dynamic SQL to handle columns that may not exist
+    let updateQuery = `
+      UPDATE invoices
+      SET status = 'pending',
+          payment_method = NULL,
+          payment_reference = NULL,
+          payment_date = NULL,
+          paid_at = NULL,
+          amount_paid = 0,
+          balance_due = total
+      WHERE id = $1
+      RETURNING *`;
 
-    return NextResponse.json({
-      message: 'Invoice marked as unpaid successfully',
-      invoice: result.rows[0],
-      driveDeleted,
-    });
+    // Try to also clear gdrive columns if they exist
+    try {
+      const result = await pool.query(
+        `UPDATE invoices
+         SET status = 'pending',
+             payment_method = NULL,
+             payment_reference = NULL,
+             payment_date = NULL,
+             paid_at = NULL,
+             amount_paid = 0,
+             balance_due = total,
+             gdrive_folder_id = NULL,
+             gdrive_folder_name = NULL,
+             gdrive_pdf_id = NULL,
+             gdrive_pdf_url = NULL
+         WHERE id = $1
+         RETURNING *`,
+        [id]
+      );
+
+      return NextResponse.json({
+        message: 'Invoice marked as unpaid successfully',
+        invoice: result.rows[0],
+        driveDeleted,
+      });
+    } catch (updateError: any) {
+      // If gdrive columns don't exist, use simpler update
+      if (updateError.message?.includes('column') || updateError.code === '42703') {
+        const result = await pool.query(updateQuery, [id]);
+        return NextResponse.json({
+          message: 'Invoice marked as unpaid successfully',
+          invoice: result.rows[0],
+          driveDeleted,
+        });
+      }
+      throw updateError;
+    }
 
   } catch (error: any) {
     console.error('Error marking invoice as unpaid:', error);
