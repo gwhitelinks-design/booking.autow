@@ -666,7 +666,7 @@ export default function ViewInvoicePage() {
             {invoice.line_items && invoice.line_items.map((item, index) => (
               <tr key={index}>
                 <td style={styles.td} className="desc-col">
-                  {item.description}
+                  <span style={styles.descriptionText}>{item.description}</span>
                   {item.item_type !== 'service' && (
                     <span style={item.item_type === 'discount' ? styles.discountType : styles.itemType}> ({item.item_type})</span>
                   )}
@@ -1243,6 +1243,9 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '12px',
     color: '#666',
     fontStyle: 'italic' as const,
+  },
+  descriptionText: {
+    whiteSpace: 'pre-line' as const,
   },
   discountType: {
     fontSize: '12px',
