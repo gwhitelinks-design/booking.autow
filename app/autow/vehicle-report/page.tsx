@@ -27,6 +27,9 @@ export default function VehicleReportsPage() {
   const [sendMessage, setSendMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleteReportId, setDeleteReportId] = useState<number | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('autow_token');
@@ -128,6 +131,40 @@ export default function VehicleReportsPage() {
       }
     } catch (error) {
       setNotification({ type: 'error', message: 'Failed to copy link' });
+    }
+  };
+
+  const handleDeleteClick = (reportId: number) => {
+    setDeleteReportId(reportId);
+    setShowDeleteModal(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteReportId) return;
+
+    setDeleting(true);
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(`/api/autow/vehicle-report/delete?id=${deleteReportId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        setNotification({ type: 'success', message: 'Report deleted successfully' });
+        setShowDeleteModal(false);
+        fetchReports(); // Refresh the list
+        setTimeout(() => setNotification(null), 3000);
+      } else {
+        const data = await response.json();
+        setNotification({ type: 'error', message: data.error || 'Failed to delete' });
+      }
+    } catch (error) {
+      setNotification({ type: 'error', message: 'Failed to delete report' });
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -284,6 +321,12 @@ export default function VehicleReportsPage() {
                     Edit
                   </button>
                 )}
+                <button
+                  onClick={() => handleDeleteClick(report.id)}
+                  style={styles.deleteButton}
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))
@@ -331,6 +374,26 @@ export default function VehicleReportsPage() {
               </button>
               <button onClick={handleSendEmail} style={styles.confirmBtn} disabled={sending}>
                 {sending ? 'Sending...' : 'Send Report'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div style={styles.modalOverlay} onClick={() => setShowDeleteModal(false)}>
+          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
+            <h2 style={styles.modalTitle}>Delete Report</h2>
+            <p style={styles.deleteWarning}>
+              Are you sure you want to delete this vehicle report? This action cannot be undone.
+            </p>
+            <div style={styles.modalActions}>
+              <button onClick={() => setShowDeleteModal(false)} style={styles.cancelBtn}>
+                Cancel
+              </button>
+              <button onClick={handleConfirmDelete} style={styles.deleteBtnConfirm} disabled={deleting}>
+                {deleting ? 'Deleting...' : 'Delete Report'}
               </button>
             </div>
           </div>
@@ -528,6 +591,31 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '6px',
     fontSize: '13px',
     cursor: 'pointer',
+  },
+  deleteButton: {
+    padding: '8px 12px',
+    background: 'rgba(244, 67, 54, 0.2)',
+    color: '#f44336',
+    border: '1px solid rgba(244, 67, 54, 0.3)',
+    borderRadius: '6px',
+    fontSize: '13px',
+    cursor: 'pointer',
+  },
+  deleteWarning: {
+    color: '#ccc',
+    fontSize: '14px',
+    lineHeight: '1.5',
+    marginBottom: '20px',
+  },
+  deleteBtnConfirm: {
+    padding: '10px 20px',
+    background: '#f44336',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    cursor: 'pointer',
+    fontWeight: '600' as const,
   },
   notification: {
     position: 'fixed' as const,
