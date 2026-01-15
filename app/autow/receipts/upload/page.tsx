@@ -293,6 +293,12 @@ export default function ReceiptUploadPage() {
   const [receiptDate, setReceiptDate] = useState(new Date().toISOString().slice(0, 10));
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
+  const [folderId, setFolderId] = useState('');
+  const [folders, setFolders] = useState<{ invoiceFolders: Array<{ id: string; name: string }>; expensesFolder: { id: string; name: string } | null }>({
+    invoiceFolders: [],
+    expensesFolder: null,
+  });
+  const [loadingFolders, setLoadingFolders] = useState(true);
 
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -310,6 +316,29 @@ export default function ReceiptUploadPage() {
       router.push('/autow');
     }
   }, [router]);
+
+  // Fetch Google Drive folders for dropdown
+  useEffect(() => {
+    const fetchFolders = async () => {
+      try {
+        const token = localStorage.getItem('autow_token');
+        const response = await fetch('/api/autow/drive/folders', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setFolders(data);
+        }
+      } catch (err) {
+        console.error('Error fetching folders:', err);
+      } finally {
+        setLoadingFolders(false);
+      }
+    };
+    fetchFolders();
+  }, []);
 
   const parseReceipt = async (imgData: string) => {
     setScanning(true);
@@ -401,6 +430,7 @@ export default function ReceiptUploadPage() {
     setReceiptDate(new Date().toISOString().slice(0, 10));
     setCategory('');
     setDescription('');
+    setFolderId('');
     setScanned(false);
     setConfidence(null);
     setAutoFilledFields(new Set());
@@ -436,6 +466,10 @@ export default function ReceiptUploadPage() {
       setError('Please enter a valid amount');
       return;
     }
+    if (!folderId) {
+      setError('Please select a folder to save the receipt to');
+      return;
+    }
 
     setLoading(true);
     setLoadingMessage('Uploading to Google Drive...');
@@ -455,6 +489,7 @@ export default function ReceiptUploadPage() {
           receipt_date: receiptDate,
           category: category || null,
           description: description.trim() || null,
+          folderId: folderId || null,
         }),
       });
 
@@ -479,7 +514,7 @@ export default function ReceiptUploadPage() {
     }
   };
 
-  const isFormValid = imageData && supplier.trim() && amount && parseFloat(amount) > 0;
+  const isFormValid = imageData && supplier.trim() && amount && parseFloat(amount) > 0 && folderId;
 
   return (
     <div style={styles.container}>
@@ -662,6 +697,37 @@ export default function ReceiptUploadPage() {
             <option value="supplies">Supplies</option>
             <option value="misc">Miscellaneous</option>
           </select>
+        </div>
+
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Save to Folder <span style={styles.required}>*</span>
+          </label>
+          <select
+            value={folderId}
+            onChange={(e) => setFolderId(e.target.value)}
+            style={styles.select}
+            disabled={loadingFolders}
+          >
+            <option value="">{loadingFolders ? 'Loading folders...' : 'Select folder...'}</option>
+            {folders.expensesFolder && (
+              <option value={folders.expensesFolder.id}>
+                📁 General Expenses
+              </option>
+            )}
+            {folders.invoiceFolders.length > 0 && (
+              <optgroup label="Invoice Folders">
+                {folders.invoiceFolders.map((folder) => (
+                  <option key={folder.id} value={folder.id}>
+                    📂 {folder.name}
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+          <span style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+            Link this receipt to an invoice folder or save to General Expenses
+          </span>
         </div>
 
         <div style={styles.formGroup}>

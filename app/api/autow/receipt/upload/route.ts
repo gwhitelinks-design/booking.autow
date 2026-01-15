@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { uploadReceiptImage as uploadToGoogleDrive } from '@/lib/google-drive';
-import { getMonthlyFolderPath } from '@/lib/supabase-storage';
+import { uploadReceiptToFolder, ensureExpensesFolder } from '@/lib/google-drive';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,6 +19,7 @@ export async function POST(request: NextRequest) {
       amount,
       receipt_date,
       category,
+      folderId,
       created_by = 'Staff'
     } = body;
 
@@ -36,11 +36,21 @@ export async function POST(request: NextRequest) {
 
     const finalReceiptDate = receipt_date || new Date().toISOString().slice(0, 10);
 
-    // Upload image to Google Drive ONLY (Supabase Storage disabled to save quota)
-    let driveResult: { fileId: string; webViewLink: string; folderPath: string };
+    // Determine target folder - if no folderId provided, use Expenses folder
+    let targetFolderId = folderId;
+    let folderName = 'Selected Folder';
+
+    if (!targetFolderId) {
+      // Default to Expenses folder if no folder selected
+      targetFolderId = await ensureExpensesFolder();
+      folderName = 'General Expenses';
+    }
+
+    // Upload image to Google Drive
+    let driveResult: { fileId: string; webViewLink: string };
 
     try {
-      driveResult = await uploadToGoogleDrive(imageData, supplier, finalReceiptDate);
+      driveResult = await uploadReceiptToFolder(imageData, supplier, targetFolderId);
       console.log('Google Drive upload successful:', driveResult.webViewLink);
     } catch (driveError: any) {
       console.error('Google Drive upload failed:', driveError);
@@ -55,6 +65,7 @@ export async function POST(request: NextRequest) {
     const receipt_number = numberResult.rows[0].receipt_number;
 
     // Insert receipt METADATA into database (image stored in Google Drive only)
+    // Note: Using gdrive_folder_path to store folder ID for backwards compatibility
     const result = await pool.query(
       `INSERT INTO receipts (
         receipt_number, receipt_date, supplier, description, amount, category,
@@ -72,7 +83,7 @@ export async function POST(request: NextRequest) {
         category || null,
         driveResult.fileId,
         driveResult.webViewLink,
-        driveResult.folderPath,
+        targetFolderId,
         created_by
       ]
     );
