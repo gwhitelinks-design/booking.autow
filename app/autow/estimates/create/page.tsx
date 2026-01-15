@@ -1298,6 +1298,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: '100%',
     boxSizing: 'border-box' as const,
     maxWidth: '100%',
+    WebkitTextFillColor: '#fff',
+    colorScheme: 'dark',
   },
   lineItemsTable: {
     marginBottom: '20px',
@@ -1571,6 +1573,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#fff',
     fontSize: '13px',
     textAlign: 'center' as const,
+    WebkitTextFillColor: '#fff',
+    colorScheme: 'dark',
   },
   submitSection: {
     display: 'flex',

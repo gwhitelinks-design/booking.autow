@@ -759,7 +759,7 @@ Company Number: 16952633`;
                     step="0.01"
                     value={item.rate}
                     onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)}
-                    style={styles.input}
+                    style={styles.numberInput}
                   />
                 </div>
 
@@ -769,7 +769,7 @@ Company Number: 16952633`;
                     step="0.01"
                     value={item.quantity}
                     onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                    style={styles.input}
+                    style={styles.numberInput}
                   />
                 </div>
 
@@ -1248,6 +1248,20 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxSizing: 'border-box' as const,
     maxWidth: '100%',
   },
+  numberInput: {
+    padding: '12px 13px',
+    background: '#0a0a0a',
+    border: '1px solid rgba(48, 255, 55, 0.2)',
+    borderRadius: '6px',
+    color: '#fff',
+    fontSize: '14px',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box' as const,
+    maxWidth: '100%',
+    WebkitTextFillColor: '#fff',
+    colorScheme: 'dark',
+  },
   lineItemsTable: {
     marginBottom: '20px',
   },
@@ -1374,6 +1388,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#fff',
     fontSize: '13px',
     textAlign: 'center' as const,
+    WebkitTextFillColor: '#fff',
+    colorScheme: 'dark',
   },
   submitSection: {
     display: 'flex',
