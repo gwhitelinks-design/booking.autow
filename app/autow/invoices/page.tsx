@@ -93,6 +93,33 @@ export default function InvoicesPage() {
     }
   };
 
+  const markAsUnpaid = async (invoiceId: number) => {
+    if (!confirm('Mark this invoice as unpaid? This will also delete the invoice folder and PDF from Google Drive.')) return;
+
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/invoice/mark-as-unpaid', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ id: invoiceId })
+      });
+
+      if (response.ok) {
+        alert('Invoice marked as unpaid. Google Drive folder deleted.');
+        fetchInvoices();
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error marking invoice as unpaid:', error);
+      alert('Failed to mark invoice as unpaid');
+    }
+  };
+
   const generateShareLink = async (invoiceId: number) => {
     try {
       const token = localStorage.getItem('autow_token');
@@ -286,6 +313,14 @@ export default function InvoicesPage() {
                     style={{ ...styles.actionButton, ...styles.paidButton }}
                   >
                     Mark as Paid
+                  </button>
+                )}
+                {invoice.status === 'paid' && (
+                  <button
+                    onClick={() => markAsUnpaid(invoice.id!)}
+                    style={{ ...styles.actionButton, ...styles.unpaidButton }}
+                  >
+                    Mark as Unpaid
                   </button>
                 )}
                 <button
@@ -485,6 +520,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(76, 175, 80, 0.1)',
     color: '#4caf50',
     borderColor: 'rgba(76, 175, 80, 0.3)',
+  },
+  unpaidButton: {
+    background: 'rgba(255, 152, 0, 0.1)',
+    color: '#ff9800',
+    borderColor: 'rgba(255, 152, 0, 0.3)',
   },
   shareButton: {
     background: 'rgba(255, 193, 7, 0.1)',
