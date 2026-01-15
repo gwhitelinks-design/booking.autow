@@ -114,6 +114,15 @@ export default function WelcomePage() {
             <h2 style={styles.optionTitle}>Receipts</h2>
             <p style={styles.optionDescription}>Upload and manage receipts</p>
           </button>
+
+          <button
+            onClick={() => router.push('/autow/business-hub')}
+            style={{...styles.optionCard, borderColor: 'rgba(0, 200, 255, 0.4)'}}
+          >
+            <div style={styles.optionIcon}>📊</div>
+            <h2 style={styles.optionTitle}>Business Hub</h2>
+            <p style={styles.optionDescription}>Mileage, Expenses & Financials</p>
+          </button>
         </div>
 
         <button onClick={handleLogout} style={styles.logoutButton}>
