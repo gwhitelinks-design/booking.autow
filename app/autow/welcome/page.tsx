@@ -98,6 +98,15 @@ export default function WelcomePage() {
           </button>
 
           <button
+            onClick={() => router.push('/autow/vehicle-report')}
+            style={{...styles.optionCard, borderColor: 'rgba(33, 150, 243, 0.4)'}}
+          >
+            <div style={styles.optionIcon}>🚗</div>
+            <h2 style={styles.optionTitle}>Vehicle Reports</h2>
+            <p style={styles.optionDescription}>Transport & recovery check reports</p>
+          </button>
+
+          <button
             onClick={() => router.push('/autow/jotter')}
             style={{...styles.optionCard, borderColor: 'rgba(156, 39, 176, 0.4)'}}
           >
