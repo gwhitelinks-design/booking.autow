@@ -16,6 +16,16 @@ interface Expense {
   tax_deductible_percent: number;
   is_recurring: boolean;
   created_at: string;
+  invoice_id?: number;
+}
+
+interface Invoice {
+  id: number;
+  invoice_number: string;
+  client_name: string;
+  vehicle_reg: string;
+  total: number;
+  status: string;
 }
 
 const EXPENSE_CATEGORIES: { [key: string]: string[] } = {
@@ -45,6 +55,7 @@ export default function ExpensesPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [expenses, setExpenses] = useState<Expense[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filterCategory, setFilterCategory] = useState('');
   const [totals, setTotals] = useState({
     total: 0,
@@ -64,6 +75,7 @@ export default function ExpensesPage() {
     payment_method: 'Business Card',
     tax_deductible_percent: 100,
     is_recurring: false,
+    invoice_id: '',
   });
 
   useEffect(() => {
@@ -73,7 +85,24 @@ export default function ExpensesPage() {
       return;
     }
     fetchExpenses();
+    fetchInvoices();
   }, [router, filterCategory]);
+
+  const fetchInvoices = async () => {
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/invoice/list?status=paid', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setInvoices(data.invoices || []);
+      }
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+    }
+  };
 
   const fetchExpenses = async () => {
     try {
@@ -147,6 +176,7 @@ export default function ExpensesPage() {
           ...formData,
           amount: parseFloat(formData.amount),
           vat: parseFloat(formData.vat || '0'),
+          invoice_id: formData.invoice_id ? parseInt(formData.invoice_id) : null,
         })
       });
 
@@ -162,6 +192,7 @@ export default function ExpensesPage() {
           payment_method: 'Business Card',
           tax_deductible_percent: 100,
           is_recurring: false,
+          invoice_id: '',
         });
         fetchExpenses();
       } else {
@@ -216,7 +247,13 @@ export default function ExpensesPage() {
       payment_method: 'Business Card',
       tax_deductible_percent: 100,
       is_recurring: false,
+      invoice_id: '',
     });
+  };
+
+  const getInvoiceLabel = (invoiceId: number) => {
+    const invoice = invoices.find(inv => inv.id === invoiceId);
+    return invoice ? `${invoice.invoice_number} - ${invoice.client_name}` : '-';
   };
 
   if (loading) {
@@ -391,6 +428,22 @@ export default function ExpensesPage() {
                 Recurring Expense
               </label>
             </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Link to Invoice (Job Costing)</label>
+              <select
+                value={formData.invoice_id}
+                onChange={(e) => setFormData({ ...formData, invoice_id: e.target.value })}
+                style={styles.invoiceSelect}
+              >
+                <option value="">No invoice (general expense)</option>
+                {invoices.map(inv => (
+                  <option key={inv.id} value={inv.id}>
+                    {inv.invoice_number} - {inv.client_name} ({inv.vehicle_reg}) £{parseFloat(String(inv.total)).toFixed(2)}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
           <div style={styles.formActions}>
@@ -431,13 +484,14 @@ export default function ExpensesPage() {
                 <th style={styles.th}>Amount</th>
                 <th style={styles.th}>VAT</th>
                 <th style={styles.th}>Tax %</th>
+                <th style={styles.th}>Linked Job</th>
                 <th style={styles.th}></th>
               </tr>
             </thead>
             <tbody>
               {expenses.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={styles.emptyRow}>No expenses recorded yet</td>
+                  <td colSpan={9} style={styles.emptyRow}>No expenses recorded yet</td>
                 </tr>
               ) : (
                 expenses.map((expense) => (
@@ -454,6 +508,13 @@ export default function ExpensesPage() {
                     <td style={styles.tdAmount}>£{parseFloat(String(expense.amount)).toFixed(2)}</td>
                     <td style={styles.tdVat}>£{parseFloat(String(expense.vat || 0)).toFixed(2)}</td>
                     <td style={styles.td}>{expense.tax_deductible_percent}%</td>
+                    <td style={styles.td}>
+                      {expense.invoice_id ? (
+                        <span style={styles.linkedJobBadge}>{getInvoiceLabel(expense.invoice_id)}</span>
+                      ) : (
+                        <span style={styles.generalBadge}>General</span>
+                      )}
+                    </td>
                     <td style={styles.td}>
                       <button
                         onClick={() => handleDelete(expense.id)}
@@ -694,6 +755,30 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '4px',
     fontSize: '10px',
     marginLeft: '6px',
+  },
+  invoiceSelect: {
+    padding: '10px 12px',
+    background: '#0a0a0a',
+    border: '1px solid rgba(255, 165, 0, 0.3)',
+    borderRadius: '6px',
+    color: '#fff',
+    fontSize: '14px',
+    outline: 'none',
+  },
+  linkedJobBadge: {
+    background: 'rgba(255, 165, 0, 0.15)',
+    color: '#ffa500',
+    padding: '3px 8px',
+    borderRadius: '4px',
+    fontSize: '10px',
+    fontWeight: '600' as const,
+  },
+  generalBadge: {
+    background: 'rgba(128, 128, 128, 0.15)',
+    color: '#888',
+    padding: '3px 8px',
+    borderRadius: '4px',
+    fontSize: '10px',
   },
   emptyRow: {
     textAlign: 'center' as const,

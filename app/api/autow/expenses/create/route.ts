@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       is_recurring,
       allowable_for_tax,
       notes,
+      invoice_id,
     } = body;
 
     // Validate required fields
@@ -39,8 +40,8 @@ export async function POST(request: NextRequest) {
       INSERT INTO business_expenses (
         date, category, subcategory, description, supplier,
         amount, vat, payment_method, tax_deductible_percent, is_recurring,
-        allowable_for_tax, notes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        allowable_for_tax, notes, invoice_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
       RETURNING *
     `, [
       date,
@@ -55,6 +56,7 @@ export async function POST(request: NextRequest) {
       is_recurring || false,
       allowable_for_tax !== false,
       notes || '',
+      invoice_id || null,
     ]);
 
     return NextResponse.json({

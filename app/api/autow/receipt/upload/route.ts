@@ -20,7 +20,8 @@ export async function POST(request: NextRequest) {
       receipt_date,
       category,
       folderId,
-      created_by = 'Staff'
+      created_by = 'Staff',
+      invoice_id
     } = body;
 
     // Validate required fields
@@ -70,9 +71,9 @@ export async function POST(request: NextRequest) {
       `INSERT INTO receipts (
         receipt_number, receipt_date, supplier, description, amount, category,
         gdrive_file_id, gdrive_file_url, gdrive_folder_path,
-        status, created_by
+        status, created_by, invoice_id
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending', $10
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, 'pending', $10, $11
       ) RETURNING *`,
       [
         receipt_number,
@@ -84,7 +85,8 @@ export async function POST(request: NextRequest) {
         driveResult.fileId,
         driveResult.webViewLink,
         targetFolderId,
-        created_by
+        created_by,
+        invoice_id || null
       ]
     );
 

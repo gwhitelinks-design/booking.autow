@@ -24,6 +24,15 @@ interface MileageSummary {
   after10kClaim: number;
 }
 
+interface Invoice {
+  id: number;
+  invoice_number: string;
+  client_name: string;
+  vehicle_reg: string;
+  total: number;
+  status: string;
+}
+
 const VEHICLES = [
   { value: 'ford_ranger', label: 'Ford Ranger' },
   { value: 'recovery_truck', label: 'Recovery Truck' },
@@ -41,6 +50,7 @@ export default function MileagePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [entries, setEntries] = useState<MileageEntry[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [summary, setSummary] = useState<MileageSummary>({
     totalMiles: 0,
     totalClaim: 0,
@@ -58,6 +68,7 @@ export default function MileagePage() {
     destination: '',
     purpose: '',
     miles: '',
+    invoice_id: '',
   });
 
   // Postcode calculator state
@@ -76,7 +87,24 @@ export default function MileagePage() {
       return;
     }
     fetchMileage();
+    fetchInvoices();
   }, [router]);
+
+  const fetchInvoices = async () => {
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/invoice/list?status=paid', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setInvoices(data.invoices || []);
+      }
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+    }
+  };
 
   const fetchMileage = async () => {
     try {
@@ -158,6 +186,7 @@ export default function MileagePage() {
           ...formData,
           miles,
           claim_amount: claimAmount,
+          invoice_id: formData.invoice_id ? parseInt(formData.invoice_id) : null,
         })
       });
 
@@ -169,6 +198,7 @@ export default function MileagePage() {
           destination: '',
           purpose: '',
           miles: '',
+          invoice_id: '',
         });
         fetchMileage();
       } else {
@@ -431,6 +461,21 @@ export default function MileagePage() {
                 required
               />
             </div>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Link to Invoice (Job Costing)</label>
+              <select
+                value={formData.invoice_id}
+                onChange={(e) => setFormData({ ...formData, invoice_id: e.target.value })}
+                style={styles.invoiceSelect}
+              >
+                <option value="">No invoice (general mileage)</option>
+                {invoices.map(inv => (
+                  <option key={inv.id} value={inv.id}>
+                    {inv.invoice_number} - {inv.client_name} ({inv.vehicle_reg})
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
           <button type="submit" style={styles.submitBtn} disabled={saving}>
             {saving ? 'Saving...' : '+ Add Journey'}
@@ -659,6 +704,15 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#f44336',
     fontSize: '13px',
     marginTop: '8px',
+  },
+  invoiceSelect: {
+    padding: '12px',
+    background: '#0a0a0a',
+    border: '1px solid rgba(255, 165, 0, 0.3)',
+    borderRadius: '6px',
+    color: '#fff',
+    fontSize: '14px',
+    outline: 'none',
   },
   submitBtn: {
     padding: '14px 28px',

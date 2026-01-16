@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
       miles,
       claim_amount,
       notes,
+      invoice_id,
     } = body;
 
     // Validate required fields
@@ -64,10 +65,10 @@ export async function POST(request: NextRequest) {
 
     const result = await pool.query(`
       INSERT INTO business_mileage (
-        date, vehicle, start_location, destination, purpose, miles, rate_applied, claim_amount, notes
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        date, vehicle, start_location, destination, purpose, miles, rate_applied, claim_amount, notes, invoice_id
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
       RETURNING *
-    `, [date, vehicle, start_location, destination, purpose || '', miles, Math.round(rateApplied * 100) / 100, finalClaim, notes || '']);
+    `, [date, vehicle, start_location, destination, purpose || '', miles, Math.round(rateApplied * 100) / 100, finalClaim, notes || '', invoice_id || null]);
 
     return NextResponse.json({
       entry: result.rows[0],

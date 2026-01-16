@@ -299,6 +299,8 @@ export default function ReceiptUploadPage() {
     expensesFolder: null,
   });
   const [loadingFolders, setLoadingFolders] = useState(true);
+  const [invoiceId, setInvoiceId] = useState('');
+  const [invoices, setInvoices] = useState<Array<{ id: number; invoice_number: string; client_name: string; vehicle_reg: string; total: number }>>([]);
 
   const [loading, setLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
@@ -338,6 +340,25 @@ export default function ReceiptUploadPage() {
       }
     };
     fetchFolders();
+  }, []);
+
+  // Fetch invoices for job costing link
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        const token = localStorage.getItem('autow_token');
+        const response = await fetch('/api/autow/invoice/list?status=paid', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          setInvoices(data.invoices || []);
+        }
+      } catch (err) {
+        console.error('Error fetching invoices:', err);
+      }
+    };
+    fetchInvoices();
   }, []);
 
   const parseReceipt = async (imgData: string) => {
@@ -431,6 +452,7 @@ export default function ReceiptUploadPage() {
     setCategory('');
     setDescription('');
     setFolderId('');
+    setInvoiceId('');
     setScanned(false);
     setConfidence(null);
     setAutoFilledFields(new Set());
@@ -490,6 +512,7 @@ export default function ReceiptUploadPage() {
           category: category || null,
           description: description.trim() || null,
           folderId: folderId || null,
+          invoice_id: invoiceId ? parseInt(invoiceId) : null,
         }),
       });
 
@@ -727,6 +750,27 @@ export default function ReceiptUploadPage() {
           </select>
           <span style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
             Link this receipt to an invoice folder or save to General Expenses
+          </span>
+        </div>
+
+        <div style={styles.formGroup}>
+          <label style={styles.label}>
+            Link to Invoice (Job Costing)
+          </label>
+          <select
+            value={invoiceId}
+            onChange={(e) => setInvoiceId(e.target.value)}
+            style={{ ...styles.select, borderColor: invoiceId ? 'rgba(255, 165, 0, 0.4)' : '#333' }}
+          >
+            <option value="">No invoice (general expense)</option>
+            {invoices.map((inv) => (
+              <option key={inv.id} value={inv.id}>
+                {inv.invoice_number} - {inv.client_name} ({inv.vehicle_reg}) £{parseFloat(String(inv.total)).toFixed(2)}
+              </option>
+            ))}
+          </select>
+          <span style={{ fontSize: '12px', color: '#ffa500', marginTop: '4px' }}>
+            Link to a paid invoice to track job profitability
           </span>
         </div>
 
