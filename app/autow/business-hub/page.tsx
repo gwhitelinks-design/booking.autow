@@ -152,6 +152,20 @@ export default function BusinessHubPage() {
             £{stats.totalExpenses.toFixed(2)} total
           </div>
         </button>
+
+        <button
+          onClick={() => router.push('/autow/business-hub/tax-summary')}
+          style={{...styles.hubCard, border: '2px solid rgba(255, 165, 0, 0.4)'}}
+        >
+          <div style={styles.hubIcon}>🏛️</div>
+          <h2 style={{...styles.hubTitle, color: '#ffa500'}}>Tax Summary</h2>
+          <p style={styles.hubDescription}>
+            Calculate tax holdback and view profit breakdown
+          </p>
+          <div style={{...styles.hubStat, background: 'rgba(255, 165, 0, 0.15)', color: '#ffa500'}}>
+            Corporation Tax Calculator
+          </div>
+        </button>
       </div>
 
       {/* Quick Info */}
