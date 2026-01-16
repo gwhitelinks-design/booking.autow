@@ -12,6 +12,12 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   title: 'AUTOW Services',
   description: 'Professional mobile mechanic and automotive services in Cornwall. Mobile repairs, garage services, vehicle recovery, and ECU remapping.',
+  manifest: '/manifest.json',
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'AUTOW',
+  },
   keywords: 'mobile mechanic, auto repair, vehicle recovery, ECU remapping, Cornwall, Penzance',
   authors: [{ name: 'AUTOW Services' }],
   creator: 'AUTOW Services',
