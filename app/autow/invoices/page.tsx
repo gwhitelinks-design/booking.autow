@@ -70,7 +70,7 @@ export default function InvoicesPage() {
     }
   };
 
-  const getStatusBadge = (status: string, profit?: number) => {
+  const getStatusBadge = (status: string, profit?: number | string | null) => {
     const statusStyles = {
       pending: { bg: 'rgba(255, 193, 7, 0.2)', color: '#ffc107' },
       paid: { bg: 'rgba(76, 175, 80, 0.2)', color: '#4caf50' },
@@ -90,13 +90,13 @@ export default function InvoicesPage() {
         }}>
           {status.toUpperCase()}
         </span>
-        {status === 'completed' && profit !== undefined && (
+        {status === 'completed' && profit !== undefined && profit !== null && (
           <span style={{
             fontSize: '12px',
-            color: profit >= 0 ? '#4caf50' : '#f44336',
+            color: parseFloat(String(profit)) >= 0 ? '#4caf50' : '#f44336',
             fontWeight: '600',
           }}>
-            Profit: £{profit.toFixed(2)}
+            Profit: £{parseFloat(String(profit)).toFixed(2)}
           </span>
         )}
       </div>
