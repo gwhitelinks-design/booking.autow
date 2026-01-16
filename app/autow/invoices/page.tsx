@@ -4,11 +4,36 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Invoice } from '@/lib/types';
 
+interface JobCostPreview {
+  invoice: {
+    id: number;
+    invoice_number: string;
+    client_name: string;
+    vehicle_reg: string;
+    total: number;
+    vat: number;
+    net: number;
+    status: string;
+  };
+  costs: {
+    parts: { total: number; count: number; items: any[] };
+    mileage: { total: number; count: number; items: any[] };
+    totalCosts: number;
+  };
+  profit: {
+    amount: number;
+    margin: number;
+  };
+}
+
 export default function InvoicesPage() {
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [showJobDoneModal, setShowJobDoneModal] = useState(false);
+  const [jobCostPreview, setJobCostPreview] = useState<JobCostPreview | null>(null);
+  const [processingJobComplete, setProcessingJobComplete] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('autow_token');
@@ -45,10 +70,11 @@ export default function InvoicesPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
+  const getStatusBadge = (status: string, profit?: number) => {
     const statusStyles = {
       pending: { bg: 'rgba(255, 193, 7, 0.2)', color: '#ffc107' },
       paid: { bg: 'rgba(76, 175, 80, 0.2)', color: '#4caf50' },
+      completed: { bg: 'rgba(156, 39, 176, 0.2)', color: '#9c27b0' },
       overdue: { bg: 'rgba(244, 67, 54, 0.2)', color: '#f44336' },
       cancelled: { bg: 'rgba(158, 158, 158, 0.2)', color: '#9e9e9e' }
     };
@@ -56,13 +82,24 @@ export default function InvoicesPage() {
     const style = statusStyles[status as keyof typeof statusStyles] || statusStyles.pending;
 
     return (
-      <span style={{
-        ...styles.statusBadge,
-        background: style.bg,
-        color: style.color
-      }}>
-        {status.toUpperCase()}
-      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+        <span style={{
+          ...styles.statusBadge,
+          background: style.bg,
+          color: style.color
+        }}>
+          {status.toUpperCase()}
+        </span>
+        {status === 'completed' && profit !== undefined && (
+          <span style={{
+            fontSize: '12px',
+            color: profit >= 0 ? '#4caf50' : '#f44336',
+            fontWeight: '600',
+          }}>
+            Profit: £{profit.toFixed(2)}
+          </span>
+        )}
+      </div>
     );
   };
 
@@ -177,6 +214,61 @@ export default function InvoicesPage() {
     }
   };
 
+  const openJobDoneModal = async (invoiceId: number) => {
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(`/api/autow/invoice/complete?invoiceId=${invoiceId}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setJobCostPreview(data);
+        setShowJobDoneModal(true);
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error fetching job costs:', error);
+      alert('Failed to load job costs');
+    }
+  };
+
+  const confirmJobComplete = async () => {
+    if (!jobCostPreview) return;
+
+    setProcessingJobComplete(true);
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/invoice/complete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ invoiceId: jobCostPreview.invoice.id })
+      });
+
+      if (response.ok) {
+        setShowJobDoneModal(false);
+        setJobCostPreview(null);
+        alert('Job marked as complete!');
+        fetchInvoices();
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error completing job:', error);
+      alert('Failed to complete job');
+    } finally {
+      setProcessingJobComplete(false);
+    }
+  };
+
   if (loading) {
     return (
       <div style={styles.container}>
@@ -219,7 +311,7 @@ export default function InvoicesPage() {
 
       {/* Status Filter */}
       <div style={styles.filterBar}>
-        {['all', 'pending', 'paid', 'overdue', 'cancelled'].map(status => (
+        {['all', 'pending', 'paid', 'completed', 'overdue', 'cancelled'].map(status => (
           <button
             key={status}
             onClick={() => setStatusFilter(status)}
@@ -254,7 +346,7 @@ export default function InvoicesPage() {
                   <p style={styles.clientName}>{invoice.client_name}</p>
                 </div>
                 <div style={{ textAlign: 'right' as const }}>
-                  {getStatusBadge(invoice.status)}
+                  {getStatusBadge(invoice.status, (invoice as any).profit)}
                   <p style={styles.invoiceDate}>
                     {invoice.invoice_date
                       ? new Date(invoice.invoice_date).toLocaleDateString('en-GB')
@@ -316,12 +408,20 @@ export default function InvoicesPage() {
                   </button>
                 )}
                 {invoice.status === 'paid' && (
-                  <button
-                    onClick={() => markAsUnpaid(invoice.id!)}
-                    style={{ ...styles.actionButton, ...styles.unpaidButton }}
-                  >
-                    Mark as Unpaid
-                  </button>
+                  <>
+                    <button
+                      onClick={() => markAsUnpaid(invoice.id!)}
+                      style={{ ...styles.actionButton, ...styles.unpaidButton }}
+                    >
+                      Mark as Unpaid
+                    </button>
+                    <button
+                      onClick={() => openJobDoneModal(invoice.id!)}
+                      style={{ ...styles.actionButton, ...styles.jobDoneButton }}
+                    >
+                      Job Done
+                    </button>
+                  </>
                 )}
                 <button
                   onClick={() => deleteInvoice(invoice.id!)}
@@ -334,6 +434,91 @@ export default function InvoicesPage() {
           ))
         )}
       </div>
+
+      {/* Job Done Modal */}
+      {showJobDoneModal && jobCostPreview && (
+        <div style={styles.modalOverlay}>
+          <div style={styles.modal}>
+            <h2 style={styles.modalTitle}>Complete Job</h2>
+            <p style={styles.modalSubtitle}>
+              {jobCostPreview.invoice.invoice_number} - {jobCostPreview.invoice.client_name}
+            </p>
+
+            <div style={styles.modalSection}>
+              <div style={styles.modalRow}>
+                <span>Invoice Net:</span>
+                <span style={{ color: '#30ff37', fontWeight: '700' }}>
+                  £{jobCostPreview.invoice.net.toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <div style={styles.modalSection}>
+              <h4 style={styles.modalSectionTitle}>Costs</h4>
+              <div style={styles.modalRow}>
+                <span>Parts Receipts ({jobCostPreview.costs.parts.count}):</span>
+                <span style={{ color: '#f44336' }}>
+                  -£{jobCostPreview.costs.parts.total.toFixed(2)}
+                </span>
+              </div>
+              <div style={styles.modalRow}>
+                <span>Mileage ({jobCostPreview.costs.mileage.count} trips):</span>
+                <span style={{ color: '#f44336' }}>
+                  -£{jobCostPreview.costs.mileage.total.toFixed(2)}
+                </span>
+              </div>
+              <div style={{ ...styles.modalRow, borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '10px', marginTop: '10px' }}>
+                <span style={{ fontWeight: '600' }}>Total Costs:</span>
+                <span style={{ color: '#f44336', fontWeight: '600' }}>
+                  -£{jobCostPreview.costs.totalCosts.toFixed(2)}
+                </span>
+              </div>
+            </div>
+
+            <div style={{ ...styles.modalSection, background: 'rgba(48, 255, 55, 0.1)', padding: '15px', borderRadius: '8px' }}>
+              <div style={styles.modalRow}>
+                <span style={{ fontSize: '18px', fontWeight: '700' }}>Profit:</span>
+                <span style={{
+                  fontSize: '24px',
+                  fontWeight: '700',
+                  color: jobCostPreview.profit.amount >= 0 ? '#4caf50' : '#f44336'
+                }}>
+                  £{jobCostPreview.profit.amount.toFixed(2)}
+                </span>
+              </div>
+              <div style={styles.modalRow}>
+                <span style={{ color: '#888' }}>Profit Margin:</span>
+                <span style={{
+                  color: jobCostPreview.profit.margin >= 0 ? '#4caf50' : '#f44336',
+                  fontWeight: '600'
+                }}>
+                  {jobCostPreview.profit.margin.toFixed(1)}%
+                </span>
+              </div>
+            </div>
+
+            <div style={styles.modalActions}>
+              <button
+                onClick={() => {
+                  setShowJobDoneModal(false);
+                  setJobCostPreview(null);
+                }}
+                style={styles.cancelButton}
+                disabled={processingJobComplete}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmJobComplete}
+                style={styles.confirmButton}
+                disabled={processingJobComplete}
+              >
+                {processingJobComplete ? 'Processing...' : 'Confirm Complete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @media (max-width: 768px) {
@@ -550,5 +735,85 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '24px',
     textAlign: 'center' as const,
     padding: '60px 20px',
+  },
+  jobDoneButton: {
+    background: 'rgba(156, 39, 176, 0.1)',
+    color: '#9c27b0',
+    borderColor: 'rgba(156, 39, 176, 0.3)',
+  },
+  modalOverlay: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.8)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: '20px',
+  },
+  modal: {
+    background: '#1a1a1a',
+    borderRadius: '16px',
+    padding: '30px',
+    maxWidth: '500px',
+    width: '100%',
+    border: '1px solid rgba(48, 255, 55, 0.3)',
+  },
+  modalTitle: {
+    color: '#30ff37',
+    fontSize: '24px',
+    margin: '0 0 5px 0',
+  },
+  modalSubtitle: {
+    color: '#888',
+    fontSize: '16px',
+    margin: '0 0 25px 0',
+  },
+  modalSection: {
+    marginBottom: '20px',
+  },
+  modalSectionTitle: {
+    color: '#fff',
+    fontSize: '14px',
+    margin: '0 0 10px 0',
+    textTransform: 'uppercase' as const,
+    letterSpacing: '1px',
+  },
+  modalRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '8px',
+    color: '#fff',
+    fontSize: '15px',
+  },
+  modalActions: {
+    display: 'flex',
+    gap: '15px',
+    marginTop: '25px',
+  },
+  cancelButton: {
+    flex: 1,
+    padding: '14px 20px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    color: '#fff',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '8px',
+    fontSize: '16px',
+    cursor: 'pointer',
+  },
+  confirmButton: {
+    flex: 1,
+    padding: '14px 20px',
+    background: '#9c27b0',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '16px',
+    fontWeight: '700' as const,
+    cursor: 'pointer',
   },
 };
