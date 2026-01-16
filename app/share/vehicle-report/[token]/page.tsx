@@ -70,8 +70,8 @@ export default async function SharedVehicleReportPage({
             <img src="/latest2.png" alt="AUTOW" style={styles.logo} />
           </div>
           <div style={styles.titleSection}>
-            <h1 style={styles.companyName}>AUTOW</h1>
-            <h2 style={styles.subtitle}>Transport & Recovery</h2>
+            <h1 style={styles.companyName}>AUTOW Services LTD</h1>
+            <h2 style={styles.subtitle}>Vehicle Repair & Recovery</h2>
             <p style={styles.phone}>Tel: 07737 006737</p>
             <p style={styles.contactInfo}>Email: info@autow-services.co.uk</p>
             <p style={styles.contactInfo}>WEB: www.autow-services.co.uk</p>
@@ -201,17 +201,35 @@ export default async function SharedVehicleReportPage({
           <p style={styles.notesText}>{report.notes || '____________________________________________________________________________'}</p>
         </div>
 
-        {/* Disclaimer */}
+        {/* Disclaimer & Terms */}
         <div style={styles.disclaimerSection}>
-          <p style={styles.disclaimerText}>
-            <strong>Disclaimer:</strong> The customer confirms that the condition of the vehicle has been checked and agreed. The Driver will provide a walk around Video Inspection prior to recovery or repair.
-          </p>
+          <h3 style={styles.termsTitle}>Terms & Conditions</h3>
+          <div style={styles.termsBox}>
+            <p style={styles.termsText}>
+              <strong>1. Vehicle Condition:</strong> The customer confirms that the condition of the vehicle has been inspected and agreed upon prior to transport/recovery. A video inspection will be conducted by the driver before and after the service.
+            </p>
+            <p style={styles.termsText}>
+              <strong>2. Insurance Coverage:</strong> AUTOW Services LTD holds comprehensive Goods in Transit insurance up to £1,000,000 and Public Liability insurance up to £5,000,000.
+            </p>
+            <p style={styles.termsText}>
+              <strong>3. Limitation of Liability:</strong> We accept no liability for: (a) undisclosed pre-existing damage, (b) mechanical or electrical failures not caused during our service, (c) personal belongings left in the vehicle, (d) damage caused by incorrect information provided by the customer.
+            </p>
+            <p style={styles.termsText}>
+              <strong>4. Customer Responsibilities:</strong> The customer must ensure all information provided is accurate, disclose any known faults or issues, and remove all valuable personal items from the vehicle.
+            </p>
+            <p style={styles.termsText}>
+              <strong>5. Payment:</strong> Payment is due upon completion of service unless otherwise agreed in writing. We reserve the right to hold the vehicle until full payment is received.
+            </p>
+            <p style={styles.termsText}>
+              <strong>6. Cancellation:</strong> Cancellations must be made at least 2 hours before the scheduled service. Late cancellations may incur a call-out fee.
+            </p>
+          </div>
           <div style={styles.videoField}>
             <span style={styles.fieldLabel}>Video File Code:</span>
             <span style={styles.fieldValue}>{report.video_file_code || '________________'}</span>
           </div>
-          <p style={styles.insuranceText}>
-            AUTOW Transport & Recovery holds Goods in Transit insurance up to £1,000,000. No liability is accepted for undisclosed pre-existing damage or mechanical failures not caused during recovery. By signing this form, the customer agrees to the terms outlined above.
+          <p style={styles.agreementText}>
+            By signing this form, I confirm that I have read, understood, and agree to the terms and conditions outlined above. I acknowledge that AUTOW Services LTD has conducted a thorough inspection of my vehicle and I accept the recorded condition as accurate.
           </p>
         </div>
 
@@ -484,17 +502,38 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '11px',
     lineHeight: 1.5,
   },
-  disclaimerText: {
+  termsTitle: {
+    fontSize: '12px',
+    fontWeight: 'bold',
     margin: '0 0 10px 0',
+    background: '#000',
+    color: '#fff',
+    padding: '4px 8px',
+    display: 'inline-block',
+  },
+  termsBox: {
+    border: '1px solid #ccc',
+    padding: '12px',
+    marginBottom: '10px',
+    background: '#fafafa',
+  },
+  termsText: {
+    fontSize: '10px',
+    margin: '0 0 8px 0',
+    lineHeight: 1.5,
+    color: '#333',
   },
   videoField: {
     margin: '10px 0',
     fontSize: '12px',
   },
-  insuranceText: {
+  agreementText: {
     margin: '10px 0',
     fontSize: '10px',
-    color: '#333',
+    color: '#000',
+    fontWeight: 'bold',
+    fontStyle: 'italic' as const,
+    lineHeight: 1.5,
   },
   // Signatures section
   signaturesSection: {

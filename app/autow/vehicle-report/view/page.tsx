@@ -3,6 +3,14 @@
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 
+interface DamageMarker {
+  id: string;
+  x: number;
+  y: number;
+  number: number;
+  note: string;
+}
+
 interface VehicleReport {
   id: number;
   report_number: string;
@@ -47,8 +55,7 @@ function ViewReportContent() {
   const [customMessage, setCustomMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sendStatus, setSendStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
-  const [shareLink, setShareLink] = useState<string | null>(null);
-  const [copyStatus, setCopyStatus] = useState<string | null>(null);
+  const [notification, setNotification] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('autow_token');
@@ -113,7 +120,6 @@ function ViewReportContent() {
 
       if (response.ok) {
         setSendStatus({ type: 'success', message: `Report sent successfully to ${emailAddress}` });
-        // Refresh report to show email sent status
         fetchReport();
         setTimeout(() => {
           setShowEmailModal(false);
@@ -144,59 +150,31 @@ function ViewReportContent() {
       const data = await response.json();
 
       if (response.ok) {
-        setShareLink(data.share_url);
         await navigator.clipboard.writeText(data.share_url);
-        setCopyStatus('Link copied to clipboard!');
-        setTimeout(() => setCopyStatus(null), 3000);
+        setNotification({ type: 'success', message: 'Share link copied to clipboard!' });
+        setTimeout(() => setNotification(null), 3000);
       } else {
-        setCopyStatus('Failed to generate link');
-        setTimeout(() => setCopyStatus(null), 3000);
+        setNotification({ type: 'error', message: 'Failed to generate link' });
+        setTimeout(() => setNotification(null), 3000);
       }
     } catch (error) {
-      setCopyStatus('Failed to copy link');
-      setTimeout(() => setCopyStatus(null), 3000);
+      setNotification({ type: 'error', message: 'Failed to copy link' });
+      setTimeout(() => setNotification(null), 3000);
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    const statusStyles: { [key: string]: { bg: string; color: string } } = {
-      draft: { bg: 'rgba(255, 152, 0, 0.2)', color: '#ff9800' },
-      completed: { bg: 'rgba(76, 175, 80, 0.2)', color: '#4caf50' },
-      archived: { bg: 'rgba(158, 158, 158, 0.2)', color: '#9e9e9e' }
-    };
-    const style = statusStyles[status] || statusStyles.draft;
-    return (
-      <span style={{ ...styles.badge, background: style.bg, color: style.color }}>
-        {status.toUpperCase()}
-      </span>
-    );
-  };
-
-  const getServiceBadge = (serviceType: string) => {
-    const isRecovery = serviceType === 'recovery';
-    return (
-      <span style={{
-        ...styles.badge,
-        background: isRecovery ? 'rgba(33, 150, 243, 0.2)' : 'rgba(156, 39, 176, 0.2)',
-        color: isRecovery ? '#2196f3' : '#9c27b0'
-      }}>
-        {serviceType?.toUpperCase() || 'TRANSPORT'}
-      </span>
-    );
-  };
-
   const formatDate = (dateStr: string) => {
-    if (!dateStr) return 'Not set';
-    return new Date(dateStr).toLocaleDateString('en-GB', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
+    if (!dateStr) return '________________';
+    return new Date(dateStr).toLocaleDateString('en-GB');
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   if (loading) {
     return (
-      <div style={styles.container}>
+      <div style={styles.loadingContainer}>
         <div style={styles.loadingText}>Loading report...</div>
       </div>
     );
@@ -204,233 +182,255 @@ function ViewReportContent() {
 
   if (!report) {
     return (
-      <div style={styles.container}>
+      <div style={styles.loadingContainer}>
         <div style={styles.loadingText}>Report not found</div>
-        <button onClick={() => router.push('/autow/vehicle-report')} style={styles.backButton}>
+        <button onClick={() => router.push('/autow/vehicle-report')} style={styles.backBtn}>
           Back to Reports
         </button>
       </div>
     );
   }
 
-  const damageMarkers = typeof report.damage_markers === 'string'
+  const damageMarkers: DamageMarker[] = typeof report.damage_markers === 'string'
     ? JSON.parse(report.damage_markers || '[]')
     : (report.damage_markers || []);
 
+  const serviceType = report.service_type === 'recovery' ? 'Recovery' : 'Transport';
+
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>{report.vehicle_reg}</h1>
-          <p style={styles.reportNumber}>{report.report_number}</p>
-        </div>
-        <div style={styles.headerActions}>
-          <div style={styles.badges}>
-            {getServiceBadge(report.service_type)}
-            {getStatusBadge(report.status)}
-          </div>
-          <div style={styles.buttonGroup}>
-            <button
-              onClick={() => setShowEmailModal(true)}
-              style={styles.sendButton}
-            >
-              Send to Customer
+    <div style={styles.pageContainer} className="report-page">
+      {/* Action Bar */}
+      <div style={styles.actionBar} className="no-print">
+        <button onClick={() => router.push('/autow/vehicle-report')} style={styles.backBtn}>
+          Back
+        </button>
+        <div style={styles.actionButtons}>
+          {report.status === 'draft' && (
+            <button onClick={() => router.push(`/autow/vehicle-report/create?edit=${report.id}`)} style={styles.editBtn}>
+              Edit
             </button>
-            <button
-              onClick={handleCopyShareLink}
-              style={styles.copyLinkButton}
-            >
-              Copy Share Link
-            </button>
-            {report.status === 'draft' && (
-              <button
-                onClick={() => router.push(`/autow/vehicle-report/create?edit=${report.id}`)}
-                style={styles.editButton}
-              >
-                Edit Report
-              </button>
-            )}
-            <button
-              onClick={() => router.push('/autow/vehicle-report')}
-              style={styles.backButton}
-            >
-              Back
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Email Sent Notice */}
-      {report.email_sent_at && (
-        <div style={styles.emailSentNotice}>
-          Report sent to <strong>{report.email_sent_to}</strong> on {formatDate(report.email_sent_at)}
-        </div>
-      )}
-
-      {/* Copy Status Notice */}
-      {copyStatus && (
-        <div style={styles.copyStatusNotice}>
-          {copyStatus}
-          {shareLink && (
-            <div style={styles.shareLinkText}>{shareLink}</div>
           )}
+          <button onClick={() => setShowEmailModal(true)} style={styles.sendBtn}>
+            Send to Customer
+          </button>
+          <button onClick={handleCopyShareLink} style={styles.shareBtn}>
+            Copy Share Link
+          </button>
+          <button onClick={handlePrint} style={styles.printBtn}>
+            Print
+          </button>
+        </div>
+      </div>
+
+      {/* Notification */}
+      {notification && (
+        <div style={{
+          ...styles.notification,
+          background: notification.type === 'success' ? 'rgba(76, 175, 80, 0.9)' : 'rgba(244, 67, 54, 0.9)'
+        }} className="no-print">
+          {notification.message}
         </div>
       )}
 
-      {/* Report Details */}
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Report Details</h2>
-        <div style={styles.grid}>
-          <div style={styles.field}>
-            <span style={styles.label}>Report Date</span>
-            <span style={styles.value}>{formatDate(report.report_date)}</span>
+      {/* Document */}
+      <div style={styles.document} className="document">
+        {/* Header */}
+        <div style={styles.header}>
+          <div style={styles.logoSection}>
+            <img src="/latest2.png" alt="AUTOW" style={styles.logo} />
           </div>
-          <div style={styles.field}>
-            <span style={styles.label}>Time Arrival</span>
-            <span style={styles.value}>{report.time_arrival || 'Not set'}</span>
+          <div style={styles.titleSection}>
+            <h1 style={styles.companyName}>AUTOW Services LTD</h1>
+            <h2 style={styles.subtitle}>Vehicle Repair & Recovery</h2>
+            <p style={styles.phone}>Tel: 07737 006737</p>
+            <p style={styles.contactInfo}>Email: info@autow-services.co.uk</p>
+            <p style={styles.contactInfo}>WEB: www.autow-services.co.uk</p>
           </div>
-          <div style={styles.field}>
-            <span style={styles.label}>Time Depart</span>
-            <span style={styles.value}>{report.time_depart || 'Not set'}</span>
+          <div style={styles.addressSection}>
+            <p style={styles.addressText}>AUTO SERVICES</p>
+            <p style={styles.addressText}>Alverton</p>
+            <p style={styles.addressText}>Penzance</p>
+            <p style={styles.addressText}>Cornwall</p>
+            <p style={styles.addressText}>TR18 4QB</p>
           </div>
         </div>
-      </div>
 
-      {/* Vehicle Details */}
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Vehicle Details</h2>
-        <div style={styles.grid}>
-          <div style={styles.field}>
-            <span style={styles.label}>Registration</span>
-            <span style={{ ...styles.value, color: '#30ff37', fontWeight: 700 }}>{report.vehicle_reg}</span>
-          </div>
-          <div style={styles.field}>
-            <span style={styles.label}>Type/Model</span>
-            <span style={styles.value}>{report.vehicle_type_model || 'Not specified'}</span>
-          </div>
-          <div style={styles.field}>
-            <span style={styles.label}>Weight</span>
-            <span style={styles.value}>{report.vehicle_weight || 'Not specified'}</span>
-          </div>
-        </div>
-        <div style={styles.grid}>
-          <div style={styles.field}>
-            <span style={styles.label}>Pickup Location</span>
-            <span style={styles.value}>{report.pickup_location || 'Not specified'}</span>
-          </div>
-          <div style={styles.field}>
-            <span style={styles.label}>Delivery Location</span>
-            <span style={styles.value}>{report.delivery_location || 'Not specified'}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Customer Details */}
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Customer Details</h2>
-        <div style={styles.grid}>
-          <div style={styles.field}>
-            <span style={styles.label}>Name</span>
-            <span style={styles.value}>{report.customer_name || 'Not specified'}</span>
-          </div>
-          <div style={styles.field}>
-            <span style={styles.label}>Phone</span>
-            <span style={styles.value}>{report.customer_phone || 'Not specified'}</span>
-          </div>
-          <div style={styles.field}>
-            <span style={styles.label}>Email</span>
-            <span style={styles.value}>{report.customer_email || 'Not specified'}</span>
-          </div>
-        </div>
-        {report.customer_address && (
-          <div style={styles.field}>
-            <span style={styles.label}>Address</span>
-            <span style={styles.value}>{report.customer_address}</span>
-          </div>
-        )}
-      </div>
-
-      {/* Known Issues */}
-      {report.known_issues && (
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Known Issues</h2>
-          <p style={styles.textContent}>{report.known_issues}</p>
-        </div>
-      )}
-
-      {/* Risk Procedure */}
-      {(report.risk_procedure_description || report.risk_procedure_signature) && (
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Risk Procedure Authorization</h2>
-          {report.risk_procedure_description && (
-            <p style={styles.textContent}>{report.risk_procedure_description}</p>
-          )}
-          {report.risk_procedure_signature && (
-            <div style={styles.signatureBox}>
-              <span style={styles.label}>Authorization Signature</span>
-              <img src={report.risk_procedure_signature} alt="Risk Procedure Signature" style={styles.signatureImage} />
+        {/* Form Fields - Two Column Layout */}
+        <div style={styles.formSection}>
+          <div style={styles.formRow}>
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Repair or Recovery:</span>
+              <span style={styles.fieldValue}>{serviceType}</span>
             </div>
-          )}
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Date:</span>
+              <span style={styles.fieldValue}>{formatDate(report.report_date)}</span>
+            </div>
+          </div>
+          <div style={styles.formRow}>
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Vehicle Registration:</span>
+              <span style={styles.fieldValueHighlight}>{report.vehicle_reg || '________________'}</span>
+            </div>
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Time Arrival:</span>
+              <span style={styles.fieldValue}>{report.time_arrival || '________'}</span>
+              <span style={styles.fieldLabel}> Time Depart:</span>
+              <span style={styles.fieldValue}>{report.time_depart || '________'}</span>
+            </div>
+          </div>
+          <div style={styles.formRow}>
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Vehicle Type / Model:</span>
+              <span style={styles.fieldValue}>{report.vehicle_type_model || '________________'}</span>
+            </div>
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Customer Name:</span>
+              <span style={styles.fieldValue}>{report.customer_name || '________________'}</span>
+            </div>
+          </div>
+          <div style={styles.formRow}>
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Vehicle Weight:</span>
+              <span style={styles.fieldValue}>{report.vehicle_weight || '________________'}</span>
+            </div>
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Customer Address:</span>
+              <span style={styles.fieldValue}>{report.customer_address || '________________'}</span>
+            </div>
+          </div>
+          <div style={styles.formRow}>
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Pickup Location:</span>
+              <span style={styles.fieldValue}>{report.pickup_location || '________________'}</span>
+            </div>
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Known Issues / Notes:</span>
+              <span style={styles.fieldValue}>{report.known_issues || '________________'}</span>
+            </div>
+          </div>
+          <div style={styles.formRow}>
+            <div style={styles.formField}>
+              <span style={styles.fieldLabel}>Delivery Location:</span>
+              <span style={styles.fieldValue}>{report.delivery_location || '________________'}</span>
+            </div>
+            <div style={styles.formField}></div>
+          </div>
         </div>
-      )}
 
-      {/* Damage Markers */}
-      {damageMarkers.length > 0 && (
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Damage Markers</h2>
-          <div style={styles.damageList}>
-            {damageMarkers.map((marker: any, index: number) => (
-              <div key={index} style={styles.damageItem}>
-                <span style={styles.damageNumber}>{marker.number}</span>
-                <span style={styles.damageNote}>{marker.note || 'No description'}</span>
+        {/* Two Column Section - Risk Procedure & Vehicle Diagram */}
+        <div style={styles.twoColumnSection}>
+          {/* Left Column - Risk Procedure */}
+          <div style={styles.riskColumn}>
+            <div style={styles.riskBox}>
+              <h3 style={styles.riskTitle}>Procedures Involving Risk of Damage</h3>
+              <p style={styles.riskText}>
+                You have asked us to do the following, something which by its nature may cause damage to your vehicle
+              </p>
+              <div style={styles.riskField}>
+                <span style={styles.fieldLabel}>The Following:</span>
+                <span style={styles.fieldValue}>{report.risk_procedure_description || '________________'}</span>
               </div>
-            ))}
+              <p style={styles.riskDisclaimer}>
+                I hereby authorize Autow (or its agent) to carry out the above procedure(s). I understand that this carries an inherent risk of damage, And that damage may be caused to my vehicle. I agree that Autow (or its agent) cannot be held liable for any such damage.
+              </p>
+              <div style={styles.signatureField}>
+                <span style={styles.fieldLabel}>Signature:</span>
+                {report.risk_procedure_signature ? (
+                  <img src={report.risk_procedure_signature} alt="Risk Signature" style={styles.signatureImage} />
+                ) : (
+                  <span style={styles.signatureLine}>________________________</span>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column - Vehicle Diagram */}
+          <div style={styles.diagramColumn}>
+            <h3 style={styles.diagramTitle}>Vehicle Condition Report &nbsp;&nbsp; Top-Down View</h3>
+            <div style={styles.diagramContainer}>
+              <img src="/assets/car_check.jpg" alt="Vehicle Check Diagram" style={styles.carImage} />
+            </div>
+            {damageMarkers.length > 0 && (
+              <div style={styles.damageList}>
+                {damageMarkers.map((marker, idx) => (
+                  <div key={idx} style={styles.damageItem}>
+                    <span style={styles.damageNumber}>{marker.number}.</span>
+                    <span style={styles.damageNote}>{marker.note || 'No description'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
-      )}
 
-      {/* Notes */}
-      {report.notes && (
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Notes</h2>
-          <p style={styles.textContent}>{report.notes}</p>
+        {/* Notes Section */}
+        <div style={styles.notesSection}>
+          <h3 style={styles.notesTitle}>Notes:</h3>
+          <p style={styles.notesText}>{report.notes || '____________________________________________________________________________'}</p>
         </div>
-      )}
 
-      {/* Video File Code */}
-      {report.video_file_code && (
-        <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Video File Code</h2>
-          <p style={{ ...styles.value, fontFamily: 'monospace', fontSize: '18px' }}>{report.video_file_code}</p>
+        {/* Disclaimer & Terms */}
+        <div style={styles.disclaimerSection}>
+          <h3 style={styles.termsTitle}>Terms & Conditions</h3>
+          <div style={styles.termsBox}>
+            <p style={styles.termsText}>
+              <strong>1. Vehicle Condition:</strong> The customer confirms that the condition of the vehicle has been inspected and agreed upon prior to transport/recovery. A video inspection will be conducted by the driver before and after the service.
+            </p>
+            <p style={styles.termsText}>
+              <strong>2. Insurance Coverage:</strong> AUTOW Services LTD holds comprehensive Goods in Transit insurance up to £1,000,000 and Public Liability insurance up to £5,000,000.
+            </p>
+            <p style={styles.termsText}>
+              <strong>3. Limitation of Liability:</strong> We accept no liability for: (a) undisclosed pre-existing damage, (b) mechanical or electrical failures not caused during our service, (c) personal belongings left in the vehicle, (d) damage caused by incorrect information provided by the customer.
+            </p>
+            <p style={styles.termsText}>
+              <strong>4. Customer Responsibilities:</strong> The customer must ensure all information provided is accurate, disclose any known faults or issues, and remove all valuable personal items from the vehicle.
+            </p>
+            <p style={styles.termsText}>
+              <strong>5. Payment:</strong> Payment is due upon completion of service unless otherwise agreed in writing. We reserve the right to hold the vehicle until full payment is received.
+            </p>
+            <p style={styles.termsText}>
+              <strong>6. Cancellation:</strong> Cancellations must be made at least 2 hours before the scheduled service. Late cancellations may incur a call-out fee.
+            </p>
+          </div>
+          <div style={styles.videoField}>
+            <span style={styles.fieldLabel}>Video File Code:</span>
+            <span style={styles.fieldValue}>{report.video_file_code || '________________'}</span>
+          </div>
+          <p style={styles.agreementText}>
+            By signing this form, I confirm that I have read, understood, and agree to the terms and conditions outlined above. I acknowledge that AUTOW Services LTD has conducted a thorough inspection of my vehicle and I accept the recorded condition as accurate.
+          </p>
         </div>
-      )}
 
-      {/* Signatures */}
-      <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>Signatures</h2>
-        <div style={styles.signaturesGrid}>
-          <div style={styles.signatureBox}>
-            <span style={styles.label}>Customer Signature</span>
-            {report.customer_signature ? (
-              <>
+        {/* Signatures */}
+        <div style={styles.signaturesSection}>
+          <div style={styles.signatureRow}>
+            <div style={styles.signatureBlock}>
+              <span style={styles.fieldLabel}>Customer Signature:</span>
+              {report.customer_signature ? (
                 <img src={report.customer_signature} alt="Customer Signature" style={styles.signatureImage} />
-                <span style={styles.signatureDate}>{formatDate(report.customer_signature_date)}</span>
-              </>
-            ) : (
-              <span style={styles.noSignature}>Not signed</span>
-            )}
+              ) : (
+                <span style={styles.signatureLine}>________________________</span>
+              )}
+            </div>
+            <div style={styles.signatureBlock}>
+              <span style={styles.fieldLabel}>Date:</span>
+              <span style={styles.fieldValue}>{formatDate(report.customer_signature_date)}</span>
+            </div>
           </div>
-          <div style={styles.signatureBox}>
-            <span style={styles.label}>Driver Signature</span>
-            {report.driver_signature ? (
-              <>
+          <div style={styles.signatureRow}>
+            <div style={styles.signatureBlock}>
+              <span style={styles.fieldLabel}>Driver Signature:</span>
+              {report.driver_signature ? (
                 <img src={report.driver_signature} alt="Driver Signature" style={styles.signatureImage} />
-                <span style={styles.signatureDate}>{formatDate(report.driver_signature_date)}</span>
-              </>
-            ) : (
-              <span style={styles.noSignature}>Not signed</span>
-            )}
+              ) : (
+                <span style={styles.signatureLine}>________________________</span>
+              )}
+            </div>
+            <div style={styles.signatureBlock}>
+              <span style={styles.fieldLabel}>Date:</span>
+              <span style={styles.fieldValue}>{formatDate(report.driver_signature_date)}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -474,24 +474,27 @@ function ViewReportContent() {
             )}
 
             <div style={styles.modalActions}>
-              <button
-                onClick={() => setShowEmailModal(false)}
-                style={styles.cancelButton}
-                disabled={sending}
-              >
+              <button onClick={() => setShowEmailModal(false)} style={styles.cancelButton} disabled={sending}>
                 Cancel
               </button>
-              <button
-                onClick={handleSendEmail}
-                style={styles.confirmSendButton}
-                disabled={sending}
-              >
+              <button onClick={handleSendEmail} style={styles.confirmSendButton} disabled={sending}>
                 {sending ? 'Sending...' : 'Send Report'}
               </button>
             </div>
           </div>
         </div>
       )}
+
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+          body { background: white !important; }
+          .document { box-shadow: none !important; border: none !important; }
+        }
+        @media (max-width: 768px) {
+          .document { padding: 15px !important; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -499,7 +502,7 @@ function ViewReportContent() {
 export default function ViewReportPage() {
   return (
     <Suspense fallback={
-      <div style={styles.container}>
+      <div style={styles.loadingContainer}>
         <div style={styles.loadingText}>Loading...</div>
       </div>
     }>
@@ -509,226 +512,339 @@ export default function ViewReportPage() {
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    background: '#000',
+  pageContainer: {
+    fontFamily: 'Arial, sans-serif',
+    background: '#f5f5f5',
     minHeight: '100vh',
     padding: '20px',
-    color: '#fff',
   },
+  loadingContainer: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: '100vh',
+    background: '#f5f5f5',
+    gap: '20px',
+  },
+  loadingText: {
+    fontSize: '18px',
+    color: '#333',
+  },
+  actionBar: {
+    maxWidth: '900px',
+    margin: '0 auto 20px auto',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    flexWrap: 'wrap' as const,
+    gap: '10px',
+  },
+  actionButtons: {
+    display: 'flex',
+    gap: '10px',
+    flexWrap: 'wrap' as const,
+  },
+  backBtn: {
+    padding: '10px 20px',
+    background: '#666',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  editBtn: {
+    padding: '10px 20px',
+    background: '#ff9800',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  sendBtn: {
+    padding: '10px 20px',
+    background: '#4caf50',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  shareBtn: {
+    padding: '10px 20px',
+    background: '#2196f3',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  printBtn: {
+    padding: '10px 20px',
+    background: '#333',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '6px',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  notification: {
+    position: 'fixed' as const,
+    top: '20px',
+    left: '50%',
+    transform: 'translateX(-50%)',
+    padding: '12px 24px',
+    borderRadius: '8px',
+    color: '#fff',
+    fontSize: '14px',
+    fontWeight: '600' as const,
+    zIndex: 1000,
+  },
+  document: {
+    maxWidth: '900px',
+    margin: '0 auto',
+    background: '#fff',
+    padding: '30px',
+    borderRadius: '4px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    border: '1px solid #ddd',
+  },
+  // Header styles
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: '30px',
-    flexWrap: 'wrap' as const,
-    gap: '20px',
-  },
-  title: {
-    color: '#30ff37',
-    fontSize: '36px',
-    margin: '0 0 5px 0',
-  },
-  reportNumber: {
-    color: '#888',
-    fontSize: '16px',
-    margin: '0',
-  },
-  headerActions: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    alignItems: 'flex-end',
-    gap: '15px',
-  },
-  badges: {
-    display: 'flex',
-    gap: '10px',
-  },
-  badge: {
-    padding: '6px 14px',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '700' as const,
-  },
-  buttonGroup: {
-    display: 'flex',
-    gap: '10px',
-    flexWrap: 'wrap' as const,
-  },
-  sendButton: {
-    padding: '12px 24px',
-    background: 'linear-gradient(135deg, #30ff37 0%, #20cc2a 100%)',
-    color: '#000',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '700' as const,
-    cursor: 'pointer',
-  },
-  copyLinkButton: {
-    padding: '12px 24px',
-    background: 'rgba(33, 150, 243, 0.2)',
-    color: '#2196f3',
-    border: '1px solid rgba(33, 150, 243, 0.3)',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '600' as const,
-    cursor: 'pointer',
-  },
-  editButton: {
-    padding: '12px 24px',
-    background: 'rgba(255, 152, 0, 0.2)',
-    color: '#ff9800',
-    border: '1px solid rgba(255, 152, 0, 0.3)',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '600' as const,
-    cursor: 'pointer',
-  },
-  backButton: {
-    padding: '12px 24px',
-    background: 'rgba(255, 255, 255, 0.1)',
-    color: '#fff',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '8px',
-    fontSize: '15px',
-    cursor: 'pointer',
-  },
-  emailSentNotice: {
-    background: 'rgba(76, 175, 80, 0.1)',
-    border: '1px solid rgba(76, 175, 80, 0.3)',
-    borderRadius: '8px',
-    padding: '12px 20px',
     marginBottom: '20px',
-    color: '#4caf50',
-    fontSize: '14px',
-  },
-  copyStatusNotice: {
-    background: 'rgba(33, 150, 243, 0.1)',
-    border: '1px solid rgba(33, 150, 243, 0.3)',
-    borderRadius: '8px',
-    padding: '12px 20px',
-    marginBottom: '20px',
-    color: '#2196f3',
-    fontSize: '14px',
-  },
-  shareLinkText: {
-    marginTop: '8px',
-    padding: '8px 12px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: '4px',
-    fontFamily: 'monospace',
-    fontSize: '12px',
-    wordBreak: 'break-all' as const,
-  },
-  section: {
-    background: '#1a1a1a',
-    border: '1px solid rgba(48, 255, 55, 0.2)',
-    borderRadius: '12px',
-    padding: '24px',
-    marginBottom: '20px',
-  },
-  sectionTitle: {
-    color: '#30ff37',
-    fontSize: '18px',
-    margin: '0 0 20px 0',
     paddingBottom: '15px',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    borderBottom: '2px solid #000',
   },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '20px',
-    marginBottom: '15px',
+  logoSection: {
+    flex: '0 0 150px',
   },
-  field: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '5px',
+  logo: {
+    width: '140px',
+    height: 'auto',
   },
-  label: {
-    color: '#888',
-    fontSize: '13px',
-    textTransform: 'uppercase' as const,
-    letterSpacing: '0.5px',
+  titleSection: {
+    flex: 1,
+    textAlign: 'center' as const,
   },
-  value: {
-    color: '#fff',
-    fontSize: '16px',
-  },
-  textContent: {
-    color: 'rgba(255, 255, 255, 0.8)',
-    fontSize: '15px',
-    lineHeight: '1.6',
+  companyName: {
+    fontSize: '28px',
+    fontWeight: 'bold',
     margin: '0',
-    whiteSpace: 'pre-wrap' as const,
   },
-  signaturesGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-    gap: '20px',
+  subtitle: {
+    fontSize: '18px',
+    fontWeight: 'bold',
+    margin: '5px 0',
   },
-  signatureBox: {
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.1)',
-    borderRadius: '8px',
-    padding: '15px',
+  phone: {
+    fontSize: '14px',
+    fontWeight: 'bold',
+    margin: '5px 0',
+  },
+  contactInfo: {
+    fontSize: '11px',
+    margin: '2px 0',
+    color: '#333',
+  },
+  addressSection: {
+    flex: '0 0 120px',
+    textAlign: 'right' as const,
+  },
+  addressText: {
+    fontSize: '11px',
+    margin: '1px 0',
+    color: '#333',
+  },
+  // Form section styles
+  formSection: {
+    marginBottom: '20px',
+  },
+  formRow: {
     display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '10px',
+    gap: '20px',
+    marginBottom: '8px',
+  },
+  formField: {
+    flex: 1,
+    fontSize: '12px',
+  },
+  fieldLabel: {
+    fontWeight: 'bold',
+    marginRight: '5px',
+  },
+  fieldValue: {
+    borderBottom: '1px solid #999',
+    paddingBottom: '2px',
+  },
+  fieldValueHighlight: {
+    borderBottom: '1px solid #999',
+    paddingBottom: '2px',
+    fontWeight: 'bold',
+    fontSize: '14px',
+  },
+  // Two column section
+  twoColumnSection: {
+    display: 'flex',
+    gap: '20px',
+    marginBottom: '20px',
+  },
+  riskColumn: {
+    flex: '1',
+  },
+  diagramColumn: {
+    flex: '1',
+  },
+  riskBox: {
+    border: '1px solid #000',
+    padding: '12px',
+    height: '100%',
+  },
+  riskTitle: {
+    fontSize: '12px',
+    fontWeight: 'bold',
+    margin: '0 0 10px 0',
+    background: '#000',
+    color: '#fff',
+    padding: '4px 8px',
+    display: 'inline-block',
+  },
+  riskText: {
+    fontSize: '11px',
+    margin: '0 0 10px 0',
+    lineHeight: 1.4,
+  },
+  riskField: {
+    fontSize: '12px',
+    marginBottom: '10px',
+  },
+  riskDisclaimer: {
+    fontSize: '10px',
+    margin: '10px 0',
+    lineHeight: 1.4,
+    color: '#333',
+  },
+  signatureField: {
+    fontSize: '12px',
+    marginTop: '15px',
+  },
+  signatureLine: {
+    borderBottom: '1px solid #000',
+    display: 'inline-block',
+    minWidth: '200px',
   },
   signatureImage: {
-    maxWidth: '100%',
-    maxHeight: '150px',
+    maxHeight: '50px',
+    maxWidth: '200px',
+    display: 'block',
+    marginTop: '5px',
+  },
+  diagramTitle: {
+    fontSize: '12px',
+    fontWeight: 'bold',
+    margin: '0 0 10px 0',
+    background: '#000',
+    color: '#fff',
+    padding: '4px 8px',
+    display: 'inline-block',
+  },
+  diagramContainer: {
+    border: '1px solid #ccc',
     background: '#fff',
-    borderRadius: '4px',
-    padding: '10px',
+    marginBottom: '10px',
   },
-  signatureDate: {
-    color: '#888',
-    fontSize: '13px',
-  },
-  noSignature: {
-    color: '#666',
-    fontSize: '14px',
-    fontStyle: 'italic' as const,
-    padding: '30px',
-    textAlign: 'center' as const,
+  carImage: {
+    width: '100%',
+    height: 'auto',
+    display: 'block',
   },
   damageList: {
-    display: 'flex',
-    flexDirection: 'column' as const,
-    gap: '10px',
+    fontSize: '11px',
   },
   damageItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    padding: '12px 15px',
-    borderRadius: '8px',
+    marginBottom: '3px',
   },
   damageNumber: {
-    width: '30px',
-    height: '30px',
-    borderRadius: '50%',
-    background: '#f44336',
-    color: '#fff',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    fontWeight: '700' as const,
-    fontSize: '14px',
+    fontWeight: 'bold',
+    marginRight: '5px',
+    color: '#f44336',
   },
   damageNote: {
-    color: '#fff',
-    fontSize: '14px',
+    color: '#333',
   },
-  loadingText: {
-    color: '#30ff37',
-    fontSize: '24px',
-    textAlign: 'center' as const,
-    padding: '60px 20px',
+  // Notes section
+  notesSection: {
+    border: '1px solid #000',
+    padding: '12px',
+    marginBottom: '20px',
+  },
+  notesTitle: {
+    fontSize: '12px',
+    fontWeight: 'bold',
+    margin: '0 0 8px 0',
+  },
+  notesText: {
+    fontSize: '11px',
+    minHeight: '40px',
+    lineHeight: 1.6,
+    margin: 0,
+    whiteSpace: 'pre-wrap' as const,
+  },
+  // Disclaimer section
+  disclaimerSection: {
+    marginBottom: '20px',
+    fontSize: '11px',
+    lineHeight: 1.5,
+  },
+  termsTitle: {
+    fontSize: '12px',
+    fontWeight: 'bold',
+    margin: '0 0 10px 0',
+    background: '#000',
+    color: '#fff',
+    padding: '4px 8px',
+    display: 'inline-block',
+  },
+  termsBox: {
+    border: '1px solid #ccc',
+    padding: '12px',
+    marginBottom: '10px',
+    background: '#fafafa',
+  },
+  termsText: {
+    fontSize: '10px',
+    margin: '0 0 8px 0',
+    lineHeight: 1.5,
+    color: '#333',
+  },
+  videoField: {
+    margin: '10px 0',
+    fontSize: '12px',
+  },
+  agreementText: {
+    margin: '10px 0',
+    fontSize: '10px',
+    color: '#000',
+    fontWeight: 'bold',
+    fontStyle: 'italic' as const,
+    lineHeight: 1.5,
+  },
+  // Signatures section
+  signaturesSection: {
+    marginTop: '20px',
+  },
+  signatureRow: {
+    display: 'flex',
+    gap: '40px',
+    marginBottom: '15px',
+    alignItems: 'flex-end',
+  },
+  signatureBlock: {
+    fontSize: '12px',
   },
   // Modal styles
   modalOverlay: {
@@ -737,7 +853,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     left: 0,
     right: 0,
     bottom: 0,
-    background: 'rgba(0, 0, 0, 0.8)',
+    background: 'rgba(0, 0, 0, 0.7)',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -745,34 +861,31 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '20px',
   },
   modal: {
-    background: '#1a1a1a',
-    border: '1px solid rgba(48, 255, 55, 0.3)',
-    borderRadius: '16px',
+    background: '#fff',
+    borderRadius: '12px',
     padding: '30px',
     width: '100%',
     maxWidth: '500px',
   },
   modalTitle: {
-    color: '#30ff37',
     fontSize: '22px',
     margin: '0 0 25px 0',
+    color: '#333',
   },
   formGroup: {
     marginBottom: '20px',
   },
   formLabel: {
     display: 'block',
-    color: '#888',
+    color: '#666',
     fontSize: '14px',
     marginBottom: '8px',
   },
   input: {
     width: '100%',
     padding: '14px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
+    border: '1px solid #ddd',
     borderRadius: '8px',
-    color: '#fff',
     fontSize: '16px',
     outline: 'none',
     boxSizing: 'border-box' as const,
@@ -780,10 +893,8 @@ const styles: { [key: string]: React.CSSProperties } = {
   textarea: {
     width: '100%',
     padding: '14px',
-    background: 'rgba(255, 255, 255, 0.05)',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
+    border: '1px solid #ddd',
     borderRadius: '8px',
-    color: '#fff',
     fontSize: '16px',
     outline: 'none',
     resize: 'vertical' as const,
@@ -803,21 +914,21 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   cancelButton: {
     padding: '12px 24px',
-    background: 'rgba(255, 255, 255, 0.1)',
-    color: '#fff',
-    border: '1px solid rgba(255, 255, 255, 0.2)',
+    background: '#f5f5f5',
+    color: '#333',
+    border: '1px solid #ddd',
     borderRadius: '8px',
     fontSize: '15px',
     cursor: 'pointer',
   },
   confirmSendButton: {
     padding: '12px 24px',
-    background: 'linear-gradient(135deg, #30ff37 0%, #20cc2a 100%)',
-    color: '#000',
+    background: '#4caf50',
+    color: '#fff',
     border: 'none',
     borderRadius: '8px',
     fontSize: '15px',
-    fontWeight: '700' as const,
+    fontWeight: '600' as const,
     cursor: 'pointer',
   },
 };
