@@ -121,11 +121,11 @@ export default function TaxSummaryPage() {
   }
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="tax-container">
       {/* Header */}
-      <div style={styles.header}>
+      <div style={styles.header} className="tax-header">
         <div style={styles.headerLeft}>
-          <h1 style={styles.title}>Tax Summary</h1>
+          <h1 style={styles.title} className="tax-title">Tax Summary</h1>
           <p style={styles.subtitle}>Corporation Tax Estimation & Financial Overview</p>
         </div>
         <button onClick={() => router.push('/autow/business-hub')} style={styles.backBtn}>
@@ -162,10 +162,10 @@ export default function TaxSummaryPage() {
       {data && (
         <>
           {/* Main Summary Card */}
-          <div style={styles.mainCard}>
+          <div style={styles.mainCard} className="tax-main-card">
             <h2 style={styles.mainTitle}>Tax Calculation Summary</h2>
 
-            <div style={styles.calculationGrid}>
+            <div style={styles.calculationGrid} className="tax-calc-grid">
               {/* Revenue Section */}
               <div style={styles.calcSection}>
                 <div style={styles.calcHeader}>
@@ -254,8 +254,8 @@ export default function TaxSummaryPage() {
             </div>
 
             {/* Final Summary */}
-            <div style={styles.finalSummary}>
-              <div style={styles.summaryBox}>
+            <div style={styles.finalSummary} className="tax-final-summary">
+              <div style={styles.summaryBox} className="tax-summary-box">
                 <div style={styles.summaryLabel}>Your Take Home</div>
                 <div style={styles.summaryValue}>{formatCurrency(data.tax.takeHome)}</div>
               </div>
@@ -273,7 +273,7 @@ export default function TaxSummaryPage() {
           </div>
 
           {/* Quick Stats */}
-          <div style={styles.statsGrid}>
+          <div style={styles.statsGrid} className="tax-stats-grid">
             <button
               style={styles.statCardClickable}
               onClick={() => setShowDetails(showDetails === 'invoices' ? null : 'invoices')}
@@ -309,7 +309,7 @@ export default function TaxSummaryPage() {
           {Object.keys(data.expenses.byCategory).length > 0 && (
             <div style={styles.section}>
               <h3 style={styles.sectionTitle}>Expenses by Category</h3>
-              <div style={styles.categoryGrid}>
+              <div style={styles.categoryGrid} className="tax-category-grid">
                 {Object.entries(data.expenses.byCategory)
                   .sort(([, a], [, b]) => b.total - a.total)
                   .map(([category, catData]) => (
@@ -330,7 +330,7 @@ export default function TaxSummaryPage() {
           {data.weeklyBreakdown.length > 0 && (
             <div style={styles.section}>
               <h3 style={styles.sectionTitle}>Weekly Breakdown</h3>
-              <div style={styles.weeklyGrid}>
+              <div style={styles.weeklyGrid} className="tax-weekly-grid">
                 {data.weeklyBreakdown.map((week, index) => (
                   <div key={index} style={styles.weekCard}>
                     <div style={styles.weekHeader}>{week.week}</div>
@@ -357,7 +357,7 @@ export default function TaxSummaryPage() {
           {/* VAT Summary */}
           <div style={styles.section}>
             <h3 style={styles.sectionTitle}>VAT Summary</h3>
-            <div style={styles.vatGrid}>
+            <div style={styles.vatGrid} className="tax-vat-grid">
               <div style={styles.vatCard}>
                 <div style={styles.vatLabel}>VAT Collected</div>
                 <div style={styles.vatValueGreen}>{formatCurrency(data.vat.collected)}</div>
@@ -376,7 +376,7 @@ export default function TaxSummaryPage() {
           {/* Details Modal */}
           {showDetails && (
             <div style={styles.modal}>
-              <div style={styles.modalContent}>
+              <div style={styles.modalContent} className="tax-modal-content">
                 <div style={styles.modalHeader}>
                   <h3 style={styles.modalTitle}>
                     {showDetails === 'invoices' ? 'Paid Invoices' :
@@ -386,76 +386,136 @@ export default function TaxSummaryPage() {
                 </div>
                 <div style={styles.modalBody}>
                   {showDetails === 'invoices' && (
-                    <table style={styles.table}>
-                      <thead>
-                        <tr>
-                          <th style={styles.th}>Invoice</th>
-                          <th style={styles.th}>Date</th>
-                          <th style={styles.th}>Client</th>
-                          <th style={styles.th}>Net</th>
-                          <th style={styles.th}>VAT</th>
-                          <th style={styles.th}>Total</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    <>
+                      {/* Desktop Table */}
+                      <div className="desktop-table">
+                        <table style={styles.table}>
+                          <thead>
+                            <tr>
+                              <th style={styles.th}>Invoice</th>
+                              <th style={styles.th}>Date</th>
+                              <th style={styles.th}>Client</th>
+                              <th style={styles.th}>Net</th>
+                              <th style={styles.th}>VAT</th>
+                              <th style={styles.th}>Total</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {data.invoices.map((inv) => (
+                              <tr key={inv.id}>
+                                <td style={styles.td}>{inv.invoice_number}</td>
+                                <td style={styles.td}>{formatDate(inv.paid_at || inv.invoice_date)}</td>
+                                <td style={styles.td}>{inv.client_name}</td>
+                                <td style={styles.td}>{formatCurrency(parseFloat(inv.subtotal))}</td>
+                                <td style={styles.td}>{formatCurrency(parseFloat(inv.vat_amount))}</td>
+                                <td style={styles.tdGreen}>{formatCurrency(parseFloat(inv.total))}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {/* Mobile Cards */}
+                      <div className="mobile-cards">
                         {data.invoices.map((inv) => (
-                          <tr key={inv.id}>
-                            <td style={styles.td}>{inv.invoice_number}</td>
-                            <td style={styles.td}>{formatDate(inv.paid_at || inv.invoice_date)}</td>
-                            <td style={styles.td}>{inv.client_name}</td>
-                            <td style={styles.td}>{formatCurrency(parseFloat(inv.subtotal))}</td>
-                            <td style={styles.td}>{formatCurrency(parseFloat(inv.vat_amount))}</td>
-                            <td style={styles.tdGreen}>{formatCurrency(parseFloat(inv.total))}</td>
-                          </tr>
+                          <div key={inv.id} style={styles.mobileCard}>
+                            <div style={styles.mobileCardHeader}>
+                              <span style={styles.mobileCardTitle}>{inv.invoice_number}</span>
+                              <span style={styles.mobileCardAmount}>{formatCurrency(parseFloat(inv.total))}</span>
+                            </div>
+                            <div style={styles.mobileCardBody}>
+                              <span>{inv.client_name}</span>
+                              <span style={styles.mobileCardDate}>{formatDate(inv.paid_at || inv.invoice_date)}</span>
+                            </div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    </>
                   )}
                   {showDetails === 'expenses' && (
-                    <table style={styles.table}>
-                      <thead>
-                        <tr>
-                          <th style={styles.th}>Date</th>
-                          <th style={styles.th}>Category</th>
-                          <th style={styles.th}>Description</th>
-                          <th style={styles.th}>Amount</th>
-                          <th style={styles.th}>Tax %</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    <>
+                      {/* Desktop Table */}
+                      <div className="desktop-table">
+                        <table style={styles.table}>
+                          <thead>
+                            <tr>
+                              <th style={styles.th}>Date</th>
+                              <th style={styles.th}>Category</th>
+                              <th style={styles.th}>Description</th>
+                              <th style={styles.th}>Amount</th>
+                              <th style={styles.th}>Tax %</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {data.expensesList.map((exp) => (
+                              <tr key={exp.id}>
+                                <td style={styles.td}>{formatDate(exp.date)}</td>
+                                <td style={styles.td}>{exp.category}</td>
+                                <td style={styles.td}>{exp.description}</td>
+                                <td style={styles.tdRed}>{formatCurrency(parseFloat(exp.amount))}</td>
+                                <td style={styles.td}>{exp.tax_deductible_percent}%</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {/* Mobile Cards */}
+                      <div className="mobile-cards">
                         {data.expensesList.map((exp) => (
-                          <tr key={exp.id}>
-                            <td style={styles.td}>{formatDate(exp.date)}</td>
-                            <td style={styles.td}>{exp.category}</td>
-                            <td style={styles.td}>{exp.description}</td>
-                            <td style={styles.tdRed}>{formatCurrency(parseFloat(exp.amount))}</td>
-                            <td style={styles.td}>{exp.tax_deductible_percent}%</td>
-                          </tr>
+                          <div key={exp.id} style={styles.mobileCard}>
+                            <div style={styles.mobileCardHeader}>
+                              <span style={styles.mobileCardTitle}>{exp.category}</span>
+                              <span style={{...styles.mobileCardAmount, color: '#ff6b6b'}}>{formatCurrency(parseFloat(exp.amount))}</span>
+                            </div>
+                            <div style={styles.mobileCardBody}>
+                              <span>{exp.description}</span>
+                              <span style={styles.mobileCardDate}>{formatDate(exp.date)}</span>
+                            </div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    </>
                   )}
                   {showDetails === 'mileage' && (
-                    <table style={styles.table}>
-                      <thead>
-                        <tr>
-                          <th style={styles.th}>Date</th>
-                          <th style={styles.th}>Description</th>
-                          <th style={styles.th}>Miles</th>
-                          <th style={styles.th}>Claim</th>
-                        </tr>
-                      </thead>
-                      <tbody>
+                    <>
+                      {/* Desktop Table */}
+                      <div className="desktop-table">
+                        <table style={styles.table}>
+                          <thead>
+                            <tr>
+                              <th style={styles.th}>Date</th>
+                              <th style={styles.th}>Description</th>
+                              <th style={styles.th}>Miles</th>
+                              <th style={styles.th}>Claim</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {data.mileageList.map((m) => (
+                              <tr key={m.id}>
+                                <td style={styles.td}>{formatDate(m.date)}</td>
+                                <td style={styles.td}>{m.description}</td>
+                                <td style={styles.td}>{parseFloat(m.miles).toFixed(1)}</td>
+                                <td style={styles.tdCyan}>{formatCurrency(parseFloat(m.claim_amount))}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                      {/* Mobile Cards */}
+                      <div className="mobile-cards">
                         {data.mileageList.map((m) => (
-                          <tr key={m.id}>
-                            <td style={styles.td}>{formatDate(m.date)}</td>
-                            <td style={styles.td}>{m.description}</td>
-                            <td style={styles.td}>{parseFloat(m.miles).toFixed(1)}</td>
-                            <td style={styles.tdCyan}>{formatCurrency(parseFloat(m.claim_amount))}</td>
-                          </tr>
+                          <div key={m.id} style={styles.mobileCard}>
+                            <div style={styles.mobileCardHeader}>
+                              <span style={styles.mobileCardTitle}>{parseFloat(m.miles).toFixed(1)} mi</span>
+                              <span style={{...styles.mobileCardAmount, color: '#00c8ff'}}>{formatCurrency(parseFloat(m.claim_amount))}</span>
+                            </div>
+                            <div style={styles.mobileCardBody}>
+                              <span>{m.description}</span>
+                              <span style={styles.mobileCardDate}>{formatDate(m.date)}</span>
+                            </div>
+                          </div>
                         ))}
-                      </tbody>
-                    </table>
+                      </div>
+                    </>
                   )}
                 </div>
               </div>
@@ -486,6 +546,30 @@ export default function TaxSummaryPage() {
           </div>
         </>
       )}
+
+      {/* Mobile Styles */}
+      <style>{`
+        .mobile-cards { display: none; }
+        .desktop-table { display: block; }
+
+        @media (max-width: 768px) {
+          .tax-header { flex-direction: column !important; align-items: flex-start !important; }
+          .tax-modal-content { max-width: 95vw !important; }
+          .mobile-cards { display: block !important; }
+          .desktop-table { display: none !important; }
+          .tax-category-grid, .tax-weekly-grid, .tax-vat-grid { grid-template-columns: 1fr 1fr !important; }
+          .tax-final-summary { flex-direction: column !important; gap: 12px !important; }
+          .tax-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        @media (max-width: 480px) {
+          .tax-container { padding: 15px 10px !important; }
+          .tax-main-card { padding: 15px !important; }
+          .tax-stats-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+          .tax-category-grid, .tax-weekly-grid, .tax-vat-grid { grid-template-columns: 1fr !important; }
+          .tax-title { font-size: 22px !important; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -965,5 +1049,38 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '24px',
     textAlign: 'center' as const,
     padding: '60px 20px',
+  },
+  mobileCard: {
+    background: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: '10px',
+    padding: '14px',
+    marginBottom: '10px',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  mobileCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '8px',
+  },
+  mobileCardTitle: {
+    color: '#00c8ff',
+    fontSize: '14px',
+    fontWeight: '600' as const,
+  },
+  mobileCardAmount: {
+    color: '#30ff37',
+    fontSize: '16px',
+    fontWeight: '700' as const,
+  },
+  mobileCardBody: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    color: '#888',
+    fontSize: '12px',
+  },
+  mobileCardDate: {
+    color: '#666',
   },
 };

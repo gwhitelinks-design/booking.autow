@@ -265,11 +265,11 @@ export default function ExpensesPage() {
   }
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="exp-container">
       {/* Header */}
-      <div style={styles.header}>
+      <div style={styles.header} className="exp-header">
         <div style={styles.headerLeft}>
-          <h1 style={styles.title}>📊 Expenses Tracking</h1>
+          <h1 style={styles.title} className="exp-title">📊 Expenses Tracking</h1>
           <p style={styles.subtitle}>Track and categorize business expenses</p>
         </div>
         <button onClick={() => router.push('/autow/business-hub')} style={styles.backBtn}>
@@ -278,7 +278,7 @@ export default function ExpensesPage() {
       </div>
 
       {/* Summary Stats */}
-      <div style={styles.summaryGrid}>
+      <div style={styles.summaryGrid} className="exp-summary-grid">
         <div style={styles.summaryCard}>
           <div style={styles.summaryValue}>£{totals.total.toFixed(2)}</div>
           <div style={styles.summaryLabel}>Total Expenses</div>
@@ -301,7 +301,7 @@ export default function ExpensesPage() {
       <div style={styles.section}>
         <h2 style={styles.sectionTitle}>➕ Add Expense</h2>
         <form onSubmit={handleSubmit}>
-          <div style={styles.formGrid}>
+          <div style={styles.formGrid} className="exp-form-grid">
             <div style={styles.formGroup}>
               <label style={styles.label}>Date *</label>
               <input
@@ -446,12 +446,12 @@ export default function ExpensesPage() {
             </div>
           </div>
 
-          <div style={styles.formActions}>
+          <div style={styles.formActions} className="exp-form-actions">
             <button type="button" onClick={clearForm} style={styles.clearBtn}>
-              Clear Form
+              Clear
             </button>
             <button type="submit" style={styles.submitBtn} disabled={saving}>
-              {saving ? 'Saving...' : '+ Add Expense'}
+              {saving ? 'Saving...' : '+ Add'}
             </button>
           </div>
         </form>
@@ -473,7 +473,8 @@ export default function ExpensesPage() {
           </select>
         </div>
 
-        <div style={styles.tableWrapper}>
+        {/* Desktop Table */}
+        <div style={styles.tableWrapper} className="desktop-table">
           <table style={styles.table}>
             <thead>
               <tr>
@@ -529,7 +530,63 @@ export default function ExpensesPage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Cards */}
+        <div className="mobile-cards">
+          {expenses.length === 0 ? (
+            <div style={styles.emptyRow}>No expenses recorded yet</div>
+          ) : (
+            expenses.map((expense) => (
+              <div key={expense.id} style={styles.mobileCard}>
+                <div style={styles.mobileCardHeader}>
+                  <div>
+                    <span style={styles.categoryBadge}>{expense.category}</span>
+                    {expense.is_recurring && <span style={styles.recurringBadge}>↻</span>}
+                  </div>
+                  <span style={styles.mobileCardAmount}>£{parseFloat(String(expense.amount)).toFixed(2)}</span>
+                </div>
+                <div style={styles.mobileCardBody}>
+                  <div style={styles.mobileCardDesc}>{expense.description}</div>
+                  <div style={styles.mobileCardMeta}>
+                    <span>{formatDate(expense.date)}</span>
+                    <span>{expense.supplier || '-'}</span>
+                  </div>
+                </div>
+                <div style={styles.mobileCardFooter}>
+                  {expense.invoice_id ? (
+                    <span style={styles.linkedJobBadge}>{getInvoiceLabel(expense.invoice_id)}</span>
+                  ) : (
+                    <span style={styles.generalBadge}>General</span>
+                  )}
+                  <button onClick={() => handleDelete(expense.id)} style={styles.deleteBtn}>🗑️</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
+
+      {/* Mobile Styles */}
+      <style>{`
+        .mobile-cards { display: none; }
+        .desktop-table { display: block; }
+
+        @media (max-width: 768px) {
+          .exp-header { flex-direction: column !important; align-items: flex-start !important; }
+          .mobile-cards { display: block !important; }
+          .desktop-table { display: none !important; }
+          .exp-form-grid { grid-template-columns: 1fr 1fr !important; }
+          .exp-summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        @media (max-width: 480px) {
+          .exp-container { padding: 15px 10px !important; }
+          .exp-form-grid { grid-template-columns: 1fr !important; }
+          .exp-summary-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+          .exp-title { font-size: 18px !important; }
+          .exp-form-actions { flex-direction: row !important; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -798,5 +855,44 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '24px',
     textAlign: 'center' as const,
     padding: '60px 20px',
+  },
+  mobileCard: {
+    background: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: '10px',
+    padding: '14px',
+    marginBottom: '10px',
+    border: '1px solid rgba(48, 255, 55, 0.2)',
+  },
+  mobileCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '10px',
+  },
+  mobileCardAmount: {
+    color: '#30ff37',
+    fontSize: '18px',
+    fontWeight: '700' as const,
+  },
+  mobileCardBody: {
+    marginBottom: '10px',
+  },
+  mobileCardDesc: {
+    color: '#fff',
+    fontSize: '14px',
+    marginBottom: '6px',
+  },
+  mobileCardMeta: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    color: '#888',
+    fontSize: '12px',
+  },
+  mobileCardFooter: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+    paddingTop: '10px',
   },
 };

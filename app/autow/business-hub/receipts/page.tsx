@@ -355,6 +355,46 @@ export default function ReceiptsSummaryPage() {
       textAlign: 'center' as const,
       padding: '40px',
     },
+    mobileCard: {
+      background: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '10px',
+      padding: '14px',
+      marginBottom: '10px',
+      border: '1px solid rgba(255, 255, 255, 0.1)',
+    },
+    mobileCardHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '8px',
+    },
+    mobileCardNumber: {
+      color: '#00c8ff',
+      fontSize: '14px',
+      fontWeight: '600' as const,
+    },
+    mobileCardAmount: {
+      color: '#ff6b6b',
+      fontSize: '18px',
+      fontWeight: '700' as const,
+    },
+    mobileCardBody: {
+      marginBottom: '10px',
+    },
+    mobileCardDesc: {
+      color: '#888',
+      fontSize: '12px',
+      marginTop: '4px',
+    },
+    mobileCardFooter: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    mobileCardDate: {
+      color: '#888',
+      fontSize: '12px',
+    },
   };
 
   const getStatusBadgeStyle = (status: string): React.CSSProperties => {
@@ -369,17 +409,17 @@ export default function ReceiptsSummaryPage() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
+    <div style={styles.container} className="rec-container">
+      <div style={styles.header} className="rec-header">
         <button style={styles.backButton} onClick={() => router.push('/autow/business-hub')}>
-          ← Back to Hub
+          ← Back
         </button>
-        <h1 style={styles.title}>🧾 Receipts Summary</h1>
+        <h1 style={styles.title} className="rec-title">🧾 Receipts Summary</h1>
         <div></div>
       </div>
 
       {/* Summary Cards */}
-      <div style={styles.summaryGrid}>
+      <div style={styles.summaryGrid} className="rec-summary-grid">
         <div style={styles.summaryCard}>
           <div style={styles.summaryLabel}>Total Spent</div>
           <div style={{...styles.summaryValue, color: '#ff6b6b'}}>
@@ -405,7 +445,7 @@ export default function ReceiptsSummaryPage() {
       </div>
 
       {/* Filters */}
-      <div style={styles.filterSection}>
+      <div style={styles.filterSection} className="rec-filter-section">
         <select
           style={styles.select}
           value={categoryFilter}
@@ -450,60 +490,89 @@ export default function ReceiptsSummaryPage() {
       ) : receipts.length === 0 ? (
         <div style={styles.emptyState}>No receipts found</div>
       ) : (
-        <div style={styles.tableContainer}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Receipt #</th>
-                <th style={styles.th}>Date</th>
-                <th style={styles.th}>Supplier</th>
-                <th style={styles.th}>Description</th>
-                <th style={styles.th}>Category</th>
-                <th style={styles.th}>Status</th>
-                <th style={{...styles.th, textAlign: 'right' as const}}>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {receipts.map((rec) => (
-                <tr key={rec.id}>
-                  <td style={styles.td}>
+        <>
+          {/* Desktop Table */}
+          <div style={styles.tableContainer} className="desktop-table">
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Receipt #</th>
+                  <th style={styles.th}>Date</th>
+                  <th style={styles.th}>Supplier</th>
+                  <th style={styles.th}>Description</th>
+                  <th style={styles.th}>Category</th>
+                  <th style={styles.th}>Status</th>
+                  <th style={{...styles.th, textAlign: 'right' as const}}>Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {receipts.map((rec) => (
+                  <tr key={rec.id}>
+                    <td style={styles.td}>
+                      {rec.gdrive_file_url ? (
+                        <a
+                          href={rec.gdrive_file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={styles.link}
+                        >
+                          {rec.receipt_number}
+                        </a>
+                      ) : (
+                        rec.receipt_number
+                      )}
+                    </td>
+                    <td style={styles.td}>{formatDate(rec.receipt_date)}</td>
+                    <td style={styles.td}>{rec.supplier}</td>
+                    <td style={styles.td}>{rec.description || '-'}</td>
+                    <td style={styles.td}>{getCategoryLabel(rec.category)}</td>
+                    <td style={styles.td}>
+                      <span style={getStatusBadgeStyle(rec.status)}>
+                        {rec.status}
+                      </span>
+                    </td>
+                    <td style={{...styles.td, textAlign: 'right' as const, color: '#ff6b6b', fontWeight: 'bold'}}>
+                      {formatCurrency(rec.amount)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="mobile-cards">
+            {receipts.map((rec) => (
+              <div key={rec.id} style={styles.mobileCard}>
+                <div style={styles.mobileCardHeader}>
+                  <span style={styles.mobileCardNumber}>
                     {rec.gdrive_file_url ? (
-                      <a
-                        href={rec.gdrive_file_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        style={styles.link}
-                      >
+                      <a href={rec.gdrive_file_url} target="_blank" rel="noopener noreferrer" style={styles.link}>
                         {rec.receipt_number}
                       </a>
-                    ) : (
-                      rec.receipt_number
-                    )}
-                  </td>
-                  <td style={styles.td}>{formatDate(rec.receipt_date)}</td>
-                  <td style={styles.td}>{rec.supplier}</td>
-                  <td style={styles.td}>{rec.description || '-'}</td>
-                  <td style={styles.td}>{getCategoryLabel(rec.category)}</td>
-                  <td style={styles.td}>
-                    <span style={getStatusBadgeStyle(rec.status)}>
-                      {rec.status}
-                    </span>
-                  </td>
-                  <td style={{...styles.td, textAlign: 'right' as const, color: '#ff6b6b', fontWeight: 'bold'}}>
-                    {formatCurrency(rec.amount)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+                    ) : rec.receipt_number}
+                  </span>
+                  <span style={styles.mobileCardAmount}>{formatCurrency(rec.amount)}</span>
+                </div>
+                <div style={styles.mobileCardBody}>
+                  <div>{rec.supplier}</div>
+                  <div style={styles.mobileCardDesc}>{rec.description || '-'}</div>
+                </div>
+                <div style={styles.mobileCardFooter}>
+                  <span style={styles.mobileCardDate}>{formatDate(rec.receipt_date)}</span>
+                  <span style={getStatusBadgeStyle(rec.status)}>{rec.status}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Category Breakdown */}
       {Object.keys(summary.byCategory).length > 0 && (
         <div style={styles.categorySection}>
           <h2 style={styles.sectionTitle}>By Category</h2>
-          <div style={styles.categoryGrid}>
+          <div style={styles.categoryGrid} className="rec-category-grid">
             {Object.entries(summary.byCategory)
               .sort(([, a], [, b]) => b.total - a.total)
               .map(([category, data]) => (
@@ -523,7 +592,7 @@ export default function ReceiptsSummaryPage() {
       {Object.keys(summary.byMonth).length > 0 && (
         <div style={styles.categorySection}>
           <h2 style={styles.sectionTitle}>Monthly Breakdown</h2>
-          <div style={styles.monthlyGrid}>
+          <div style={styles.monthlyGrid} className="rec-monthly-grid">
             {Object.entries(summary.byMonth)
               .sort(([a], [b]) => b.localeCompare(a))
               .map(([monthKey, data]) => (
@@ -538,6 +607,28 @@ export default function ReceiptsSummaryPage() {
           </div>
         </div>
       )}
+
+      {/* Mobile Styles */}
+      <style>{`
+        .mobile-cards { display: none; }
+        .desktop-table { display: block; }
+
+        @media (max-width: 768px) {
+          .rec-header { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+          .mobile-cards { display: block !important; }
+          .desktop-table { display: none !important; }
+          .rec-summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .rec-category-grid, .rec-monthly-grid { grid-template-columns: 1fr 1fr !important; }
+          .rec-filter-section { flex-direction: column !important; }
+        }
+
+        @media (max-width: 480px) {
+          .rec-container { padding: 15px 10px !important; }
+          .rec-summary-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+          .rec-category-grid, .rec-monthly-grid { grid-template-columns: 1fr !important; }
+          .rec-title { font-size: 20px !important; }
+        }
+      `}</style>
     </div>
   );
 }

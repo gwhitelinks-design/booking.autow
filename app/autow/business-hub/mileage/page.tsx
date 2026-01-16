@@ -300,20 +300,20 @@ export default function MileagePage() {
   }
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="mil-container">
       {/* Header */}
-      <div style={styles.header}>
+      <div style={styles.header} className="mil-header">
         <div style={styles.headerLeft}>
-          <h1 style={styles.title}>🚗 Mileage Tracking</h1>
+          <h1 style={styles.title} className="mil-title">🚗 Mileage Tracking</h1>
           <p style={styles.subtitle}>Log business journeys and calculate HMRC claims</p>
         </div>
         <button onClick={() => router.push('/autow/business-hub')} style={styles.backBtn}>
-          ← Back to Hub
+          ← Back
         </button>
       </div>
 
       {/* Summary Stats */}
-      <div style={styles.summaryGrid}>
+      <div style={styles.summaryGrid} className="mil-summary-grid">
         <div style={styles.summaryCard}>
           <div style={styles.summaryValue}>{summary.totalMiles.toFixed(1)}</div>
           <div style={styles.summaryLabel}>Total Miles</div>
@@ -336,8 +336,8 @@ export default function MileagePage() {
 
       {/* Postcode Calculator */}
       <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>📍 Postcode Distance Calculator</h2>
-        <div style={styles.calcGrid}>
+        <h2 style={styles.sectionTitle}>📍 Distance Calculator</h2>
+        <div style={styles.calcGrid} className="mil-calc-grid">
           <div style={styles.formGroup}>
             <label style={styles.label}>From Postcode</label>
             <input
@@ -375,14 +375,14 @@ export default function MileagePage() {
         )}
 
         {postcodeCalc.result && (
-          <div style={styles.calcResult}>
-            <div style={styles.calcResultValue}>{postcodeCalc.result.toFixed(1)} miles</div>
-            <div style={styles.calcActions}>
+          <div style={styles.calcResult} className="mil-calc-result">
+            <div style={styles.calcResultValue}>{postcodeCalc.result.toFixed(1)} mi</div>
+            <div style={styles.calcActions} className="mil-calc-actions">
               <button onClick={() => useCalculatedDistance(false)} style={styles.useBtn}>
-                Use Distance
+                Use
               </button>
               <button onClick={() => useCalculatedDistance(true)} style={styles.useBtn}>
-                Round Trip ({(postcodeCalc.result * 2).toFixed(1)} mi)
+                Round ({(postcodeCalc.result * 2).toFixed(1)})
               </button>
             </div>
           </div>
@@ -393,7 +393,7 @@ export default function MileagePage() {
       <div style={styles.section}>
         <h2 style={styles.sectionTitle}>➕ Log Journey</h2>
         <form onSubmit={handleSubmit}>
-          <div style={styles.formGrid}>
+          <div style={styles.formGrid} className="mil-form-grid">
             <div style={styles.formGroup}>
               <label style={styles.label}>Date *</label>
               <input
@@ -485,8 +485,10 @@ export default function MileagePage() {
 
       {/* Mileage Log Table */}
       <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>📋 Mileage Log ({entries.length} entries)</h2>
-        <div style={styles.tableWrapper}>
+        <h2 style={styles.sectionTitle}>📋 Mileage Log ({entries.length})</h2>
+
+        {/* Desktop Table */}
+        <div style={styles.tableWrapper} className="desktop-table">
           <table style={styles.table}>
             <thead>
               <tr>
@@ -529,7 +531,56 @@ export default function MileagePage() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Cards */}
+        <div className="mobile-cards">
+          {entries.length === 0 ? (
+            <div style={styles.emptyRow}>No mileage entries yet</div>
+          ) : (
+            entries.map((entry) => (
+              <div key={entry.id} style={styles.mobileCard}>
+                <div style={styles.mobileCardHeader}>
+                  <span style={styles.mobileCardMiles}>{parseFloat(String(entry.miles)).toFixed(1)} mi</span>
+                  <span style={styles.mobileCardClaim}>£{parseFloat(String(entry.claim_amount)).toFixed(2)}</span>
+                </div>
+                <div style={styles.mobileCardRoute}>
+                  {entry.start_location} → {entry.destination}
+                </div>
+                <div style={styles.mobileCardFooter}>
+                  <span style={styles.mobileCardDate}>{formatDate(entry.date)}</span>
+                  <span style={styles.mobileCardVehicle}>{getVehicleLabel(entry.vehicle)}</span>
+                  <button onClick={() => handleDelete(entry.id)} style={styles.deleteBtn}>🗑️</button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
+
+      {/* Mobile Styles */}
+      <style>{`
+        .mobile-cards { display: none; }
+        .desktop-table { display: block; }
+
+        @media (max-width: 768px) {
+          .mil-header { flex-direction: column !important; align-items: flex-start !important; }
+          .mobile-cards { display: block !important; }
+          .desktop-table { display: none !important; }
+          .mil-calc-grid { grid-template-columns: 1fr 1fr 1fr !important; }
+          .mil-form-grid { grid-template-columns: 1fr 1fr !important; }
+          .mil-summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+        }
+
+        @media (max-width: 480px) {
+          .mil-container { padding: 15px 10px !important; }
+          .mil-calc-grid { grid-template-columns: 1fr !important; }
+          .mil-form-grid { grid-template-columns: 1fr !important; }
+          .mil-summary-grid { grid-template-columns: 1fr 1fr !important; gap: 8px !important; }
+          .mil-title { font-size: 18px !important; }
+          .mil-calc-result { flex-direction: column !important; text-align: center !important; }
+          .mil-calc-actions { justify-content: center !important; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -780,5 +831,52 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '24px',
     textAlign: 'center' as const,
     padding: '60px 20px',
+  },
+  mobileCard: {
+    background: 'rgba(0, 0, 0, 0.3)',
+    borderRadius: '10px',
+    padding: '14px',
+    marginBottom: '10px',
+    border: '1px solid rgba(0, 200, 255, 0.2)',
+  },
+  mobileCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '8px',
+  },
+  mobileCardMiles: {
+    color: '#00c8ff',
+    fontSize: '18px',
+    fontWeight: '700' as const,
+  },
+  mobileCardClaim: {
+    color: '#30ff37',
+    fontSize: '18px',
+    fontWeight: '700' as const,
+  },
+  mobileCardRoute: {
+    color: '#fff',
+    fontSize: '14px',
+    marginBottom: '10px',
+    padding: '8px',
+    background: 'rgba(0, 200, 255, 0.1)',
+    borderRadius: '6px',
+  },
+  mobileCardFooter: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  mobileCardDate: {
+    color: '#888',
+    fontSize: '12px',
+  },
+  mobileCardVehicle: {
+    color: '#666',
+    fontSize: '11px',
+    flex: 1,
+    textAlign: 'center' as const,
   },
 };

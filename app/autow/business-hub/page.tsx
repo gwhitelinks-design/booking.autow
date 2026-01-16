@@ -60,49 +60,50 @@ export default function BusinessHubPage() {
   }
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="hub-container">
       {/* Header */}
-      <div style={styles.header}>
-        <div style={styles.headerLeft}>
-          <img src="https://autow-services.co.uk/logo.png" alt="AUTOW" style={styles.logo} />
+      <div style={styles.header} className="hub-header">
+        <div style={styles.headerLeft} className="hub-header-left">
+          <img src="https://autow-services.co.uk/logo.png" alt="AUTOW" style={styles.logo} className="hub-logo" />
           <div style={styles.headerText}>
-            <h1 style={styles.title}>Business Hub</h1>
+            <h1 style={styles.title} className="hub-title">Business Hub</h1>
             <p style={styles.subtitle}>Financial Management & Tracking</p>
           </div>
         </div>
-        <button onClick={() => router.push('/autow/welcome')} style={styles.backBtn}>
+        <button onClick={() => router.push('/autow/welcome')} style={styles.backBtn} className="hub-back-btn">
           ← Back to Menu
         </button>
       </div>
 
       {/* Stats Grid */}
-      <div style={styles.statsGrid}>
+      <div style={styles.statsGrid} className="hub-stats-grid">
         <div style={styles.statCard}>
-          <div style={styles.statValue}>£{stats.totalReceived.toFixed(2)}</div>
+          <div style={styles.statValue} className="hub-stat-value">£{stats.totalReceived.toFixed(2)}</div>
           <div style={styles.statLabel}>Total Received</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statValue}>£{stats.totalExpenses.toFixed(2)}</div>
+          <div style={styles.statValue} className="hub-stat-value">£{stats.totalExpenses.toFixed(2)}</div>
           <div style={styles.statLabel}>Total Expenses</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statValue}>£{stats.mileageClaim.toFixed(2)}</div>
+          <div style={styles.statValue} className="hub-stat-value">£{stats.mileageClaim.toFixed(2)}</div>
           <div style={styles.statLabel}>Mileage Claim</div>
         </div>
         <div style={styles.statCard}>
-          <div style={styles.statValue}>{stats.receiptCount}</div>
+          <div style={styles.statValue} className="hub-stat-value">{stats.receiptCount}</div>
           <div style={styles.statLabel}>Receipts</div>
         </div>
       </div>
 
       {/* Hub Cards */}
-      <div style={styles.hubGrid}>
+      <div style={styles.hubGrid} className="hub-grid">
         <button
           onClick={() => router.push('/autow/business-hub/invoices')}
           style={styles.hubCard}
+          className="hub-card"
         >
-          <div style={styles.hubIcon}>💰</div>
-          <h2 style={styles.hubTitle}>Invoices Summary</h2>
+          <div style={styles.hubIcon} className="hub-icon">💰</div>
+          <h2 style={styles.hubTitle} className="hub-card-title">Invoices Summary</h2>
           <p style={styles.hubDescription}>
             View paid invoice data and financial breakdown
           </p>
@@ -114,9 +115,10 @@ export default function BusinessHubPage() {
         <button
           onClick={() => router.push('/autow/business-hub/receipts')}
           style={styles.hubCard}
+          className="hub-card"
         >
-          <div style={styles.hubIcon}>🧾</div>
-          <h2 style={styles.hubTitle}>Receipts Summary</h2>
+          <div style={styles.hubIcon} className="hub-icon">🧾</div>
+          <h2 style={styles.hubTitle} className="hub-card-title">Receipts Summary</h2>
           <p style={styles.hubDescription}>
             Receipt data and expense tracking
           </p>
@@ -128,9 +130,10 @@ export default function BusinessHubPage() {
         <button
           onClick={() => router.push('/autow/business-hub/mileage')}
           style={styles.hubCard}
+          className="hub-card"
         >
-          <div style={styles.hubIcon}>🚗</div>
-          <h2 style={styles.hubTitle}>Mileage Tracking</h2>
+          <div style={styles.hubIcon} className="hub-icon">🚗</div>
+          <h2 style={styles.hubTitle} className="hub-card-title">Mileage Tracking</h2>
           <p style={styles.hubDescription}>
             Log journeys and calculate HMRC mileage claims
           </p>
@@ -142,9 +145,10 @@ export default function BusinessHubPage() {
         <button
           onClick={() => router.push('/autow/business-hub/expenses')}
           style={styles.hubCard}
+          className="hub-card"
         >
-          <div style={styles.hubIcon}>📊</div>
-          <h2 style={styles.hubTitle}>Expenses</h2>
+          <div style={styles.hubIcon} className="hub-icon">📊</div>
+          <h2 style={styles.hubTitle} className="hub-card-title">Expenses</h2>
           <p style={styles.hubDescription}>
             Track business expenses by category
           </p>
@@ -156,9 +160,10 @@ export default function BusinessHubPage() {
         <button
           onClick={() => router.push('/autow/business-hub/tax-summary')}
           style={{...styles.hubCard, border: '2px solid rgba(255, 165, 0, 0.4)'}}
+          className="hub-card"
         >
-          <div style={styles.hubIcon}>🏛️</div>
-          <h2 style={{...styles.hubTitle, color: '#ffa500'}}>Tax Summary</h2>
+          <div style={styles.hubIcon} className="hub-icon">🏛️</div>
+          <h2 style={{...styles.hubTitle, color: '#ffa500'}} className="hub-card-title">Tax Summary</h2>
           <p style={styles.hubDescription}>
             Calculate tax holdback and view profit breakdown
           </p>
@@ -171,7 +176,7 @@ export default function BusinessHubPage() {
       {/* Quick Info */}
       <div style={styles.infoSection}>
         <h3 style={styles.infoTitle}>Tax Year 2025/26</h3>
-        <div style={styles.infoGrid}>
+        <div style={styles.infoGrid} className="hub-info-grid">
           <div style={styles.infoItem}>
             <span style={styles.infoLabel}>HMRC Mileage (first 10k):</span>
             <span style={styles.infoValue}>45p per mile</span>
@@ -186,6 +191,35 @@ export default function BusinessHubPage() {
           </div>
         </div>
       </div>
+      {/* Mobile Styles */}
+      <style>{`
+        @media (max-width: 768px) {
+          .hub-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            padding: 20px 15px !important;
+          }
+          .hub-header-left {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 12px !important;
+          }
+          .hub-logo { width: 80px !important; }
+          .hub-title { font-size: 22px !important; }
+          .hub-back-btn { width: 100% !important; }
+        }
+
+        @media (max-width: 480px) {
+          .hub-container { padding: 15px 10px !important; }
+          .hub-stats-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+          .hub-stat-value { font-size: 20px !important; }
+          .hub-grid { grid-template-columns: 1fr !important; gap: 12px !important; }
+          .hub-card { padding: 20px 15px !important; }
+          .hub-icon { font-size: 36px !important; margin-bottom: 10px !important; }
+          .hub-card-title { font-size: 16px !important; }
+          .hub-info-grid { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -243,7 +277,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
     gap: '16px',
     marginBottom: '30px',
   },
@@ -268,7 +302,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   hubGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
     gap: '20px',
     marginBottom: '30px',
   },
@@ -319,7 +353,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   infoGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
     gap: '12px',
   },
   infoItem: {

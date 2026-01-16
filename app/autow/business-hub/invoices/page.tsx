@@ -288,20 +288,68 @@ export default function InvoicesSummaryPage() {
       textAlign: 'center' as const,
       padding: '40px',
     },
+    mobileCard: {
+      background: 'rgba(255, 255, 255, 0.05)',
+      borderRadius: '10px',
+      padding: '14px',
+      marginBottom: '10px',
+      border: '1px solid rgba(48, 255, 55, 0.2)',
+    },
+    mobileCardHeader: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: '8px',
+    },
+    mobileCardNumber: {
+      color: '#00c8ff',
+      fontSize: '14px',
+      fontWeight: '600' as const,
+    },
+    mobileCardAmount: {
+      color: '#30ff37',
+      fontSize: '18px',
+      fontWeight: '700' as const,
+    },
+    mobileCardBody: {
+      marginBottom: '10px',
+    },
+    mobileCardClient: {
+      color: '#fff',
+      fontSize: '14px',
+    },
+    mobileCardVehicle: {
+      color: '#888',
+      fontSize: '12px',
+      marginTop: '4px',
+    },
+    mobileCardFooter: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    mobileCardDate: {
+      color: '#888',
+      fontSize: '12px',
+    },
+    mobileCardMethod: {
+      color: '#666',
+      fontSize: '11px',
+    },
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.header}>
+    <div style={styles.container} className="inv-container">
+      <div style={styles.header} className="inv-header">
         <button style={styles.backButton} onClick={() => router.push('/autow/business-hub')}>
-          ← Back to Hub
+          ← Back
         </button>
-        <h1 style={styles.title}>📊 Invoices Summary</h1>
+        <h1 style={styles.title} className="inv-title">📊 Invoices Summary</h1>
         <div></div>
       </div>
 
       {/* Summary Cards */}
-      <div style={styles.summaryGrid}>
+      <div style={styles.summaryGrid} className="inv-summary-grid">
         <div style={styles.summaryCard}>
           <div style={styles.summaryLabel}>Total Received</div>
           <div style={{...styles.summaryValue, color: '#30ff37'}}>
@@ -325,7 +373,7 @@ export default function InvoicesSummaryPage() {
       </div>
 
       {/* Filters */}
-      <div style={styles.filterSection}>
+      <div style={styles.filterSection} className="inv-filter-section">
         <select
           style={styles.select}
           value={yearFilter}
@@ -358,45 +406,68 @@ export default function InvoicesSummaryPage() {
       ) : invoices.length === 0 ? (
         <div style={styles.emptyState}>No paid invoices found</div>
       ) : (
-        <div style={styles.tableContainer}>
-          <table style={styles.table}>
-            <thead>
-              <tr>
-                <th style={styles.th}>Invoice #</th>
-                <th style={styles.th}>Date Paid</th>
-                <th style={styles.th}>Client</th>
-                <th style={styles.th}>Vehicle</th>
-                <th style={styles.th}>Payment Method</th>
-                <th style={styles.th}>Subtotal</th>
-                <th style={styles.th}>VAT</th>
-                <th style={{...styles.th, textAlign: 'right' as const}}>Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {invoices.map((inv) => (
-                <tr key={inv.id}>
-                  <td style={styles.td}>{inv.invoice_number}</td>
-                  <td style={styles.td}>{formatDate(inv.paid_at || inv.invoice_date)}</td>
-                  <td style={styles.td}>{inv.client_name}</td>
-                  <td style={styles.td}>{inv.vehicle_reg || '-'}</td>
-                  <td style={styles.td}>{inv.payment_method || '-'}</td>
-                  <td style={styles.td}>{formatCurrency(inv.subtotal)}</td>
-                  <td style={styles.td}>{formatCurrency(inv.vat_amount)}</td>
-                  <td style={{...styles.td, textAlign: 'right' as const, color: '#30ff37', fontWeight: 'bold'}}>
-                    {formatCurrency(inv.total)}
-                  </td>
+        <>
+          {/* Desktop Table */}
+          <div style={styles.tableContainer} className="desktop-table">
+            <table style={styles.table}>
+              <thead>
+                <tr>
+                  <th style={styles.th}>Invoice #</th>
+                  <th style={styles.th}>Date Paid</th>
+                  <th style={styles.th}>Client</th>
+                  <th style={styles.th}>Vehicle</th>
+                  <th style={styles.th}>Payment Method</th>
+                  <th style={styles.th}>Subtotal</th>
+                  <th style={styles.th}>VAT</th>
+                  <th style={{...styles.th, textAlign: 'right' as const}}>Total</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody>
+                {invoices.map((inv) => (
+                  <tr key={inv.id}>
+                    <td style={styles.td}>{inv.invoice_number}</td>
+                    <td style={styles.td}>{formatDate(inv.paid_at || inv.invoice_date)}</td>
+                    <td style={styles.td}>{inv.client_name}</td>
+                    <td style={styles.td}>{inv.vehicle_reg || '-'}</td>
+                    <td style={styles.td}>{inv.payment_method || '-'}</td>
+                    <td style={styles.td}>{formatCurrency(inv.subtotal)}</td>
+                    <td style={styles.td}>{formatCurrency(inv.vat_amount)}</td>
+                    <td style={{...styles.td, textAlign: 'right' as const, color: '#30ff37', fontWeight: 'bold'}}>
+                      {formatCurrency(inv.total)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile Cards */}
+          <div className="mobile-cards">
+            {invoices.map((inv) => (
+              <div key={inv.id} style={styles.mobileCard}>
+                <div style={styles.mobileCardHeader}>
+                  <span style={styles.mobileCardNumber}>{inv.invoice_number}</span>
+                  <span style={styles.mobileCardAmount}>{formatCurrency(inv.total)}</span>
+                </div>
+                <div style={styles.mobileCardBody}>
+                  <div style={styles.mobileCardClient}>{inv.client_name}</div>
+                  <div style={styles.mobileCardVehicle}>{inv.vehicle_reg || '-'}</div>
+                </div>
+                <div style={styles.mobileCardFooter}>
+                  <span style={styles.mobileCardDate}>{formatDate(inv.paid_at || inv.invoice_date)}</span>
+                  <span style={styles.mobileCardMethod}>{inv.payment_method || '-'}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
       )}
 
       {/* Monthly Breakdown */}
       {Object.keys(summary.byMonth).length > 0 && (
         <div style={styles.monthlySection}>
           <h2 style={styles.sectionTitle}>Monthly Breakdown</h2>
-          <div style={styles.monthlyGrid}>
+          <div style={styles.monthlyGrid} className="inv-monthly-grid">
             {Object.entries(summary.byMonth)
               .sort(([a], [b]) => b.localeCompare(a))
               .map(([monthKey, data]) => (
@@ -411,6 +482,28 @@ export default function InvoicesSummaryPage() {
           </div>
         </div>
       )}
+
+      {/* Mobile Styles */}
+      <style>{`
+        .mobile-cards { display: none; }
+        .desktop-table { display: block; }
+
+        @media (max-width: 768px) {
+          .inv-header { flex-direction: column !important; align-items: flex-start !important; gap: 10px !important; }
+          .mobile-cards { display: block !important; }
+          .desktop-table { display: none !important; }
+          .inv-summary-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .inv-monthly-grid { grid-template-columns: 1fr 1fr !important; }
+          .inv-filter-section { flex-direction: column !important; }
+        }
+
+        @media (max-width: 480px) {
+          .inv-container { padding: 15px 10px !important; }
+          .inv-summary-grid { grid-template-columns: 1fr 1fr !important; gap: 10px !important; }
+          .inv-monthly-grid { grid-template-columns: 1fr !important; }
+          .inv-title { font-size: 20px !important; }
+        }
+      `}</style>
     </div>
   );
 }
