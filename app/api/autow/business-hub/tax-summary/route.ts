@@ -1,62 +1,32 @@
-'use server';
-
 import { NextRequest, NextResponse } from 'next/server';
-import { Pool } from 'pg';
-import jwt from 'jsonwebtoken';
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
-
-interface TokenPayload {
-  userId: number;
-  email: string;
-}
-
-function verifyAuth(request: NextRequest): TokenPayload | null {
-  const authHeader = request.headers.get('Authorization');
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return null;
-  }
-
-  const token = authHeader.substring(7);
-  try {
-    return jwt.verify(token, process.env.JWT_SECRET!) as TokenPayload;
-  } catch {
-    return null;
-  }
-}
+import pool from '@/lib/db';
 
 export async function GET(request: NextRequest) {
-  const user = verifyAuth(request);
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  const { searchParams } = new URL(request.url);
-  const period = searchParams.get('period') || 'month'; // week, month, quarter, year, custom
-  const startDate = searchParams.get('startDate');
-  const endDate = searchParams.get('endDate');
-
-  const client = await pool.connect();
-
   try {
+    // Check authorization
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (token !== process.env.AUTOW_STAFF_TOKEN) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const period = searchParams.get('period') || 'month';
+    const startDateParam = searchParams.get('startDate');
+    const endDateParam = searchParams.get('endDate');
+
     // Calculate date range based on period
-    let dateFilter = '';
-    let dateParams: string[] = [];
     const now = new Date();
+    let periodStart: Date;
+    let periodEnd = new Date();
 
-    if (startDate && endDate) {
-      // Custom date range
-      dateFilter = 'AND date >= $1 AND date <= $2';
-      dateParams = [startDate, endDate];
+    if (startDateParam && endDateParam) {
+      periodStart = new Date(startDateParam);
+      periodEnd = new Date(endDateParam);
     } else {
-      let periodStart: Date;
-
       switch (period) {
         case 'week':
-          // Get start of current week (Monday)
           periodStart = new Date(now);
           const day = periodStart.getDay();
           const diff = periodStart.getDate() - day + (day === 0 ? -6 : 1);
@@ -81,46 +51,56 @@ export async function GET(request: NextRequest) {
         default:
           periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
       }
-
-      dateFilter = 'AND date >= $1';
-      dateParams = [periodStart.toISOString().split('T')[0]];
     }
 
+    const startDateStr = periodStart.toISOString().split('T')[0];
+    const endDateStr = periodEnd.toISOString().split('T')[0];
+
     // Fetch paid invoices (revenue)
-    const invoiceDateFilter = dateFilter.replace(/date/g, 'COALESCE(paid_at, invoice_date)::date');
-    const invoicesQuery = `
+    const invoicesResult = await pool.query(`
       SELECT
         id, invoice_number, invoice_date, paid_at, client_name, vehicle_reg,
         subtotal::numeric, vat_amount::numeric, total::numeric, payment_method
       FROM invoices
       WHERE status = 'paid'
-      ${invoiceDateFilter.replace('$1', `'${dateParams[0]}'`)}
-      ${dateParams[1] ? invoiceDateFilter.replace('$2', `'${dateParams[1]}'`).split('AND')[2] : ''}
+        AND COALESCE(paid_at, invoice_date)::date >= $1
+        AND COALESCE(paid_at, invoice_date)::date <= $2
       ORDER BY COALESCE(paid_at, invoice_date) DESC
-    `;
-    const invoicesResult = await client.query(invoicesQuery);
+    `, [startDateStr, endDateStr]);
 
-    // Fetch expenses (deductions)
-    const expensesQuery = `
-      SELECT
-        id, date, category, subcategory, description, supplier,
-        amount::numeric, vat::numeric, tax_deductible_percent
-      FROM expenses
-      WHERE 1=1 ${dateFilter}
-      ORDER BY date DESC
-    `;
-    const expensesResult = await client.query(expensesQuery, dateParams.slice(0, dateFilter.split('$').length - 1));
+    // Fetch expenses (deductions) - use business_expenses table
+    let expensesResult = { rows: [] as any[] };
+    try {
+      expensesResult = await pool.query(`
+        SELECT
+          id, date, category, subcategory, description, supplier,
+          amount::numeric, vat::numeric, tax_deductible_percent, allowable_for_tax
+        FROM business_expenses
+        WHERE date >= $1 AND date <= $2
+        ORDER BY date DESC
+      `, [startDateStr, endDateStr]);
+    } catch (e: any) {
+      if (!e.message?.includes('does not exist')) {
+        console.error('Expenses query error:', e);
+      }
+    }
 
-    // Fetch mileage claims
-    const mileageQuery = `
-      SELECT
-        id, date, description, start_postcode, end_postcode,
-        miles::numeric, claim_amount::numeric
-      FROM mileage_entries
-      WHERE 1=1 ${dateFilter}
-      ORDER BY date DESC
-    `;
-    const mileageResult = await client.query(mileageQuery, dateParams.slice(0, dateFilter.split('$').length - 1));
+    // Fetch mileage claims - use business_mileage table
+    let mileageResult = { rows: [] as any[] };
+    try {
+      mileageResult = await pool.query(`
+        SELECT
+          id, date, description, start_postcode, end_postcode,
+          miles::numeric, claim_amount::numeric
+        FROM business_mileage
+        WHERE date >= $1 AND date <= $2
+        ORDER BY date DESC
+      `, [startDateStr, endDateStr]);
+    } catch (e: any) {
+      if (!e.message?.includes('does not exist')) {
+        console.error('Mileage query error:', e);
+      }
+    }
 
     // Calculate totals
     const invoices = invoicesResult.rows;
@@ -138,7 +118,8 @@ export async function GET(request: NextRequest) {
     const taxDeductibleExpenses = expenses.reduce((sum, exp) => {
       const amount = parseFloat(exp.amount || 0);
       const percent = exp.tax_deductible_percent || 100;
-      return sum + (amount * percent / 100);
+      const allowable = exp.allowable_for_tax !== false;
+      return allowable ? sum + (amount * percent / 100) : sum;
     }, 0);
 
     // Mileage calculations
@@ -152,13 +133,14 @@ export async function GET(request: NextRequest) {
     // Corporation tax calculation
     let taxRate: number;
     let taxBracket: string;
-    const annualizedProfit = grossProfit * (12 / (period === 'week' ? 0.23 : period === 'month' ? 1 : period === 'quarter' ? 3 : 12));
+    const periodMultiplier = period === 'week' ? 52 : period === 'month' ? 12 : period === 'quarter' ? 4 : 1;
+    const annualizedProfit = grossProfit * periodMultiplier;
 
     if (annualizedProfit <= 50000) {
       taxRate = 0.19;
       taxBracket = 'Small Profits Rate (19%)';
     } else if (annualizedProfit <= 250000) {
-      taxRate = 0.25; // Simplified - actual marginal relief calculation is more complex
+      taxRate = 0.25;
       taxBracket = 'Marginal Relief (19-25%)';
     } else {
       taxRate = 0.25;
@@ -174,9 +156,10 @@ export async function GET(request: NextRequest) {
       if (!acc[category]) {
         acc[category] = { total: 0, count: 0, taxDeductible: 0 };
       }
-      acc[category].total += parseFloat(exp.amount || 0);
+      const amount = parseFloat(exp.amount || 0);
+      acc[category].total += amount;
       acc[category].count += 1;
-      acc[category].taxDeductible += parseFloat(exp.amount || 0) * (exp.tax_deductible_percent || 100) / 100;
+      acc[category].taxDeductible += amount * (exp.tax_deductible_percent || 100) / 100;
       return acc;
     }, {} as { [key: string]: { total: number; count: number; taxDeductible: number } });
 
@@ -186,7 +169,7 @@ export async function GET(request: NextRequest) {
     if (period !== 'week') {
       const weeklyData: { [key: string]: { revenue: number; expenses: number } } = {};
 
-      invoices.forEach(inv => {
+      invoices.forEach((inv: any) => {
         const date = new Date(inv.paid_at || inv.invoice_date);
         const weekStart = getWeekStart(date);
         const weekKey = weekStart.toISOString().split('T')[0];
@@ -196,7 +179,7 @@ export async function GET(request: NextRequest) {
         weeklyData[weekKey].revenue += parseFloat(inv.total || 0) - parseFloat(inv.vat_amount || 0);
       });
 
-      expenses.forEach(exp => {
+      expenses.forEach((exp: any) => {
         const date = new Date(exp.date);
         const weekStart = getWeekStart(date);
         const weekKey = weekStart.toISOString().split('T')[0];
@@ -206,7 +189,7 @@ export async function GET(request: NextRequest) {
         weeklyData[weekKey].expenses += parseFloat(exp.amount || 0) * (exp.tax_deductible_percent || 100) / 100;
       });
 
-      mileage.forEach(m => {
+      mileage.forEach((m: any) => {
         const date = new Date(m.date);
         const weekStart = getWeekStart(date);
         const weekKey = weekStart.toISOString().split('T')[0];
@@ -231,8 +214,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       period,
       dateRange: {
-        start: dateParams[0] || null,
-        end: dateParams[1] || new Date().toISOString().split('T')[0]
+        start: startDateStr,
+        end: endDateStr
       },
 
       // Revenue
@@ -287,11 +270,12 @@ export async function GET(request: NextRequest) {
       mileageList: mileage
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error('Tax summary error:', error);
-    return NextResponse.json({ error: 'Failed to fetch tax summary' }, { status: 500 });
-  } finally {
-    client.release();
+    return NextResponse.json(
+      { error: 'Failed to fetch tax summary', details: error.message },
+      { status: 500 }
+    );
   }
 }
 
