@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
   const [stats, setStats] = useState({ today: 0, pending: 0, completed: 0, total: 0 });
   const [openActionMenu, setOpenActionMenu] = useState<number | null>(null);
+  const [navMenuOpen, setNavMenuOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('autow_token');
@@ -22,19 +23,20 @@ export default function DashboardPage() {
     fetchBookings();
   }, [router]);
 
-  // Click-outside handler for action menus
+  // Click-outside handler for action menus and nav menu
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (openActionMenu !== null) {
-        const target = e.target as HTMLElement;
-        if (!target.closest('.actions-container')) {
-          setOpenActionMenu(null);
-        }
+      const target = e.target as HTMLElement;
+      if (openActionMenu !== null && !target.closest('.actions-container')) {
+        setOpenActionMenu(null);
+      }
+      if (navMenuOpen && !target.closest('.nav-menu-container')) {
+        setNavMenuOpen(false);
       }
     };
     document.addEventListener('click', handleClickOutside);
     return () => document.removeEventListener('click', handleClickOutside);
-  }, [openActionMenu]);
+  }, [openActionMenu, navMenuOpen]);
 
   const fetchBookings = async () => {
     try {
@@ -294,18 +296,58 @@ export default function DashboardPage() {
           <button onClick={() => router.push('/autow/welcome')} style={styles.backBtn}>
             ← Menu
           </button>
-          <button onClick={() => router.push('/autow/jotter')} style={styles.jotterBtn}>
-            ✍️ Jotter
-          </button>
-          <button onClick={() => router.push('/autow/notes')} style={styles.notesBtn}>
-            📝 Notes
-          </button>
-          <button onClick={() => router.push('/autow/assessments')} style={styles.assessmentsBtn}>
-            Assessments
-          </button>
-          <button onClick={() => router.push('/autow/booking')} style={styles.newBookingBtn}>
-            + New Booking
-          </button>
+          <div style={styles.navMenuContainer} className="nav-menu-container">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setNavMenuOpen(!navMenuOpen);
+              }}
+              style={styles.hamburgerBtn}
+            >
+              ☰
+            </button>
+            {navMenuOpen && (
+              <div style={styles.navDropdown}>
+                <button
+                  onClick={() => {
+                    router.push('/autow/jotter');
+                    setNavMenuOpen(false);
+                  }}
+                  style={styles.navMenuItem}
+                >
+                  ✍️ Jotter
+                </button>
+                <button
+                  onClick={() => {
+                    router.push('/autow/notes');
+                    setNavMenuOpen(false);
+                  }}
+                  style={styles.navMenuItem}
+                >
+                  📝 Notes
+                </button>
+                <button
+                  onClick={() => {
+                    router.push('/autow/assessments');
+                    setNavMenuOpen(false);
+                  }}
+                  style={styles.navMenuItem}
+                >
+                  🔍 Assessments
+                </button>
+                <div style={styles.menuDivider} />
+                <button
+                  onClick={() => {
+                    router.push('/autow/booking');
+                    setNavMenuOpen(false);
+                  }}
+                  style={styles.navMenuItemHighlight}
+                >
+                  + New Booking
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
@@ -432,49 +474,56 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '14px',
     transition: 'all 0.3s',
   },
-  jotterBtn: {
-    background: 'rgba(156, 39, 176, 0.1)',
-    border: '2px solid rgba(156, 39, 176, 0.4)',
-    color: '#ce93d8',
-    padding: '12px 24px',
+  navMenuContainer: {
+    position: 'relative' as const,
+  },
+  hamburgerBtn: {
+    background: 'rgba(255, 255, 255, 0.1)',
+    border: '2px solid rgba(255, 255, 255, 0.2)',
+    color: '#fff',
+    padding: '12px 16px',
     borderRadius: '12px',
     cursor: 'pointer',
-    fontWeight: 'bold' as const,
-    fontSize: '14px',
+    fontSize: '20px',
+    lineHeight: 1,
     transition: 'all 0.3s',
   },
-  notesBtn: {
-    background: 'rgba(156, 39, 176, 0.15)',
-    border: '2px solid rgba(156, 39, 176, 0.5)',
-    color: '#e1bee7',
-    padding: '12px 24px',
+  navDropdown: {
+    position: 'absolute' as const,
+    top: '100%',
+    right: 0,
+    marginTop: '8px',
+    background: '#1a1a1a',
+    border: '1px solid rgba(48, 255, 55, 0.3)',
     borderRadius: '12px',
-    cursor: 'pointer',
-    fontWeight: 'bold' as const,
-    fontSize: '14px',
-    transition: 'all 0.3s',
+    padding: '8px 0',
+    minWidth: '200px',
+    zIndex: 100,
+    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
   },
-  assessmentsBtn: {
-    background: 'rgba(124, 58, 237, 0.1)',
-    border: '2px solid rgba(124, 58, 237, 0.4)',
-    color: '#a78bfa',
-    padding: '12px 24px',
-    borderRadius: '12px',
-    cursor: 'pointer',
-    fontWeight: 'bold' as const,
-    fontSize: '14px',
-    transition: 'all 0.3s',
-  },
-  newBookingBtn: {
-    background: 'linear-gradient(135deg, #30ff37 0%, #28cc2f 100%)',
+  navMenuItem: {
+    padding: '12px 20px',
+    background: 'transparent',
     border: 'none',
-    color: '#000',
-    padding: '12px 24px',
-    borderRadius: '12px',
+    color: '#fff',
+    width: '100%',
+    textAlign: 'left' as const,
     cursor: 'pointer',
-    fontWeight: 'bold' as const,
     fontSize: '14px',
-    transition: 'all 0.3s',
+    display: 'block',
+    fontWeight: '500' as const,
+  },
+  navMenuItemHighlight: {
+    padding: '12px 20px',
+    background: 'rgba(48, 255, 55, 0.1)',
+    border: 'none',
+    color: '#30ff37',
+    width: '100%',
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'block',
+    fontWeight: 'bold' as const,
   },
   statGrid: {
     display: 'grid',
