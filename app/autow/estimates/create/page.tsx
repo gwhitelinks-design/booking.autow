@@ -23,10 +23,11 @@ export default function CreateEstimatePage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('booking_id');
+  const vehicleReportId = searchParams.get('vehicle_report_id');
   const estimateId = searchParams.get('id');
   const mode = estimateId ? 'edit' : 'create';
 
-  const [loading, setLoading] = useState(!!bookingId || !!estimateId);
+  const [loading, setLoading] = useState(!!bookingId || !!vehicleReportId || !!estimateId);
   const [saving, setSaving] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [modalItem, setModalItem] = useState<LineItem | null>(null);
@@ -114,18 +115,20 @@ Company Number: 16952633`;
     }
   };
 
-  // Auto-fill from booking or show vehicle reg modal for new estimates
+  // Auto-fill from booking, vehicle report, or show vehicle reg modal for new estimates
   useEffect(() => {
     if (bookingId) {
       fetchBooking(bookingId);
+    } else if (vehicleReportId) {
+      fetchVehicleReport(vehicleReportId);
     } else if (estimateId) {
       fetchEstimate(estimateId);
     } else {
-      // New estimate without booking - show vehicle reg modal first
+      // New estimate without source - show vehicle reg modal first
       setShowVehicleRegModal(true);
       setLoading(false);
     }
-  }, [bookingId, estimateId]);
+  }, [bookingId, vehicleReportId, estimateId]);
 
   // Handle vehicle reg modal submit
   const handleVehicleRegSubmit = async () => {
@@ -218,6 +221,44 @@ Company Number: 16952633`;
     } catch (error) {
       console.error('Error fetching booking:', error);
       alert('Failed to load booking data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchVehicleReport = async (id: string) => {
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(`/api/autow/vehicle-report/get?id=${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const report = data.report;
+        const vehicleReg = report.vehicle_reg || '';
+
+        setFormData({
+          estimate_number: '', // Will be set by fetchDocumentNumber
+          estimate_date: new Date().toISOString().split('T')[0],
+          client_name: report.customer_name || '',
+          client_email: report.customer_email || '',
+          client_address: report.customer_address || '',
+          client_phone: report.customer_phone || '',
+          client_mobile: '',
+          vehicle_make: '',
+          vehicle_model: report.vehicle_type_model || '',
+          vehicle_reg: vehicleReg,
+          notes: defaultNotes,
+          vat_rate: 0
+        });
+
+        // Fetch the auto-generated estimate number based on vehicle reg
+        await fetchDocumentNumber(vehicleReg);
+      }
+    } catch (error) {
+      console.error('Error fetching vehicle report:', error);
+      alert('Failed to load vehicle report data');
     } finally {
       setLoading(false);
     }

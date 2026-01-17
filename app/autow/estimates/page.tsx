@@ -9,6 +9,7 @@ export default function EstimatesPage() {
   const [estimates, setEstimates] = useState<Estimate[]>([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [openActionMenu, setOpenActionMenu] = useState<number | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('autow_token');
@@ -19,6 +20,20 @@ export default function EstimatesPage() {
 
     fetchEstimates();
   }, [router, statusFilter]);
+
+  // Click outside handler for action menu
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (openActionMenu !== null) {
+        const target = e.target as HTMLElement;
+        if (!target.closest('.actions-dropdown-container')) {
+          setOpenActionMenu(null);
+        }
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openActionMenu]);
 
   const fetchEstimates = async () => {
     setLoading(true);
@@ -173,36 +188,68 @@ export default function EstimatesPage() {
               </div>
 
               <div style={styles.cardActions}>
-                <button
-                  onClick={() => router.push(`/autow/estimates/view?id=${estimate.id}`)}
-                  style={styles.actionButton}
-                >
-                  View
-                </button>
-                <button
-                  onClick={() => router.push(`/autow/estimates/edit?id=${estimate.id}`)}
-                  style={styles.actionButton}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => generateShareLink(estimate.id!)}
-                  style={{ ...styles.actionButton, ...styles.shareButton }}
-                >
-                  Share Link
-                </button>
-                <button
-                  onClick={() => convertToInvoice(estimate.id!)}
-                  style={{ ...styles.actionButton, ...styles.convertButton }}
-                >
-                  Convert to Invoice
-                </button>
-                <button
-                  onClick={() => deleteEstimate(estimate.id!)}
-                  style={{ ...styles.actionButton, ...styles.deleteButton }}
-                >
-                  Delete
-                </button>
+                <div className="actions-dropdown-container" style={styles.actionsContainer}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenActionMenu(openActionMenu === estimate.id ? null : estimate.id!);
+                    }}
+                    style={styles.actionsButton}
+                  >
+                    ⋮
+                  </button>
+                  {openActionMenu === estimate.id && (
+                    <div style={styles.actionsDropdown}>
+                      <button
+                        onClick={() => {
+                          router.push(`/autow/estimates/view?id=${estimate.id}`);
+                          setOpenActionMenu(null);
+                        }}
+                        style={styles.actionMenuItem}
+                      >
+                        👁️ View
+                      </button>
+                      <button
+                        onClick={() => {
+                          router.push(`/autow/estimates/edit?id=${estimate.id}`);
+                          setOpenActionMenu(null);
+                        }}
+                        style={styles.actionMenuItem}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          generateShareLink(estimate.id!);
+                          setOpenActionMenu(null);
+                        }}
+                        style={styles.actionMenuItem}
+                      >
+                        🔗 Share Link
+                      </button>
+                      <div style={styles.menuDivider} />
+                      <button
+                        onClick={() => {
+                          convertToInvoice(estimate.id!);
+                          setOpenActionMenu(null);
+                        }}
+                        style={styles.actionMenuItemBlue}
+                      >
+                        📄 Convert to Invoice
+                      </button>
+                      <div style={styles.menuDivider} />
+                      <button
+                        onClick={() => {
+                          deleteEstimate(estimate.id!);
+                          setOpenActionMenu(null);
+                        }}
+                        style={styles.actionMenuItemDanger}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -455,6 +502,71 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     gap: '10px',
     flexWrap: 'wrap' as const,
+    justifyContent: 'flex-end',
+  },
+  actionsContainer: {
+    position: 'relative' as const,
+  },
+  actionsButton: {
+    padding: '8px 12px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    color: '#fff',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '18px',
+    lineHeight: 1,
+  },
+  actionsDropdown: {
+    position: 'absolute' as const,
+    top: '100%',
+    right: 0,
+    marginTop: '4px',
+    background: '#1a1a1a',
+    border: '1px solid rgba(48, 255, 55, 0.3)',
+    borderRadius: '8px',
+    padding: '8px 0',
+    minWidth: '180px',
+    zIndex: 100,
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+  },
+  actionMenuItem: {
+    padding: '10px 16px',
+    background: 'transparent',
+    border: 'none',
+    color: '#fff',
+    width: '100%',
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'block',
+  },
+  actionMenuItemBlue: {
+    padding: '10px 16px',
+    background: 'transparent',
+    border: 'none',
+    color: '#2196f3',
+    width: '100%',
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'block',
+  },
+  actionMenuItemDanger: {
+    padding: '10px 16px',
+    background: 'transparent',
+    border: 'none',
+    color: '#f44336',
+    width: '100%',
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'block',
+  },
+  menuDivider: {
+    height: '1px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    margin: '8px 0',
   },
   actionButton: {
     padding: '8px 16px',

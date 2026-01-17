@@ -34,6 +34,7 @@ export default function InvoicesPage() {
   const [showJobDoneModal, setShowJobDoneModal] = useState(false);
   const [jobCostPreview, setJobCostPreview] = useState<JobCostPreview | null>(null);
   const [processingJobComplete, setProcessingJobComplete] = useState(false);
+  const [openActionMenu, setOpenActionMenu] = useState<number | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('autow_token');
@@ -44,6 +45,20 @@ export default function InvoicesPage() {
 
     fetchInvoices();
   }, [router, statusFilter]);
+
+  // Click outside handler for action menu
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (openActionMenu !== null) {
+        const target = e.target as HTMLElement;
+        if (!target.closest('.actions-dropdown-container')) {
+          setOpenActionMenu(null);
+        }
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openActionMenu]);
 
   const fetchInvoices = async () => {
     setLoading(true);
@@ -381,54 +396,95 @@ export default function InvoicesPage() {
               </div>
 
               <div style={styles.cardActions}>
-                <button
-                  onClick={() => router.push(`/autow/invoices/view?id=${invoice.id}`)}
-                  style={styles.actionButton}
-                >
-                  View
-                </button>
-                <button
-                  onClick={() => router.push(`/autow/invoices/edit?id=${invoice.id}`)}
-                  style={styles.actionButton}
-                >
-                  Edit
-                </button>
-                <button
-                  onClick={() => generateShareLink(invoice.id!)}
-                  style={{ ...styles.actionButton, ...styles.shareButton }}
-                >
-                  Share Link
-                </button>
-                {invoice.status === 'pending' && (
+                <div className="actions-dropdown-container" style={styles.actionsContainer}>
                   <button
-                    onClick={() => markAsPaid(invoice.id!)}
-                    style={{ ...styles.actionButton, ...styles.paidButton }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setOpenActionMenu(openActionMenu === invoice.id ? null : invoice.id!);
+                    }}
+                    style={styles.actionsButton}
                   >
-                    Mark as Paid
+                    ⋮
                   </button>
-                )}
-                {invoice.status === 'paid' && (
-                  <>
-                    <button
-                      onClick={() => markAsUnpaid(invoice.id!)}
-                      style={{ ...styles.actionButton, ...styles.unpaidButton }}
-                    >
-                      Mark as Unpaid
-                    </button>
-                    <button
-                      onClick={() => openJobDoneModal(invoice.id!)}
-                      style={{ ...styles.actionButton, ...styles.jobDoneButton }}
-                    >
-                      Job Done
-                    </button>
-                  </>
-                )}
-                <button
-                  onClick={() => deleteInvoice(invoice.id!)}
-                  style={{ ...styles.actionButton, ...styles.deleteButton }}
-                >
-                  Delete
-                </button>
+                  {openActionMenu === invoice.id && (
+                    <div style={styles.actionsDropdown}>
+                      <button
+                        onClick={() => {
+                          router.push(`/autow/invoices/view?id=${invoice.id}`);
+                          setOpenActionMenu(null);
+                        }}
+                        style={styles.actionMenuItem}
+                      >
+                        👁️ View
+                      </button>
+                      <button
+                        onClick={() => {
+                          router.push(`/autow/invoices/edit?id=${invoice.id}`);
+                          setOpenActionMenu(null);
+                        }}
+                        style={styles.actionMenuItem}
+                      >
+                        ✏️ Edit
+                      </button>
+                      <button
+                        onClick={() => {
+                          generateShareLink(invoice.id!);
+                          setOpenActionMenu(null);
+                        }}
+                        style={styles.actionMenuItem}
+                      >
+                        🔗 Share Link
+                      </button>
+                      {invoice.status === 'pending' && (
+                        <>
+                          <div style={styles.menuDivider} />
+                          <button
+                            onClick={() => {
+                              markAsPaid(invoice.id!);
+                              setOpenActionMenu(null);
+                            }}
+                            style={styles.actionMenuItemSuccess}
+                          >
+                            ✅ Mark as Paid
+                          </button>
+                        </>
+                      )}
+                      {invoice.status === 'paid' && (
+                        <>
+                          <div style={styles.menuDivider} />
+                          <button
+                            onClick={() => {
+                              markAsUnpaid(invoice.id!);
+                              setOpenActionMenu(null);
+                            }}
+                            style={styles.actionMenuItemWarning}
+                          >
+                            ↩️ Mark as Unpaid
+                          </button>
+                          <button
+                            onClick={() => {
+                              openJobDoneModal(invoice.id!);
+                              setOpenActionMenu(null);
+                            }}
+                            style={styles.actionMenuItemPurple}
+                          >
+                            🏁 Job Done
+                          </button>
+                        </>
+                      )}
+                      <div style={styles.menuDivider} />
+                      <button
+                        onClick={() => {
+                          deleteInvoice(invoice.id!);
+                          setOpenActionMenu(null);
+                        }}
+                        style={styles.actionMenuItemDanger}
+                      >
+                        🗑️ Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))
@@ -691,6 +747,93 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     gap: '10px',
     flexWrap: 'wrap' as const,
+    justifyContent: 'flex-end',
+  },
+  actionsContainer: {
+    position: 'relative' as const,
+  },
+  actionsButton: {
+    padding: '8px 12px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    color: '#fff',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '18px',
+    lineHeight: 1,
+  },
+  actionsDropdown: {
+    position: 'absolute' as const,
+    top: '100%',
+    right: 0,
+    marginTop: '4px',
+    background: '#1a1a1a',
+    border: '1px solid rgba(48, 255, 55, 0.3)',
+    borderRadius: '8px',
+    padding: '8px 0',
+    minWidth: '180px',
+    zIndex: 100,
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.5)',
+  },
+  actionMenuItem: {
+    padding: '10px 16px',
+    background: 'transparent',
+    border: 'none',
+    color: '#fff',
+    width: '100%',
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'block',
+  },
+  actionMenuItemSuccess: {
+    padding: '10px 16px',
+    background: 'transparent',
+    border: 'none',
+    color: '#4caf50',
+    width: '100%',
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'block',
+  },
+  actionMenuItemWarning: {
+    padding: '10px 16px',
+    background: 'transparent',
+    border: 'none',
+    color: '#ff9800',
+    width: '100%',
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'block',
+  },
+  actionMenuItemPurple: {
+    padding: '10px 16px',
+    background: 'transparent',
+    border: 'none',
+    color: '#9c27b0',
+    width: '100%',
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'block',
+  },
+  actionMenuItemDanger: {
+    padding: '10px 16px',
+    background: 'transparent',
+    border: 'none',
+    color: '#f44336',
+    width: '100%',
+    textAlign: 'left' as const,
+    cursor: 'pointer',
+    fontSize: '14px',
+    display: 'block',
+  },
+  menuDivider: {
+    height: '1px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    margin: '8px 0',
   },
   actionButton: {
     padding: '8px 16px',

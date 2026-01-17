@@ -26,10 +26,11 @@ export default function CreateInvoicePage() {
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('booking_id');
   const estimateId = searchParams.get('estimate_id');
+  const vehicleReportId = searchParams.get('vehicle_report_id');
   const invoiceId = searchParams.get('id');
   const mode = invoiceId ? 'edit' : 'create';
 
-  const [loading, setLoading] = useState(!!bookingId || !!estimateId || !!invoiceId);
+  const [loading, setLoading] = useState(!!bookingId || !!estimateId || !!vehicleReportId || !!invoiceId);
   const [saving, setSaving] = useState(false);
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [modalItem, setModalItem] = useState<LineItem | null>(null);
@@ -118,12 +119,14 @@ Company Number: 16952633`;
     }
   };
 
-  // Auto-fill from booking or estimate
+  // Auto-fill from booking, estimate, or vehicle report
   useEffect(() => {
     if (bookingId) {
       fetchBooking(bookingId);
     } else if (estimateId) {
       fetchEstimate(estimateId);
+    } else if (vehicleReportId) {
+      fetchVehicleReport(vehicleReportId);
     } else if (invoiceId) {
       fetchInvoice(invoiceId);
     } else {
@@ -131,7 +134,7 @@ Company Number: 16952633`;
       setShowVehicleRegModal(true);
       setLoading(false);
     }
-  }, [bookingId, estimateId, invoiceId]);
+  }, [bookingId, estimateId, vehicleReportId, invoiceId]);
 
   // Handle vehicle reg modal submit
   const handleVehicleRegSubmit = async () => {
@@ -286,6 +289,50 @@ Company Number: 16952633`;
     } catch (error) {
       console.error('Error fetching estimate:', error);
       alert('Failed to load estimate data');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchVehicleReport = async (id: string) => {
+    try {
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch(`/api/autow/vehicle-report/get?id=${id}`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const report = data.report;
+        const vehicleReg = report.vehicle_reg || '';
+
+        const today = new Date().toISOString().split('T')[0];
+        const dueDate = new Date();
+        dueDate.setDate(dueDate.getDate() + 30);
+        const dueDateStr = dueDate.toISOString().split('T')[0];
+
+        setFormData({
+          invoice_number: '', // Will be set by fetchDocumentNumber
+          invoice_date: today,
+          due_date: dueDateStr,
+          client_name: report.customer_name || '',
+          client_email: report.customer_email || '',
+          client_address: report.customer_address || '',
+          client_phone: report.customer_phone || '',
+          client_mobile: '',
+          vehicle_make: '',
+          vehicle_model: report.vehicle_type_model || '',
+          vehicle_reg: vehicleReg,
+          notes: defaultNotes,
+          vat_rate: 0
+        });
+
+        // Fetch the auto-generated invoice number based on vehicle reg
+        await fetchDocumentNumber(vehicleReg);
+      }
+    } catch (error) {
+      console.error('Error fetching vehicle report:', error);
+      alert('Failed to load vehicle report data');
     } finally {
       setLoading(false);
     }
