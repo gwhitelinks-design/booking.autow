@@ -1368,6 +1368,73 @@ Special styling for interactive damage markers on assessment diagrams:
 
 **Live URL:** https://booking.autow-services.co.uk/share/assessment/HN14-UWY
 
+### Session: 2026-01-17 - Actions Dropdown & Hamburger Menu
+
+**Features Built:**
+
+1. **Actions Dropdown Pattern (⋮) on All List Pages**
+   - Replaced individual action buttons with single ⋮ dropdown menu
+   - Consistent pattern across: Vehicle Reports, Invoices, Estimates, Dashboard
+   - Click-outside handler closes dropdown
+   - State tracked with `openActionMenu` useState
+   - Styles: actionsContainer, actionsButton, actionsDropdown, actionMenuItem, actionMenuItemDanger, menuDivider
+
+2. **Vehicle Report Actions Dropdown**
+   - View, Send to Customer, Copy Share Link
+   - **Create Invoice** (NEW) - navigates to `/autow/invoices/create?vehicle_report_id=X`
+   - **Create Estimate** (NEW) - navigates to `/autow/estimates/create?vehicle_report_id=X`
+   - Edit (draft only), Delete (red)
+
+3. **Create Invoice/Estimate from Vehicle Reports**
+   - Added `vehicle_report_id` query parameter support to create pages
+   - Fetches vehicle report data and pre-fills form fields:
+     - `customer_name` → `client_name`
+     - `customer_email` → `client_email`
+     - `customer_phone` → `client_phone`
+     - `customer_address` → `client_address`
+     - `vehicle_reg` → `vehicle_reg`
+     - `vehicle_type_model` → `vehicle_model`
+
+4. **Invoices List Actions Dropdown**
+   - View, Edit, Share Link
+   - Mark as Paid (conditional: pending)
+   - Mark as Unpaid + Job Done (conditional: paid)
+   - Delete (red)
+
+5. **Estimates List Actions Dropdown**
+   - View, Edit, Share Link
+   - Convert to Invoice
+   - Delete (red)
+
+6. **Booking Dashboard Actions Dropdown**
+   - Create Estimate, Create Invoice
+   - Edit, Mark Complete (conditional: confirmed)
+   - Delete (red)
+
+7. **Hamburger Navigation Menu (☰) on Dashboard**
+   - Replaced individual header buttons with hamburger dropdown
+   - ← Menu button stays visible separately
+   - Dropdown contains: Jotter, Notes, Assessments, + New Booking
+   - State tracked with `navMenuOpen` useState
+   - Styles: navMenuContainer, hamburgerBtn, navDropdown, navMenuItem, navMenuItemHighlight
+
+**Files Modified:**
+- `app/autow/vehicle-report/page.tsx` - Actions dropdown + Create Invoice/Estimate options
+- `app/autow/invoices/page.tsx` - Actions dropdown
+- `app/autow/estimates/page.tsx` - Actions dropdown
+- `app/autow/invoices/create/page.tsx` - vehicle_report_id param handling
+- `app/autow/estimates/create/page.tsx` - vehicle_report_id param handling
+- `app/autow/dashboard/page.tsx` - Actions dropdown on cards + hamburger nav menu
+
+**Commits:**
+- `7a10b27` - Add Actions dropdown and Create Invoice/Estimate from Vehicle Reports
+- `f6837b3` - Add Actions dropdown to Booking Dashboard
+- `6791172` - Add hamburger navigation menu to Booking Dashboard
+
+**Deployed to:** https://booking.autow-services.co.uk
+
+---
+
 ## Future Enhancements
 
 Documented opportunities (no immediate plans):
