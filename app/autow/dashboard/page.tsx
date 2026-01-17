@@ -11,6 +11,7 @@ export default function DashboardPage() {
   const [todayBookings, setTodayBookings] = useState<Booking[]>([]);
   const [upcomingBookings, setUpcomingBookings] = useState<Booking[]>([]);
   const [stats, setStats] = useState({ today: 0, pending: 0, completed: 0, total: 0 });
+  const [openActionMenu, setOpenActionMenu] = useState<number | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem('autow_token');
@@ -20,6 +21,20 @@ export default function DashboardPage() {
     }
     fetchBookings();
   }, [router]);
+
+  // Click-outside handler for action menus
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (openActionMenu !== null) {
+        const target = e.target as HTMLElement;
+        if (!target.closest('.actions-container')) {
+          setOpenActionMenu(null);
+        }
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
+  }, [openActionMenu]);
 
   const fetchBookings = async () => {
     try {
@@ -190,33 +205,69 @@ export default function DashboardPage() {
         )}
       </div>
 
-      <div style={styles.actionButtons}>
+      <div style={styles.actionsContainer} className="actions-container">
         <button
-          onClick={() => router.push(`/autow/estimates/create?booking_id=${booking.id}`)}
-          style={styles.btnEstimate}
+          onClick={(e) => {
+            e.stopPropagation();
+            setOpenActionMenu(openActionMenu === booking.id ? null : booking.id);
+          }}
+          style={styles.actionsButton}
         >
-          📋 Create Estimate
+          ⋮
         </button>
-        <button
-          onClick={() => router.push(`/autow/edit?id=${booking.id}`)}
-          style={styles.btnEdit}
-        >
-          ✏️ Edit
-        </button>
-        {booking.status === 'confirmed' && (
-          <button
-            onClick={() => handleComplete(booking.id)}
-            style={styles.btnComplete}
-          >
-            ✅ Complete
-          </button>
+        {openActionMenu === booking.id && (
+          <div style={styles.actionsDropdown}>
+            <button
+              onClick={() => {
+                router.push(`/autow/estimates/create?booking_id=${booking.id}`);
+                setOpenActionMenu(null);
+              }}
+              style={styles.actionMenuItem}
+            >
+              📋 Create Estimate
+            </button>
+            <button
+              onClick={() => {
+                router.push(`/autow/invoices/create?booking_id=${booking.id}`);
+                setOpenActionMenu(null);
+              }}
+              style={styles.actionMenuItem}
+            >
+              🧾 Create Invoice
+            </button>
+            <div style={styles.menuDivider} />
+            <button
+              onClick={() => {
+                router.push(`/autow/edit?id=${booking.id}`);
+                setOpenActionMenu(null);
+              }}
+              style={styles.actionMenuItem}
+            >
+              ✏️ Edit
+            </button>
+            {booking.status === 'confirmed' && (
+              <button
+                onClick={() => {
+                  handleComplete(booking.id);
+                  setOpenActionMenu(null);
+                }}
+                style={styles.actionMenuItem}
+              >
+                ✅ Mark Complete
+              </button>
+            )}
+            <div style={styles.menuDivider} />
+            <button
+              onClick={() => {
+                handleDelete(booking.id);
+                setOpenActionMenu(null);
+              }}
+              style={styles.actionMenuItemDanger}
+            >
+              🗑️ Delete
+            </button>
+          </div>
         )}
-        <button
-          onClick={() => handleDelete(booking.id)}
-          style={styles.btnDelete}
-        >
-          🗑️ Delete
-        </button>
       </div>
     </div>
   );
@@ -530,57 +581,63 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#30ff37',
     textDecoration: 'none',
   },
-  actionButtons: {
+  actionsContainer: {
     marginTop: '20px',
     paddingTop: '20px',
     borderTop: '2px solid rgba(48, 255, 55, 0.1)',
+    position: 'relative' as const,
     display: 'flex',
-    gap: '12px',
-    flexWrap: 'wrap' as const,
+    justifyContent: 'flex-end',
   },
-  btnEstimate: {
-    padding: '12px 20px',
-    border: 'none',
+  actionsButton: {
+    padding: '8px 12px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    color: '#fff',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '18px',
+    lineHeight: 1,
+  },
+  actionsDropdown: {
+    position: 'absolute' as const,
+    top: '100%',
+    right: 0,
+    marginTop: '4px',
+    background: '#1a1a1a',
+    border: '1px solid rgba(48, 255, 55, 0.3)',
     borderRadius: '8px',
+    padding: '8px 0',
+    minWidth: '180px',
+    zIndex: 100,
+    boxShadow: '0 4px 16px rgba(0, 0, 0, 0.5)',
+  },
+  actionMenuItem: {
+    padding: '10px 16px',
+    background: 'transparent',
+    border: 'none',
+    color: '#fff',
+    width: '100%',
+    textAlign: 'left' as const,
     cursor: 'pointer',
     fontSize: '14px',
-    fontWeight: '600' as const,
-    transition: 'all 0.3s',
-    background: '#9c27b0',
-    color: 'white',
+    display: 'block',
   },
-  btnEdit: {
-    padding: '12px 20px',
+  actionMenuItemDanger: {
+    padding: '10px 16px',
+    background: 'transparent',
     border: 'none',
-    borderRadius: '8px',
+    color: '#f44336',
+    width: '100%',
+    textAlign: 'left' as const,
     cursor: 'pointer',
     fontSize: '14px',
-    fontWeight: '600' as const,
-    transition: 'all 0.3s',
-    background: '#2196f3',
-    color: 'white',
+    display: 'block',
   },
-  btnComplete: {
-    padding: '12px 20px',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '600' as const,
-    transition: 'all 0.3s',
-    background: '#4caf50',
-    color: 'white',
-  },
-  btnDelete: {
-    padding: '12px 20px',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '600' as const,
-    transition: 'all 0.3s',
-    background: '#f44336',
-    color: 'white',
+  menuDivider: {
+    height: '1px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    margin: '8px 0',
   },
   emptyState: {
     textAlign: 'center' as const,
