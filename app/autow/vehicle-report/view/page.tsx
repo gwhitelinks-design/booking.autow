@@ -350,12 +350,40 @@ function ViewReportContent() {
             <h3 style={styles.diagramTitle}>Vehicle Condition Report &nbsp;&nbsp; Top-Down View</h3>
             <div style={styles.diagramContainer}>
               <img src="/assets/car_check.jpg" alt="Vehicle Check Diagram" style={styles.carImage} />
+              {/* Damage Markers on Diagram */}
+              {damageMarkers.map((marker, idx) => (
+                <div
+                  key={idx}
+                  style={{
+                    position: 'absolute',
+                    left: `${marker.x}%`,
+                    top: `${marker.y}%`,
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    background: '#f44336',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    transform: 'translate(-50%, -50%)',
+                    border: '2px solid #fff',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.3)',
+                    zIndex: 10,
+                  }}
+                >
+                  {marker.number}
+                </div>
+              ))}
             </div>
             {damageMarkers.length > 0 && (
               <div style={styles.damageList}>
+                <div style={styles.damageListTitle}>Damage Points:</div>
                 {damageMarkers.map((marker, idx) => (
                   <div key={idx} style={styles.damageItem}>
-                    <span style={styles.damageNumber}>{marker.number}.</span>
+                    <span style={styles.damageNumber}>{marker.number}</span>
                     <span style={styles.damageNote}>{marker.note || 'No description'}</span>
                   </div>
                 ))}
@@ -753,6 +781,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'inline-block',
   },
   diagramContainer: {
+    position: 'relative' as const,
     border: '1px solid #ccc',
     background: '#fff',
     marginBottom: '10px',
@@ -763,18 +792,48 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'block',
   },
   damageList: {
-    fontSize: '11px',
+    background: '#fff8e1',
+    border: '2px solid #f44336',
+    borderRadius: '8px',
+    padding: '12px',
+    marginTop: '10px',
+  },
+  damageListTitle: {
+    fontSize: '13px',
+    fontWeight: 'bold',
+    color: '#d32f2f',
+    marginBottom: '10px',
+    paddingBottom: '8px',
+    borderBottom: '1px solid #ffcdd2',
   },
   damageItem: {
-    marginBottom: '3px',
+    display: 'flex',
+    alignItems: 'flex-start',
+    marginBottom: '8px',
+    padding: '6px 8px',
+    background: '#fff',
+    borderRadius: '4px',
+    border: '1px solid #ffcdd2',
   },
   damageNumber: {
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '22px',
+    height: '22px',
+    borderRadius: '50%',
+    background: '#f44336',
+    color: '#fff',
     fontWeight: 'bold',
-    marginRight: '5px',
-    color: '#f44336',
+    fontSize: '12px',
+    marginRight: '10px',
+    flexShrink: 0,
   },
   damageNote: {
     color: '#333',
+    fontSize: '12px',
+    lineHeight: 1.4,
+    fontWeight: '500',
   },
   // Notes section
   notesSection: {
