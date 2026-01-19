@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import Image from 'next/image';
 
 interface DamageMarker {
@@ -14,7 +14,12 @@ interface DamageMarker {
 
 export default function CreateVehicleReportPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const diagramRef = useRef<HTMLDivElement>(null);
+
+  // Edit mode
+  const editId = searchParams.get('edit');
+  const isEditMode = !!editId;
 
   // Form state
   const [serviceType, setServiceType] = useState<'repair' | 'recovery'>('recovery');
@@ -50,6 +55,7 @@ export default function CreateVehicleReportPage() {
 
   // UI state
   const [loading, setLoading] = useState(false);
+  const [loadingReport, setLoadingReport] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -59,6 +65,67 @@ export default function CreateVehicleReportPage() {
       router.push('/autow');
     }
   }, [router]);
+
+  // Load existing report data in edit mode
+  useEffect(() => {
+    if (!editId) return;
+
+    const fetchReport = async () => {
+      setLoadingReport(true);
+      try {
+        const token = localStorage.getItem('autow_token');
+        const response = await fetch(`/api/autow/vehicle-report/get?id=${editId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const report = data.report;
+
+          // Populate form fields
+          setServiceType(report.service_type || 'recovery');
+          setVehicleReg(report.vehicle_reg || '');
+          setVehicleTypeModel(report.vehicle_type_model || '');
+          setVehicleWeight(report.vehicle_weight || '');
+          setPickupLocation(report.pickup_location || '');
+          setDeliveryLocation(report.delivery_location || '');
+          setReportDate(report.report_date ? report.report_date.split('T')[0] : new Date().toISOString().split('T')[0]);
+          setTimeArrival(report.time_arrival || '');
+          setTimeDepart(report.time_depart || '');
+          setCustomerName(report.customer_name || '');
+          setCustomerAddress(report.customer_address || '');
+          setCustomerPhone(report.customer_phone || '');
+          setCustomerEmail(report.customer_email || '');
+          setKnownIssues(report.known_issues || '');
+          setRiskProcedure(report.risk_procedure_description || '');
+          setRiskSignature(report.risk_procedure_signature || null);
+          setNotes(report.notes || '');
+          setVideoFileCode(report.video_file_code || '');
+          setCustomerSignature(report.customer_signature || null);
+          setDriverSignature(report.driver_signature || null);
+
+          // Load damage markers
+          if (report.damage_markers) {
+            const markers = typeof report.damage_markers === 'string'
+              ? JSON.parse(report.damage_markers)
+              : report.damage_markers;
+            setDamageMarkers(markers || []);
+          }
+        } else {
+          setError('Failed to load report');
+        }
+      } catch (err) {
+        console.error('Error loading report:', err);
+        setError('Failed to load report');
+      } finally {
+        setLoadingReport(false);
+      }
+    };
+
+    fetchReport();
+  }, [editId]);
 
   // Handle diagram click to add marker
   const handleDiagramClick = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -212,57 +279,73 @@ export default function CreateVehicleReportPage() {
 
     try {
       const token = localStorage.getItem('autow_token');
-      const response = await fetch('/api/autow/vehicle-report/create', {
+      const reportData = {
+        service_type: serviceType,
+        vehicle_reg: vehicleReg.toUpperCase().trim(),
+        vehicle_type_model: vehicleTypeModel.trim() || null,
+        vehicle_weight: vehicleWeight.trim() || null,
+        pickup_location: pickupLocation.trim() || null,
+        delivery_location: deliveryLocation.trim() || null,
+        report_date: reportDate,
+        time_arrival: timeArrival || null,
+        time_depart: timeDepart || null,
+        customer_name: customerName.trim(),
+        customer_address: customerAddress.trim() || null,
+        customer_phone: customerPhone.trim() || null,
+        customer_email: customerEmail.trim() || null,
+        known_issues: knownIssues.trim() || null,
+        risk_procedure_description: riskProcedure.trim() || null,
+        risk_procedure_signature: riskSignature,
+        damage_markers: damageMarkers,
+        notes: notes.trim() || null,
+        video_file_code: videoFileCode.trim() || null,
+        customer_signature: customerSignature,
+        customer_signature_date: customerSignature ? reportDate : null,
+        driver_signature: driverSignature,
+        driver_signature_date: driverSignature ? reportDate : null,
+        status: asDraft ? 'draft' : 'completed'
+      };
+
+      const url = isEditMode
+        ? '/api/autow/vehicle-report/update'
+        : '/api/autow/vehicle-report/create';
+
+      const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({
-          service_type: serviceType,
-          vehicle_reg: vehicleReg.toUpperCase().trim(),
-          vehicle_type_model: vehicleTypeModel.trim() || null,
-          vehicle_weight: vehicleWeight.trim() || null,
-          pickup_location: pickupLocation.trim() || null,
-          delivery_location: deliveryLocation.trim() || null,
-          report_date: reportDate,
-          time_arrival: timeArrival || null,
-          time_depart: timeDepart || null,
-          customer_name: customerName.trim(),
-          customer_address: customerAddress.trim() || null,
-          customer_phone: customerPhone.trim() || null,
-          customer_email: customerEmail.trim() || null,
-          known_issues: knownIssues.trim() || null,
-          risk_procedure_description: riskProcedure.trim() || null,
-          risk_procedure_signature: riskSignature,
-          damage_markers: damageMarkers,
-          notes: notes.trim() || null,
-          video_file_code: videoFileCode.trim() || null,
-          customer_signature: customerSignature,
-          customer_signature_date: customerSignature ? reportDate : null,
-          driver_signature: driverSignature,
-          driver_signature_date: driverSignature ? reportDate : null,
-          status: asDraft ? 'draft' : 'completed'
-        })
+        body: JSON.stringify(isEditMode ? { id: editId, ...reportData } : reportData)
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to create report');
+        throw new Error(data.error || `Failed to ${isEditMode ? 'update' : 'create'} report`);
       }
 
-      setSuccess(`Report ${data.report.report_number} created successfully!`);
+      setSuccess(`Report ${data.report.report_number} ${isEditMode ? 'updated' : 'created'} successfully!`);
       setTimeout(() => {
         router.push('/autow/vehicle-report');
       }, 1500);
 
     } catch (err: any) {
-      setError(err.message || 'Failed to create report');
+      setError(err.message || `Failed to ${isEditMode ? 'update' : 'create'} report`);
     } finally {
       setLoading(false);
     }
   };
+
+  if (loadingReport) {
+    return (
+      <div style={styles.container}>
+        <div style={{ textAlign: 'center', padding: '60px 20px', color: '#30ff37', fontSize: '24px' }}>
+          Loading report...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={styles.container}>
@@ -270,7 +353,7 @@ export default function CreateVehicleReportPage() {
         <div style={styles.headerLeft}>
           <Image src="/logo.png" alt="AUTOW" width={100} height={40} style={{ objectFit: 'contain' }} />
           <div>
-            <h1 style={styles.title}>Vehicle Check Report</h1>
+            <h1 style={styles.title}>{isEditMode ? 'Edit Vehicle Report' : 'Vehicle Check Report'}</h1>
             <p style={styles.subtitle}>AUTOW Transport & Recovery</p>
           </div>
         </div>
@@ -622,7 +705,7 @@ export default function CreateVehicleReportPage() {
             disabled={loading}
             style={styles.submitButton}
           >
-            {loading ? 'Saving...' : 'Complete Report'}
+            {loading ? 'Saving...' : isEditMode ? 'Update Report' : 'Complete Report'}
           </button>
         </div>
       </div>

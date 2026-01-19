@@ -228,8 +228,8 @@ export default function VehicleReportsPage() {
     <div style={styles.container}>
       <div style={styles.header}>
         <div>
-          <h1 style={styles.title}>Vehicle Reports</h1>
-          <p style={styles.subtitle}>Check reports for transport & recovery</p>
+          <h1 style={styles.title}>CallOut & Recovery</h1>
+          <p style={styles.subtitle}>Transport & recovery job reports</p>
         </div>
         <div style={styles.headerActions}>
           <button
@@ -329,7 +329,7 @@ export default function VehicleReportsPage() {
                         }}
                         style={styles.actionMenuItem}
                       >
-                        👁️ View
+                        👁️ View Vehicle
                       </button>
                       <button
                         onClick={() => {
@@ -368,20 +368,16 @@ export default function VehicleReportsPage() {
                       >
                         📋 Create Estimate
                       </button>
-                      {report.status === 'draft' && (
-                        <>
-                          <div style={styles.menuDivider} />
-                          <button
-                            onClick={() => {
-                              router.push(`/autow/vehicle-report/create?edit=${report.id}`);
-                              setOpenActionMenu(null);
-                            }}
-                            style={styles.actionMenuItem}
-                          >
-                            ✏️ Edit
-                          </button>
-                        </>
-                      )}
+                      <div style={styles.menuDivider} />
+                      <button
+                        onClick={() => {
+                          router.push(`/autow/vehicle-report/create?edit=${report.id}`);
+                          setOpenActionMenu(null);
+                        }}
+                        style={styles.actionMenuItem}
+                      >
+                        ✏️ Edit
+                      </button>
                       <div style={styles.menuDivider} />
                       <button
                         onClick={() => {

@@ -102,8 +102,8 @@ export default function WelcomePage() {
             style={{...styles.optionCard, borderColor: 'rgba(33, 150, 243, 0.4)'}}
           >
             <div style={styles.optionIcon}>🚗</div>
-            <h2 style={styles.optionTitle}>Vehicle Reports</h2>
-            <p style={styles.optionDescription}>Transport & recovery check reports</p>
+            <h2 style={styles.optionTitle}>CallOut & Recovery</h2>
+            <p style={styles.optionDescription}>Transport & recovery job reports</p>
           </button>
 
           <button
