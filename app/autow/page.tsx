@@ -108,6 +108,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '20px',
+    paddingTop: 'max(20px, env(safe-area-inset-top))',
+    paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
+    paddingLeft: 'max(20px, env(safe-area-inset-left))',
+    paddingRight: 'max(20px, env(safe-area-inset-right))',
   },
   loginBox: {
     maxWidth: '450px',
@@ -190,6 +194,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: '0 4px 16px rgba(48, 255, 55, 0.4)',
     letterSpacing: '0.5px',
     transition: 'all 0.3s',
+    minHeight: '56px',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   buttonDisabled: {
     opacity: 0.7,

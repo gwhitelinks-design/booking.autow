@@ -515,6 +515,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
     transition: 'all 0.3s',
     border: 'none',
+    minHeight: '56px', // iOS touch target
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   modeBtnActive: {
     background: 'linear-gradient(135deg, #30ff37 0%, #28cc2f 100%)',
@@ -607,6 +611,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: '600' as const,
     cursor: 'pointer',
     transition: 'all 0.2s',
+    minHeight: '48px', // iOS touch target
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   canvasBtnDisabled: {
     opacity: 0.4,
@@ -636,6 +644,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: '0 4px 16px rgba(48, 255, 55, 0.4)',
     transition: 'all 0.3s',
     letterSpacing: '0.5px',
+    minHeight: '60px', // iOS touch target
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   submitBtnDisabled: {
     opacity: 0.5,
@@ -691,6 +703,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
     fontSize: '14px',
     fontWeight: '600' as const,
+    minHeight: '44px', // iOS touch target
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   dataGrid: {
     display: 'grid',
@@ -750,10 +766,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexWrap: 'wrap' as const,
     paddingTop: '24px',
     borderTop: '2px solid rgba(48, 255, 55, 0.1)',
+    paddingBottom: 'env(safe-area-inset-bottom, 0px)',
   },
   bookingBtn: {
     flex: 1,
-    minWidth: '180px',
+    minWidth: '140px',
     padding: '18px 24px',
     border: 'none',
     borderRadius: '12px',
@@ -763,10 +780,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'linear-gradient(135deg, #30ff37 0%, #28cc2f 100%)',
     color: '#000',
     boxShadow: '0 4px 16px rgba(48, 255, 55, 0.4)',
+    minHeight: '56px', // iOS touch target
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   noteBtn: {
     flex: 1,
-    minWidth: '180px',
+    minWidth: '140px',
     padding: '18px 24px',
     border: 'none',
     borderRadius: '12px',
@@ -776,10 +797,14 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
     color: '#fff',
     boxShadow: '0 4px 16px rgba(156, 39, 176, 0.4)',
+    minHeight: '56px', // iOS touch target
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   resetBtn: {
     flex: 1,
-    minWidth: '180px',
+    minWidth: '140px',
     padding: '18px 24px',
     border: '2px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '12px',
@@ -788,6 +813,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
     background: 'rgba(255, 255, 255, 0.05)',
     color: '#888',
+    minHeight: '56px', // iOS touch target
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   errorActions: {
     textAlign: 'center' as const,

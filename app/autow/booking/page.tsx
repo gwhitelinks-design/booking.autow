@@ -487,6 +487,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: '#000',
     minHeight: '100vh',
     padding: '20px',
+    paddingTop: 'max(20px, env(safe-area-inset-top))',
+    paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
+    paddingLeft: 'max(20px, env(safe-area-inset-left))',
+    paddingRight: 'max(20px, env(safe-area-inset-right))',
   },
   formContainer: {
     maxWidth: '700px',
@@ -615,6 +619,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'linear-gradient(135deg, #30ff37 0%, #28cc2f 100%)',
     color: '#000',
     boxShadow: '0 4px 16px rgba(48, 255, 55, 0.4)',
+    minHeight: '56px',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   btnCancel: {
     flex: 1,
@@ -627,6 +635,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(244, 67, 54, 0.1)',
     color: '#f44336',
     transition: 'all 0.3s',
+    minHeight: '56px',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   btnDisabled: {
     opacity: 0.7,

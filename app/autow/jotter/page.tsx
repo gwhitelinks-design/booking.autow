@@ -96,6 +96,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: '#000',
     minHeight: '100vh',
     padding: '20px',
+    paddingTop: 'max(20px, env(safe-area-inset-top))',
+    paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
+    paddingLeft: 'max(20px, env(safe-area-inset-left))',
+    paddingRight: 'max(20px, env(safe-area-inset-right))',
   },
   header: {
     background: 'linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%)',
@@ -146,6 +150,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 'bold' as const,
     fontSize: '14px',
     transition: 'all 0.3s',
+    minHeight: '48px',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   dashboardBtn: {
     background: 'linear-gradient(135deg, #30ff37 0%, #28cc2f 100%)',
@@ -157,6 +165,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 'bold' as const,
     fontSize: '14px',
     transition: 'all 0.3s',
+    minHeight: '48px',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   mainCard: {
     background: 'linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%)',

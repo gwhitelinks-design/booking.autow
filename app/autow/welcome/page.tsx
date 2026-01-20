@@ -159,6 +159,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     alignItems: 'center',
     justifyContent: 'center',
     padding: '20px',
+    paddingTop: 'max(20px, env(safe-area-inset-top))',
+    paddingBottom: 'max(20px, env(safe-area-inset-bottom))',
+    paddingLeft: 'max(20px, env(safe-area-inset-left))',
+    paddingRight: 'max(20px, env(safe-area-inset-right))',
   },
   welcomeBox: {
     maxWidth: '900px',
@@ -205,6 +209,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     cursor: 'pointer',
     transition: 'all 0.3s',
     boxShadow: '0 4px 16px rgba(48, 255, 55, 0.1)',
+    minHeight: '180px',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   optionIcon: {
     fontSize: '64px',
@@ -232,6 +240,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(244, 67, 54, 0.1)',
     color: '#f44336',
     transition: 'all 0.3s',
+    minHeight: '56px',
+    WebkitTapHighlightColor: 'transparent',
+    WebkitAppearance: 'none' as const,
+    touchAction: 'manipulation',
   },
   loadingText: {
     color: '#30ff37',
