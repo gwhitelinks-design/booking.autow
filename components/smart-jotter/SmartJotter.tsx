@@ -4,6 +4,7 @@ import React, { useState, useCallback, useRef, useEffect } from 'react';
 import { ParsedBookingData, OCRResponse, ProcessingStep } from '@/types/smart-jotter';
 import { useRouter } from 'next/navigation';
 import SignatureCanvas from 'react-signature-canvas';
+import { useVoice } from '@/components/voice-assistant';
 
 interface SmartJotterProps {
   onBookingCreate?: (data: ParsedBookingData) => void;
@@ -15,6 +16,7 @@ const SmartJotter: React.FC<SmartJotterProps> = ({
   onEstimateCreate,
 }) => {
   const router = useRouter();
+  const { sendMessage, toggleExpanded, isExpanded, status } = useVoice();
   const canvasRef = useRef<SignatureCanvas>(null);
   const canvasContainerRef = useRef<HTMLDivElement>(null);
   const [inputType, setInputType] = useState<'canvas' | 'text'>('text');
@@ -26,6 +28,7 @@ const SmartJotter: React.FC<SmartJotterProps> = ({
   const [error, setError] = useState<string>('');
   const [parsedData, setParsedData] = useState<ParsedBookingData | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [useAiAgent, setUseAiAgent] = useState(true); // Enable AI agent by default
 
   // Responsive canvas sizing - BIGGER canvas
   useEffect(() => {
@@ -62,6 +65,29 @@ const SmartJotter: React.FC<SmartJotterProps> = ({
     };
   }, [inputType]);
 
+  // Process via AI Agent - conversational flow
+  const processViaAgent = useCallback(async (textToProcess: string) => {
+    try {
+      // Open the voice widget if not expanded
+      if (!isExpanded) {
+        toggleExpanded();
+      }
+
+      // Send the jotter notes to the AI agent with a special context
+      const jotterMessage = `[JOTTER_INPUT] I've written these notes in the Smart Jotter: "${textToProcess}". Please help me process this information. Ask me any clarifying questions about the customer, vehicle, or issue details, then ask where I want to send this - to a new booking, estimate, invoice, or save as a note.`;
+
+      await sendMessage(jotterMessage);
+
+      // Reset the form after sending to agent
+      setCurrentStep('input');
+      setIsProcessing(false);
+    } catch (err) {
+      console.error('Agent processing error:', err);
+      setError('Failed to send to AI agent. Please try again.');
+      setIsProcessing(false);
+    }
+  }, [sendMessage, toggleExpanded, isExpanded]);
+
   const processInput = useCallback(async (data: string, type: 'canvas' | 'text') => {
     try {
       setIsProcessing(true);
@@ -92,6 +118,13 @@ const SmartJotter: React.FC<SmartJotterProps> = ({
         }
       }
 
+      // If AI Agent mode is enabled, send to voice assistant
+      if (useAiAgent) {
+        await processViaAgent(textToProcess);
+        return;
+      }
+
+      // Legacy flow: parse and show preview
       setCurrentStep('parsing');
 
       const parseResponse = await fetch('/api/autow/jotter/parse', {
@@ -120,7 +153,7 @@ const SmartJotter: React.FC<SmartJotterProps> = ({
     } finally {
       setIsProcessing(false);
     }
-  }, []);
+  }, [useAiAgent, processViaAgent]);
 
   // Canvas handlers
   const handleCanvasEnd = useCallback(() => {
@@ -508,14 +541,14 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   modeBtn: {
     flex: 1,
-    padding: '18px 24px',
-    borderRadius: '12px',
-    fontSize: '16px',
+    padding: '12px 16px',
+    borderRadius: '10px',
+    fontSize: '14px',
     fontWeight: 'bold' as const,
     cursor: 'pointer',
     transition: 'all 0.3s',
     border: 'none',
-    minHeight: '56px', // iOS touch target
+    minHeight: '44px',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none' as const,
     touchAction: 'manipulation',
@@ -602,16 +635,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexWrap: 'wrap' as const,
   },
   canvasBtn: {
-    padding: '12px 24px',
-    borderRadius: '12px',
+    padding: '10px 18px',
+    borderRadius: '10px',
     border: '2px solid rgba(48, 255, 55, 0.3)',
     background: 'rgba(48, 255, 55, 0.1)',
     color: '#30ff37',
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '600' as const,
     cursor: 'pointer',
     transition: 'all 0.2s',
-    minHeight: '48px', // iOS touch target
+    minHeight: '40px',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none' as const,
     touchAction: 'manipulation',
@@ -632,11 +665,11 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   submitBtn: {
     width: '100%',
-    padding: '20px',
-    marginTop: '24px',
+    padding: '14px',
+    marginTop: '20px',
     border: 'none',
-    borderRadius: '12px',
-    fontSize: '18px',
+    borderRadius: '10px',
+    fontSize: '15px',
     fontWeight: '700' as const,
     cursor: 'pointer',
     background: 'linear-gradient(135deg, #30ff37 0%, #28cc2f 100%)',
@@ -644,7 +677,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxShadow: '0 4px 16px rgba(48, 255, 55, 0.4)',
     transition: 'all 0.3s',
     letterSpacing: '0.5px',
-    minHeight: '60px', // iOS touch target
+    minHeight: '48px',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none' as const,
     touchAction: 'manipulation',
@@ -698,12 +731,12 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(48, 255, 55, 0.1)',
     border: '2px solid rgba(48, 255, 55, 0.2)',
     color: '#30ff37',
-    padding: '10px 20px',
+    padding: '8px 14px',
     borderRadius: '8px',
     cursor: 'pointer',
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '600' as const,
-    minHeight: '44px', // iOS touch target
+    minHeight: '36px',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none' as const,
     touchAction: 'manipulation',
@@ -762,58 +795,58 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   actionButtons: {
     display: 'flex',
-    gap: '12px',
+    gap: '10px',
     flexWrap: 'wrap' as const,
-    paddingTop: '24px',
+    paddingTop: '20px',
     borderTop: '2px solid rgba(48, 255, 55, 0.1)',
     paddingBottom: 'env(safe-area-inset-bottom, 0px)',
   },
   bookingBtn: {
     flex: 1,
-    minWidth: '140px',
-    padding: '18px 24px',
+    minWidth: '100px',
+    padding: '12px 16px',
     border: 'none',
-    borderRadius: '12px',
-    fontSize: '16px',
+    borderRadius: '10px',
+    fontSize: '14px',
     fontWeight: '700' as const,
     cursor: 'pointer',
     background: 'linear-gradient(135deg, #30ff37 0%, #28cc2f 100%)',
     color: '#000',
-    boxShadow: '0 4px 16px rgba(48, 255, 55, 0.4)',
-    minHeight: '56px', // iOS touch target
+    boxShadow: '0 4px 12px rgba(48, 255, 55, 0.3)',
+    minHeight: '44px',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none' as const,
     touchAction: 'manipulation',
   },
   noteBtn: {
     flex: 1,
-    minWidth: '140px',
-    padding: '18px 24px',
+    minWidth: '100px',
+    padding: '12px 16px',
     border: 'none',
-    borderRadius: '12px',
-    fontSize: '16px',
+    borderRadius: '10px',
+    fontSize: '14px',
     fontWeight: '700' as const,
     cursor: 'pointer',
     background: 'linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)',
     color: '#fff',
-    boxShadow: '0 4px 16px rgba(156, 39, 176, 0.4)',
-    minHeight: '56px', // iOS touch target
+    boxShadow: '0 4px 12px rgba(156, 39, 176, 0.3)',
+    minHeight: '44px',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none' as const,
     touchAction: 'manipulation',
   },
   resetBtn: {
     flex: 1,
-    minWidth: '140px',
-    padding: '18px 24px',
+    minWidth: '100px',
+    padding: '12px 16px',
     border: '2px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '12px',
-    fontSize: '16px',
+    borderRadius: '10px',
+    fontSize: '14px',
     fontWeight: '700' as const,
     cursor: 'pointer',
     background: 'rgba(255, 255, 255, 0.05)',
     color: '#888',
-    minHeight: '56px', // iOS touch target
+    minHeight: '44px',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none' as const,
     touchAction: 'manipulation',
