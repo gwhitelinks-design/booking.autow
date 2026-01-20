@@ -153,7 +153,6 @@ export default function WelcomePage() {
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    background: '#000',
     minHeight: '100vh',
     display: 'flex',
     alignItems: 'center',
@@ -167,10 +166,13 @@ const styles: { [key: string]: React.CSSProperties } = {
   welcomeBox: {
     maxWidth: '900px',
     width: '100%',
-    background: 'linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%)',
+    background: 'rgba(0, 0, 0, 0.7)',
+    backdropFilter: 'blur(20px)',
+    WebkitBackdropFilter: 'blur(20px)',
     borderRadius: '24px',
     padding: '40px',
-    boxShadow: '0 25px 50px -12px rgba(48, 255, 55, 0.25), 0 0 0 1px rgba(48, 255, 55, 0.1)',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(48, 255, 55, 0.03)',
+    border: '1px solid rgba(48, 255, 55, 0.08)',
   },
   header: {
     textAlign: 'center' as const,
@@ -201,14 +203,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '30px',
   },
   optionCard: {
-    background: 'linear-gradient(145deg, #1a1a1a 0%, #0d0d0d 100%)',
-    border: '2px solid rgba(48, 255, 55, 0.2)',
+    background: 'rgba(0, 0, 0, 0.5)',
+    backdropFilter: 'blur(15px)',
+    WebkitBackdropFilter: 'blur(15px)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
     borderRadius: '20px',
     padding: '40px 10px',
     textAlign: 'center' as const,
     cursor: 'pointer',
     transition: 'all 0.3s',
-    boxShadow: '0 4px 16px rgba(48, 255, 55, 0.1)',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
     minHeight: '180px',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none' as const,

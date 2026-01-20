@@ -365,7 +365,6 @@ export default function EstimatesPage() {
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
-    background: '#000',
     minHeight: '100vh',
     padding: '20px',
     color: '#fff',
@@ -446,8 +445,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '20px',
   },
   estimateCard: {
-    background: '#1a1a1a',
-    border: '1px solid rgba(48, 255, 55, 0.2)',
+    background: 'rgba(0, 0, 0, 0.6)',
+    backdropFilter: 'blur(15px)',
+    WebkitBackdropFilter: 'blur(15px)',
+    border: '1px solid rgba(255, 255, 255, 0.05)',
     borderRadius: '12px',
     padding: '24px 10px',
   },

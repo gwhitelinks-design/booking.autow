@@ -28,6 +28,93 @@ body {
   /* Safe area padding for notched devices */
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
+  /* Checkered flag background */
+  background-color: #000;
+  background-image: url('/backgrounds/checkered-flag-uhd.png');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+
+/* ===== GLASSMORPHISM COMPONENTS ===== */
+.glass-card {
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.glass-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+}
+
+.glass-card::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 1px;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.3),
+    transparent,
+    rgba(255, 255, 255, 0.1)
+  );
+}
+
+/* Dimmed green accent - very subtle glow */
+.glass-accent {
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 40px rgba(48, 255, 55, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(48, 255, 55, 0.1);
+}
+
+/* Glass header variant */
+.glass-header {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(25px);
+  -webkit-backdrop-filter: blur(25px);
+  border-radius: 24px;
+  border: 1px solid rgba(48, 255, 55, 0.08);
+  box-shadow:
+    0 25px 50px -12px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(48, 255, 55, 0.05);
+}
+
+/* Glass button variant */
+.glass-btn {
+  background: rgba(48, 255, 55, 0.08);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(48, 255, 55, 0.15);
+  transition: all 0.3s ease;
+}
+
+.glass-btn:hover {
+  background: rgba(48, 255, 55, 0.15);
+  border-color: rgba(48, 255, 55, 0.25);
 }
 
 /* ===== iOS SAFARI SPECIFIC FIXES ===== */
