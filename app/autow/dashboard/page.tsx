@@ -131,12 +131,15 @@ export default function DashboardPage() {
     }
   };
 
-  const getStatusBadge = (status: string) => {
-    if (status === 'completed') {
+  const getStatusBadge = (booking: Booking) => {
+    if (booking.status === 'completed') {
       return <span style={styles.statusCompleted}>✓ COMPLETED</span>;
     }
-    if (status === 'cancelled') {
+    if (booking.status === 'cancelled') {
       return <span style={styles.statusCancelled}>✗ CANCELLED</span>;
+    }
+    if (booking.is_expired) {
+      return <span style={styles.statusExpired}>⏱ EXPIRED</span>;
     }
     return <span style={styles.statusPending}>⏱ PENDING</span>;
   };
@@ -158,12 +161,13 @@ export default function DashboardPage() {
         ...styles.bookingCard,
         ...(isToday ? styles.bookingCardToday : {}),
         ...(booking.status === 'completed' ? styles.bookingCardCompleted : {}),
-        ...(booking.status === 'cancelled' ? styles.bookingCardCancelled : {})
+        ...(booking.status === 'cancelled' ? styles.bookingCardCancelled : {}),
+        ...(booking.is_expired && booking.status === 'confirmed' ? styles.bookingCardExpired : {})
       }}
     >
       <div style={styles.bookingHeader}>
         <span>{booking.vehicle_reg} - {booking.vehicle_make} {booking.vehicle_model}</span>
-        {getStatusBadge(booking.status)}
+        {getStatusBadge(booking)}
       </div>
 
       <div style={styles.bookingDetails}>
@@ -366,7 +370,7 @@ export default function DashboardPage() {
         </div>
         <div style={styles.statCard}>
           <div style={styles.statNumber}>{stats.total}</div>
-          <div style={styles.statLabel}>📊 Total Upcoming</div>
+          <div style={styles.statLabel}>📊 Total</div>
         </div>
       </div>
 
@@ -380,11 +384,11 @@ export default function DashboardPage() {
       </div>
 
       <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>📆 Upcoming Bookings</h2>
+        <h2 style={styles.sectionTitle}>📆 All Bookings</h2>
         {upcomingBookings.length ? (
           upcomingBookings.map(b => renderBookingCard(b))
         ) : (
-          <div style={styles.emptyState}>No upcoming bookings</div>
+          <div style={styles.emptyState}>No bookings found</div>
         )}
       </div>
 
@@ -583,6 +587,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderLeftColor: '#f44336',
     opacity: 0.7,
   },
+  bookingCardExpired: {
+    borderLeftColor: '#666',
+    opacity: 0.6,
+  },
   bookingHeader: {
     fontSize: '20px',
     fontWeight: 'bold' as const,
@@ -612,6 +620,14 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   statusCancelled: {
     background: '#f44336',
+    color: 'white',
+    padding: '4px 12px',
+    borderRadius: '12px',
+    fontSize: '12px',
+    fontWeight: 'bold' as const,
+  },
+  statusExpired: {
+    background: '#666',
     color: 'white',
     padding: '4px 12px',
     borderRadius: '12px',
@@ -650,9 +666,9 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   actionsDropdown: {
     position: 'absolute' as const,
-    top: '100%',
+    bottom: '100%',
     right: 0,
-    marginTop: '4px',
+    marginBottom: '4px',
     background: '#1a1a1a',
     border: '1px solid rgba(48, 255, 55, 0.3)',
     borderRadius: '8px',

@@ -1,7 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { useVoice } from '@/components/voice-assistant';
+import { FormField } from '@/lib/voice/types';
+
+// Define form fields for voice assistant
+const BOOKING_FIELDS: FormField[] = [
+  { name: 'booked_by', label: 'Booked By', type: 'text', required: true },
+  { name: 'service_type', label: 'Service Type', type: 'select', required: true, options: ['Mobile Mechanic', 'Garage Service', 'Vehicle Recovery', 'ECU Remapping', 'Service'] },
+  { name: 'booking_date', label: 'Booking Date', type: 'date', required: true },
+  { name: 'booking_time', label: 'Booking Time', type: 'time', required: true },
+  { name: 'customer_name', label: 'Customer Name', type: 'text', required: true },
+  { name: 'customer_phone', label: 'Phone Number', type: 'tel', required: true },
+  { name: 'customer_email', label: 'Email Address', type: 'email', required: false },
+  { name: 'vehicle_reg', label: 'Vehicle Registration', type: 'text', required: true },
+  { name: 'vehicle_make', label: 'Vehicle Make', type: 'text', required: true },
+  { name: 'vehicle_model', label: 'Vehicle Model', type: 'text', required: true },
+  { name: 'location_address', label: 'Location/Address', type: 'textarea', required: true },
+  { name: 'location_postcode', label: 'Postcode', type: 'text', required: true },
+  { name: 'issue_description', label: 'Issue Description', type: 'textarea', required: true },
+  { name: 'notes', label: 'Special Notes', type: 'textarea', required: false },
+];
 
 export default function BookingPage() {
   const router = useRouter();
@@ -62,6 +82,56 @@ export default function BookingPage() {
       setBookedBy(username);
     }
   }, [router]);
+
+  // Voice assistant integration
+  const { registerPage, unregisterPage, updateFormState, onFieldFill } = useVoice();
+
+  // Register page with voice context
+  useEffect(() => {
+    registerPage({
+      page: '/autow/booking',
+      title: 'New Booking',
+      description: 'Create a new customer appointment for automotive services',
+      fields: BOOKING_FIELDS,
+      formState: { ...formData, booked_by: bookedBy },
+      availableActions: ['Fill fields', 'Create booking', 'Cancel'],
+    });
+
+    return () => unregisterPage();
+  }, [registerPage, unregisterPage]);
+
+  // Update voice context when form state changes
+  useEffect(() => {
+    updateFormState({ ...formData, booked_by: bookedBy });
+  }, [formData, bookedBy, updateFormState]);
+
+  // Handle voice field fill
+  const handleVoiceFieldFill = useCallback((fieldName: string, value: string) => {
+    if (fieldName === 'booked_by') {
+      setBookedBy(value);
+    } else if (fieldName in formData) {
+      setFormData(prev => ({ ...prev, [fieldName]: value }));
+    }
+  }, [formData]);
+
+  // Subscribe to voice field fill events
+  useEffect(() => {
+    return onFieldFill(handleVoiceFieldFill);
+  }, [onFieldFill, handleVoiceFieldFill]);
+
+  // Listen for voice submit form event
+  useEffect(() => {
+    const handleVoiceSubmit = () => {
+      // Only submit if form is valid
+      const form = document.querySelector('form');
+      if (form && form.checkValidity() && !submitting) {
+        form.requestSubmit();
+      }
+    };
+
+    window.addEventListener('voice-submit-form', handleVoiceSubmit);
+    return () => window.removeEventListener('voice-submit-form', handleVoiceSubmit);
+  }, [submitting]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;

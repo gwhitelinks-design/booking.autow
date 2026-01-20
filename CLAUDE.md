@@ -546,6 +546,9 @@ OPENAI_API_KEY=xxx            # Active: Smart Jotter OCR parsing (GPT-4o-mini vi
 GOOGLE_DRIVE_FOLDER_ID=xxx    # Active: receipts storage root folder
 GOOGLE_CLIENT_EMAIL=xxx       # Active: Google service account for Drive API
 GOOGLE_PRIVATE_KEY=xxx        # Active: Google service account private key
+ANTHROPIC_API_KEY=xxx         # Active: Voice Assistant AI (Claude)
+ELEVENLABS_API_KEY=xxx        # Active: Voice Assistant TTS
+ELEVENLABS_VOICE_ID=xxx       # Active: Voice ID (default: kT6e56V1Tau6nyzxdCPf)
 ```
 
 ### Optional (placeholders, not implemented)
@@ -774,6 +777,58 @@ Statistics are calculated from the bookings array:
 - **Convert to Booking**: Pre-fills booking form with note data
 - **Delete**: Remove notes with confirmation
 - **Mobile Responsive**: Uses global CSS mobile classes
+
+### Voice Assistant (EDITH)
+An EDITH-style voice-activated AI assistant integrated into every page of the app.
+
+**Features:**
+- **Voice Input**: Speak naturally to fill forms, navigate, and manage bookings
+- **Text Input**: Type messages as fallback when voice isn't suitable
+- **Speech Output**: ElevenLabs TTS with custom British voice
+- **Smart Form Filling**: Understands natural language for dates, times, phone numbers
+- **Navigation**: Quick commands like "go to invoices" or "new booking"
+- **Business Advisor**: Ask questions about HMRC rates, tax obligations, pricing strategies
+- **Context-Aware**: Knows which page you're on and what fields are available
+
+**Activation:**
+- Click the floating mic button (bottom-right corner)
+- Press Ctrl+Space keyboard shortcut
+- Press Escape to close
+
+**Quick Commands:**
+- "go to dashboard" / "show bookings"
+- "new booking" / "create estimate" / "new invoice"
+- "go to business hub" / "track mileage"
+- "upload receipt" / "show reports"
+
+**Form Filling Examples:**
+- "Create a booking for John Smith, phone 07123456789"
+- "The vehicle is a Ford Focus, registration AB12 CDE"
+- "Set the booking date to tomorrow at 2pm"
+- "Add a line item for brake pads, 150 pounds"
+
+**Business Advisor Mode:**
+- "What's the HMRC mileage rate?"
+- "How much can I claim for mileage this year?"
+- "When is the VAT return deadline?"
+- "Should I register for VAT?"
+
+**Technical Details:**
+- Backend: `/api/autow/voice/chat` - Claude API + command parsing
+- Frontend: `components/voice-assistant/` - React context + widgets
+- Speech: Web Speech API (STT) + ElevenLabs (TTS)
+- Voice ID: `kT6e56V1Tau6nyzxdCPf` (British assistant voice)
+
+**Files:**
+- `components/voice-assistant/VoiceProvider.tsx` - Main context provider
+- `components/voice-assistant/VoiceWidget.tsx` - Floating widget UI
+- `components/voice-assistant/VoiceChat.tsx` - Chat message panel
+- `components/voice-assistant/VoiceMicButton.tsx` - Animated mic button
+- `lib/voice/types.ts` - Type definitions and quick commands
+- `lib/voice/system-prompt.ts` - AI system prompt with business knowledge
+- `lib/voice/command-parser.ts` - Parse AI commands from responses
+- `lib/voice/tts.ts` - ElevenLabs TTS integration
+- `app/api/autow/voice/chat/route.ts` - Voice chat API endpoint
 
 ## Critical Files
 

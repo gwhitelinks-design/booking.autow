@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { VoiceWrapper } from '@/components/voice-assistant/VoiceWrapper';
 
 export const metadata: Metadata = {
   title: 'AUTOW Booking System',
@@ -10,5 +11,5 @@ export default function AutowLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return children;
+  return <VoiceWrapper>{children}</VoiceWrapper>;
 }

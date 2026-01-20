@@ -19,6 +19,7 @@ export interface Booking {
   calendar_event_id: string | null;
   created_at?: string;
   updated_at?: string;
+  is_expired?: boolean;
 }
 
 export interface BookingFormData {

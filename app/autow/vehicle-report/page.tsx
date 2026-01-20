@@ -625,9 +625,9 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   actionsDropdown: {
     position: 'absolute' as const,
-    top: '100%',
+    bottom: '100%',
     right: 0,
-    marginTop: '4px',
+    marginBottom: '4px',
     background: '#1a1a1a',
     border: '1px solid rgba(48, 255, 55, 0.3)',
     borderRadius: '8px',

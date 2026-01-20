@@ -9,7 +9,25 @@ interface PostcodeResult {
   } | null;
 }
 
-// Haversine formula to calculate distance between two coordinates
+interface OSRMResponse {
+  code: string;
+  routes?: Array<{
+    distance: number; // meters
+    duration: number; // seconds
+  }>;
+}
+
+// Clean and format UK postcode
+function cleanPostcode(postcode: string): string {
+  return postcode.replace(/\s+/g, '').toUpperCase();
+}
+
+// Convert meters to miles
+function metersToMiles(meters: number): number {
+  return meters * 0.000621371;
+}
+
+// Haversine formula as fallback
 function haversineDistance(
   lat1: number,
   lon1: number,
@@ -17,27 +35,18 @@ function haversineDistance(
   lon2: number
 ): number {
   const R = 3959; // Earth's radius in miles
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
+  const dLat = (lat2 - lat1) * (Math.PI / 180);
+  const dLon = (lon2 - lon1) * (Math.PI / 180);
 
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRad(lat1)) *
-      Math.cos(toRad(lat2)) *
+    Math.cos(lat1 * (Math.PI / 180)) *
+      Math.cos(lat2 * (Math.PI / 180)) *
       Math.sin(dLon / 2) *
       Math.sin(dLon / 2);
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
-}
-
-function toRad(deg: number): number {
-  return deg * (Math.PI / 180);
-}
-
-// Clean and format UK postcode
-function cleanPostcode(postcode: string): string {
-  return postcode.replace(/\s+/g, '').toUpperCase();
 }
 
 export async function POST(request: NextRequest) {
@@ -86,24 +95,62 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Calculate distance
-    const distance = haversineDistance(
-      fromData.result.latitude,
-      fromData.result.longitude,
-      toData.result.latitude,
-      toData.result.longitude
-    );
+    const fromLat = fromData.result.latitude;
+    const fromLon = fromData.result.longitude;
+    const toLat = toData.result.latitude;
+    const toLon = toData.result.longitude;
 
-    // Apply a factor to approximate road distance (straight line * 1.3)
-    // This is a rough approximation as actual road distance varies
-    const roadDistance = distance * 1.3;
+    // Calculate straight-line distance for reference
+    const straightLine = haversineDistance(fromLat, fromLon, toLat, toLon);
+
+    // Use OSRM (Open Source Routing Machine) for actual road distance
+    // OSRM uses OpenStreetMap data for accurate routing
+    let roadDistance: number;
+    let durationMinutes: number | null = null;
+    let routeMethod = 'road';
+
+    try {
+      const osrmUrl = `https://router.project-osrm.org/route/v1/driving/${fromLon},${fromLat};${toLon},${toLat}?overview=false`;
+
+      const osrmResponse = await fetch(osrmUrl, {
+        headers: {
+          'User-Agent': 'AUTOW-Booking-App/1.0'
+        }
+      });
+
+      if (osrmResponse.ok) {
+        const osrmData: OSRMResponse = await osrmResponse.json();
+
+        if (osrmData.code === 'Ok' && osrmData.routes && osrmData.routes.length > 0) {
+          roadDistance = metersToMiles(osrmData.routes[0].distance);
+          durationMinutes = Math.round(osrmData.routes[0].duration / 60);
+        } else {
+          // OSRM couldn't find a route, use fallback
+          roadDistance = straightLine * 1.3;
+          routeMethod = 'estimated';
+        }
+      } else {
+        // OSRM API error, use fallback
+        roadDistance = straightLine * 1.3;
+        routeMethod = 'estimated';
+      }
+    } catch (osrmError) {
+      // OSRM request failed, use fallback calculation
+      console.warn('OSRM routing failed, using fallback:', osrmError);
+      roadDistance = straightLine * 1.3;
+      routeMethod = 'estimated';
+    }
 
     return NextResponse.json({
       from: fromData.result.postcode,
       to: toData.result.postcode,
-      straightLine: Math.round(distance * 10) / 10,
+      straightLine: Math.round(straightLine * 10) / 10,
       miles: Math.round(roadDistance * 10) / 10,
-      note: 'Distance is approximate (straight-line × 1.3)',
+      ...(durationMinutes && { durationMinutes }),
+      routeMethod,
+      note: routeMethod === 'road'
+        ? 'Distance calculated via road route (OpenStreetMap)'
+        : 'Distance is approximate (straight-line × 1.3)',
     });
 
   } catch (error: any) {

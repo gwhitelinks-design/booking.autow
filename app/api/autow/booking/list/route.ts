@@ -14,9 +14,10 @@ export async function GET(request: NextRequest) {
     }
 
     const result = await query(
-      `SELECT * FROM bookings
-       WHERE booking_date >= CURRENT_DATE
-       ORDER BY booking_date, booking_time`
+      `SELECT *,
+       CASE WHEN booking_date < CURRENT_DATE THEN true ELSE false END as is_expired
+       FROM bookings
+       ORDER BY booking_date DESC, booking_time DESC`
     );
 
     return NextResponse.json({
