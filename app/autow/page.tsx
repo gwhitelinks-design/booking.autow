@@ -120,8 +120,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     WebkitBackdropFilter: 'blur(20px)',
     borderRadius: '24px',
     padding: '40px',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(48, 255, 55, 0.03)',
-    border: '1px solid rgba(48, 255, 55, 0.08)',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15)',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
   },
   header: {
     textAlign: 'center' as const,

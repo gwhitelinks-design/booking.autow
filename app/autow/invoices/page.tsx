@@ -680,12 +680,13 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '20px',
   },
   invoiceCard: {
-    background: 'rgba(0, 0, 0, 0.6)',
+    background: 'rgba(0, 0, 0, 0.4)',
     backdropFilter: 'blur(15px)',
     WebkitBackdropFilter: 'blur(15px)',
-    border: '1px solid rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
     borderRadius: '12px',
     padding: '24px 10px',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
   },
   cardHeader: {
     display: 'flex',
