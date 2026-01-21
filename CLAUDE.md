@@ -600,9 +600,45 @@ if (process.env.N8N_WEBHOOK_URL) {
 ## Database Connection Details
 
 - **Host**: Supabase pooler (aws-1-eu-north-1.pooler.supabase.com)
+- **Project ID**: `kctnocfwcomphprybnud`
 - **SSL**: Enabled with `rejectUnauthorized: false` (Supabase uses self-signed certs)
 - **Connection Pooling**: Yes, via `pg.Pool` in `lib/db.ts`
 - **Query Logging**: All queries logged to console in development
+
+### CRITICAL: Shared Database Warning
+
+**This database is SHARED between multiple projects:**
+
+| Project | Tables Used |
+|---------|-------------|
+| **AUTOW Booking** | bookings, estimates, invoices, line_items, disclaimers, jotter_notes, receipts, vehicle_reports, business_settings, business_* |
+| **AUTOW Parts Bot** | suppliers, subscription_plans, quotes, usage_logs, team_members, magic_tokens, users |
+
+**NEVER modify or drop tables you don't recognize** - they belong to the Parts Bot project.
+
+### Migration Protocol (MANDATORY)
+
+When adding new database features:
+
+1. **Create migration file** in `database/migrations/` with descriptive name
+2. **Test locally first** - run migration against local/dev database
+3. **Apply to production** - run migration in Supabase SQL Editor OR via node script:
+   ```bash
+   cd /d/Projects-AI/autow-booking && node -e "
+   const { Pool } = require('pg');
+   require('dotenv').config({ path: '.env.local' });
+   const pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } });
+   // Run your SQL here
+   pool.query('YOUR SQL').then(() => console.log('Done')).finally(() => pool.end());
+   "
+   ```
+4. **Verify deployment** - test the feature on production after deploying code
+
+### Incident Log
+
+| Date | Issue | Resolution |
+|------|-------|------------|
+| 2026-01-21 | Disclaimers 500 error - table existed but missing columns (customer_name, customer_address, vehicle_reg, vehicle_make, vehicle_model). Customer disclaimer data was lost (table was empty). | Added missing columns via ALTER TABLE. Root cause: migration file existed but was never applied to production database. |
 
 ## Type Definitions
 
