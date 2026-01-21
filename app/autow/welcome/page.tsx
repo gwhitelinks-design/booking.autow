@@ -132,6 +132,15 @@ export default function WelcomePage() {
             <h2 style={styles.optionTitle}>Receipts</h2>
             <p style={styles.optionDescription}>Upload and manage receipts</p>
           </button>
+
+          <button
+            onClick={() => router.push('/autow/disclaimers')}
+            style={{...styles.optionCard, borderColor: 'rgba(255, 87, 34, 0.4)'}}
+          >
+            <div style={styles.optionIcon}>📜</div>
+            <h2 style={styles.optionTitle}>Disclaimers</h2>
+            <p style={styles.optionDescription}>Risk disclaimer forms</p>
+          </button>
         </div>
 
         <button onClick={handleLogout} style={styles.logoutButton}>
@@ -166,13 +175,13 @@ const styles: { [key: string]: React.CSSProperties } = {
   welcomeBox: {
     maxWidth: '900px',
     width: '100%',
-    background: 'rgba(0, 0, 0, 0.7)',
+    background: 'rgba(0, 0, 0, 0.4)',
     backdropFilter: 'blur(20px)',
     WebkitBackdropFilter: 'blur(20px)',
     borderRadius: '24px',
     padding: '40px',
-    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(48, 255, 55, 0.03)',
-    border: '1px solid rgba(48, 255, 55, 0.08)',
+    boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
   },
   header: {
     textAlign: 'center' as const,
@@ -203,16 +212,16 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '30px',
   },
   optionCard: {
-    background: 'rgba(0, 0, 0, 0.5)',
+    background: 'rgba(0, 0, 0, 0.3)',
     backdropFilter: 'blur(15px)',
     WebkitBackdropFilter: 'blur(15px)',
-    border: '1px solid rgba(255, 255, 255, 0.08)',
+    border: '1px solid rgba(255, 255, 255, 0.12)',
     borderRadius: '20px',
     padding: '40px 10px',
     textAlign: 'center' as const,
     cursor: 'pointer',
     transition: 'all 0.3s',
-    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08)',
     minHeight: '180px',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none' as const,

@@ -252,3 +252,347 @@ export async function sendVehicleReportEmail(data: VehicleReportEmailData): Prom
     return { success: false, error: error?.message || 'Failed to send email' };
   }
 }
+
+// ============================================
+// DISCLAIMER EMAIL FUNCTIONS
+// ============================================
+
+interface DisclaimerEmailData {
+  disclaimerNumber: string;
+  procedureDescription: string;
+  includeExistingPartsDisclaimer: boolean;
+  includeDiagnosticPaymentDisclaimer: boolean;
+  customerEmail: string;
+  signedAt: string;
+}
+
+/**
+ * Generate HTML email template for Staff notification when disclaimer is signed
+ */
+export function getDisclaimerStaffEmailHTML(data: DisclaimerEmailData): string {
+  const signedDate = new Date(data.signedAt).toLocaleString('en-GB', {
+    dateStyle: 'full',
+    timeStyle: 'short',
+  });
+
+  const additionalDisclaimers = [];
+  if (data.includeExistingPartsDisclaimer) {
+    additionalDisclaimers.push('Using Existing Parts Disclaimer');
+  }
+  if (data.includeDiagnosticPaymentDisclaimer) {
+    additionalDisclaimers.push('Diagnostic Payment Disclaimer');
+  }
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disclaimer Signed - ${data.disclaimerNumber}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif; background-color: #0a0a0a;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%); padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background: #1a1a1a; border: 1px solid rgba(48, 255, 55, 0.2); border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(48, 255, 55, 0.15);">
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding: 40px 40px 20px 40px; background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border-bottom: 1px solid rgba(48, 255, 55, 0.2);">
+              <img src="https://autow-services.co.uk/logo.png" alt="AUTOW Services" style="width: 180px; height: auto; margin-bottom: 20px;">
+              <div style="font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-top: 10px;">
+                Disclaimer Notification
+              </div>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="color: #30ff37; font-size: 24px; font-weight: 700; padding-bottom: 20px;">
+                    Disclaimer Signed
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.7); font-size: 16px; line-height: 1.6; padding-bottom: 20px;">
+                    A customer has signed the disclaimer form <strong style="color: #30ff37;">${data.disclaimerNumber}</strong>.
+                  </td>
+                </tr>
+
+                <!-- Details Box -->
+                <tr>
+                  <td style="padding: 25px; background: rgba(48, 255, 55, 0.05); border: 1px solid rgba(48, 255, 55, 0.2); border-radius: 12px; margin: 20px 0;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="color: #30ff37; font-size: 14px; font-weight: 600; padding-bottom: 15px; border-bottom: 1px solid rgba(48, 255, 55, 0.1);">
+                          DISCLAIMER DETAILS
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 15px;">
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0; width: 40%;">Reference:</td>
+                              <td style="color: #30ff37; font-size: 14px; font-weight: 700; padding: 8px 0;">${data.disclaimerNumber}</td>
+                            </tr>
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0;">Customer Email:</td>
+                              <td style="color: #ffffff; font-size: 14px; font-weight: 600; padding: 8px 0;">${data.customerEmail}</td>
+                            </tr>
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0;">Signed At:</td>
+                              <td style="color: #ffffff; font-size: 14px; padding: 8px 0;">${signedDate}</td>
+                            </tr>
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0; vertical-align: top;">Procedure:</td>
+                              <td style="color: #ffffff; font-size: 14px; padding: 8px 0;">${data.procedureDescription}</td>
+                            </tr>
+                            ${additionalDisclaimers.length > 0 ? `
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0; vertical-align: top;">Additional Disclaimers:</td>
+                              <td style="color: #ff9800; font-size: 14px; padding: 8px 0;">${additionalDisclaimers.join(', ')}</td>
+                            </tr>
+                            ` : ''}
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: rgba(48, 255, 55, 0.05); border-top: 1px solid rgba(48, 255, 55, 0.1); padding: 20px 40px; text-align: center;">
+              <p style="color: rgba(255, 255, 255, 0.4); font-size: 12px; margin: 0;">
+                This is an automated notification from AUTOW Booking System
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Generate HTML email template for Customer confirmation after signing
+ */
+export function getDisclaimerCustomerEmailHTML(data: DisclaimerEmailData): string {
+  const signedDate = new Date(data.signedAt).toLocaleString('en-GB', {
+    dateStyle: 'full',
+    timeStyle: 'short',
+  });
+
+  let additionalDisclaimersHTML = '';
+  if (data.includeExistingPartsDisclaimer) {
+    additionalDisclaimersHTML += `
+      <tr>
+        <td style="padding: 15px; background: rgba(255, 152, 0, 0.1); border-left: 3px solid #ff9800; margin-bottom: 15px;">
+          <strong style="color: #ff9800;">Using Existing Parts:</strong>
+          <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 10px 0 0 0; line-height: 1.5;">
+            You have been advised that using existing parts carries additional risk. You understand that while AUTOW Services will exercise due care, they cannot guarantee the condition or performance of parts that have not been supplied new.
+          </p>
+        </td>
+      </tr>
+      <tr><td style="height: 15px;"></td></tr>
+    `;
+  }
+  if (data.includeDiagnosticPaymentDisclaimer) {
+    additionalDisclaimersHTML += `
+      <tr>
+        <td style="padding: 15px; background: rgba(255, 152, 0, 0.1); border-left: 3px solid #ff9800; margin-bottom: 15px;">
+          <strong style="color: #ff9800;">Diagnostic Payment:</strong>
+          <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; margin: 10px 0 0 0; line-height: 1.5;">
+            You understand that diagnostic work requires time and expertise. Should you decide not to proceed with repairs following the diagnostic assessment, you agree to pay for the diagnostic time at the quoted or standard rate.
+          </p>
+        </td>
+      </tr>
+      <tr><td style="height: 15px;"></td></tr>
+    `;
+  }
+
+  return `
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Disclaimer Confirmation - ${data.disclaimerNumber}</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', sans-serif; background-color: #0a0a0a;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background: linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 50%, #0d0d0d 100%); padding: 40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background: #1a1a1a; border: 1px solid rgba(48, 255, 55, 0.2); border-radius: 24px; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(48, 255, 55, 0.15);">
+
+          <!-- Header -->
+          <tr>
+            <td align="center" style="padding: 40px 40px 20px 40px; background: linear-gradient(135deg, #1a1a1a 0%, #0d0d0d 100%); border-bottom: 1px solid rgba(48, 255, 55, 0.2);">
+              <img src="https://autow-services.co.uk/logo.png" alt="AUTOW Services" style="width: 180px; height: auto; margin-bottom: 20px;">
+              <div style="font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-top: 10px;">
+                Disclaimer Confirmation
+              </div>
+            </td>
+          </tr>
+
+          <!-- Content -->
+          <tr>
+            <td style="padding: 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="color: #30ff37; font-size: 24px; font-weight: 700; padding-bottom: 20px;">
+                    Thank You for Your Authorization
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.7); font-size: 16px; line-height: 1.6; padding-bottom: 20px;">
+                    This email confirms that you have signed the disclaimer form for the procedure described below.
+                  </td>
+                </tr>
+
+                <!-- Details Box -->
+                <tr>
+                  <td style="padding: 25px; background: rgba(48, 255, 55, 0.05); border: 1px solid rgba(48, 255, 55, 0.2); border-radius: 12px; margin: 20px 0;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="color: #30ff37; font-size: 14px; font-weight: 600; padding-bottom: 15px; border-bottom: 1px solid rgba(48, 255, 55, 0.1);">
+                          AUTHORIZATION DETAILS
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-top: 15px;">
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0; width: 40%;">Reference:</td>
+                              <td style="color: #30ff37; font-size: 14px; font-weight: 700; padding: 8px 0;">${data.disclaimerNumber}</td>
+                            </tr>
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0;">Signed:</td>
+                              <td style="color: #ffffff; font-size: 14px; padding: 8px 0;">${signedDate}</td>
+                            </tr>
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0; vertical-align: top;">Procedure:</td>
+                              <td style="color: #ffffff; font-size: 14px; padding: 8px 0;">${data.procedureDescription}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Authorization Statement -->
+                <tr>
+                  <td style="padding: 20px 0;">
+                    <p style="color: rgba(255, 255, 255, 0.7); font-size: 13px; line-height: 1.6; margin: 0; padding: 15px; background: rgba(255, 255, 255, 0.05); border-radius: 8px;">
+                      <strong>Your Authorization:</strong> You have authorized AUTOW Services (or its agent) to carry out the above procedure(s). You understand that this carries an inherent risk of damage, and that damage may be caused to your vehicle. You have agreed that AUTOW Services (or its agent) cannot be held liable for any such damage.
+                    </p>
+                  </td>
+                </tr>
+
+                <!-- Additional Disclaimers if any -->
+                ${additionalDisclaimersHTML ? `
+                <tr>
+                  <td>
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      ${additionalDisclaimersHTML}
+                    </table>
+                  </td>
+                </tr>
+                ` : ''}
+
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.5); font-size: 14px; line-height: 1.6; padding-top: 20px;">
+                    Please keep this email for your records. If you have any questions, please don't hesitate to contact us.
+                  </td>
+                </tr>
+
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.7); font-size: 14px; line-height: 1.6; padding-top: 30px;">
+                    Kind regards,<br>
+                    <strong style="color: #30ff37;">The AUTOW Services Team</strong>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background: rgba(48, 255, 55, 0.05); border-top: 1px solid rgba(48, 255, 55, 0.1); padding: 30px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="color: #30ff37; font-size: 14px; font-weight: 600; padding-bottom: 15px;">
+                    Contact Us
+                  </td>
+                </tr>
+                <tr>
+                  <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; line-height: 1.8;">
+                    <span style="color: #30ff37;">Email:</span> <a href="mailto:info@autow-services.co.uk" style="color: #30ff37; text-decoration: none;">info@autow-services.co.uk</a><br>
+                    <span style="color: #30ff37;">Phone:</span> 07352968276<br>
+                    <span style="color: #30ff37;">Address:</span> Alverton, Penzance, TR18 4QB<br>
+                    <span style="color: #30ff37;">Website:</span> <a href="https://www.autow-services.co.uk" style="color: #30ff37; text-decoration: none;">autow-services.co.uk</a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * Send disclaimer emails to both staff and customer
+ */
+export async function sendDisclaimerEmails(data: DisclaimerEmailData): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Check if SMTP is configured
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASSWORD) {
+      console.error('SMTP not configured - missing SMTP_USER or SMTP_PASSWORD env vars');
+      return { success: false, error: 'Email service not configured' };
+    }
+
+    const staffEmail = 'info@autow-services.co.uk';
+
+    // Send to staff
+    const staffHTML = getDisclaimerStaffEmailHTML(data);
+    await transporter.sendMail({
+      from: FROM_EMAIL,
+      to: staffEmail,
+      subject: `Disclaimer Signed - ${data.disclaimerNumber}`,
+      html: staffHTML,
+    });
+    console.log(`Disclaimer staff notification sent to ${staffEmail}`);
+
+    // Send to customer
+    const customerHTML = getDisclaimerCustomerEmailHTML(data);
+    await transporter.sendMail({
+      from: FROM_EMAIL,
+      to: data.customerEmail,
+      subject: `Disclaimer Confirmation - ${data.disclaimerNumber} - AUTOW Services`,
+      html: customerHTML,
+    });
+    console.log(`Disclaimer confirmation sent to ${data.customerEmail}`);
+
+    return { success: true };
+  } catch (error: any) {
+    console.error('Error sending disclaimer emails:', error?.message || error);
+    return { success: false, error: error?.message || 'Failed to send email' };
+  }
+}

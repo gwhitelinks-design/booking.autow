@@ -431,3 +431,52 @@ export interface InvoiceExpenseFormData {
   labour_amount: number;
   category?: 'parts' | 'labour' | 'mixed' | 'general';
 }
+
+// ============================================
+// DISCLAIMER TYPES
+// ============================================
+
+export interface Disclaimer {
+  id?: number;
+  disclaimer_number: string;        // DS-YYYYMMDD-XXX
+  procedure_description: string;
+
+  // Optional additional disclaimers
+  include_existing_parts_disclaimer: boolean;
+  include_diagnostic_payment_disclaimer: boolean;
+
+  // Customer information
+  customer_name?: string;
+  customer_address?: string;
+  customer_email?: string;
+  customer_signature?: string;      // Base64 PNG
+  signature_date?: string;
+
+  // Vehicle information
+  vehicle_reg?: string;
+  vehicle_make?: string;
+  vehicle_model?: string;
+
+  // Status tracking
+  status: 'pending' | 'signed';
+
+  // Share link
+  share_token?: string;
+
+  // Metadata
+  created_by: string;
+  created_at?: string;
+  updated_at?: string;
+  signed_at?: string;
+}
+
+export interface DisclaimerFormData {
+  procedure_description: string;
+  include_existing_parts_disclaimer?: boolean;
+  include_diagnostic_payment_disclaimer?: boolean;
+  customer_name?: string;
+  customer_address?: string;
+  vehicle_reg?: string;
+  vehicle_make?: string;
+  vehicle_model?: string;
+}
