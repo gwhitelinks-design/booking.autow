@@ -1285,6 +1285,37 @@ Special styling for interactive damage markers on assessment diagrams:
 
 ## Recent Session Notes
 
+### Session: 2026-01-22 - Disclaimer Database Fix & Shared DB Documentation
+
+**Issue:** Disclaimer feature returning 500 errors. Customer's signed disclaimer link stopped working.
+
+**Root Cause:** Migration file `database/migrations/create_disclaimers_table.sql` existed but was never applied to production database. Table was missing columns: `customer_name`, `customer_address`, `vehicle_reg`, `vehicle_make`, `vehicle_model`.
+
+**Data Loss:** Customer's disclaimer data was already gone (table was empty). Cannot recover.
+
+**Fixes Applied:**
+1. Added missing columns via `ALTER TABLE`
+2. Created trigger function for `updated_at`
+3. Redeployed to Vercel production
+4. Verified Parts Bot tables untouched
+
+**Documentation Added:**
+- CRITICAL: Shared Database Warning section
+- Migration Protocol (MANDATORY) section
+- Incident Log table
+- Updated global CLAUDE.md with shared database info
+
+**Key Learning:** Database `kctnocfwcomphprybnud` is SHARED between:
+- **AUTOW Booking**: bookings, estimates, invoices, line_items, disclaimers, jotter_notes, receipts, vehicle_reports, business_*
+- **AUTOW Parts Bot**: users, suppliers, subscription_plans, quotes, usage_logs, team_members, magic_tokens
+
+**Commits:**
+- `991530f` - Document shared database warning and migration protocol
+
+**Incident Report:** `docs/incidents/2026-01-22-disclaimer-data-loss.md`
+
+---
+
 ### Session: 2026-01-10 - Receipts Feature Implementation
 
 **Features Built:**

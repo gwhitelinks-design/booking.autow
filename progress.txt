@@ -1,52 +1,59 @@
 # Context Refresh Handoff
-Generated: 2026-01-21T18:00:00Z
-Previous Session: ~5 exchanges
+Generated: 2026-01-22T12:00:00Z
+Previous Session: ~10 exchanges
 
 ## Active Project
 Path: D:\Projects-AI\autow-booking
 CLAUDE.md: yes
 
 ## Session Summary
-Applied responsive CSS styling using clamp()/min() functions to all share pages (estimate, invoice, vehicle-report). Removed redundant embedded media queries and added mobile-full-height class for iOS PWA compatibility. Build verified successful.
+Fixed critical disclaimer feature 500 error. The disclaimers table existed but was missing columns needed by the API. Customer's disclaimer data was already lost (table was empty). Documented shared database architecture and added mandatory migration protocol to prevent future incidents.
 
 ## Completed This Session
-- [x] Read globals.css responsive variables for reference
-- [x] Updated /share/estimate/[token] with clamp()/min() responsive styles
-- [x] Updated /share/invoice/[token] with clamp()/min() responsive styles
-- [x] Updated /share/vehicle-report/[token] with clamp()/min() responsive styles
-- [x] Added mobile-full-height class to all share page containers
-- [x] Simplified embedded <style> tags (kept only print and iOS Safari fixes)
-- [x] Verified TypeScript type check passes
-- [x] Verified Next.js build succeeds
+- [x] Diagnosed disclaimer 500 error (missing database columns)
+- [x] Verified correct database (kctnocfwcomphprybnud)
+- [x] Added missing columns: customer_name, customer_address, vehicle_reg, vehicle_make, vehicle_model
+- [x] Created trigger function for updated_at
+- [x] Verified Parts Bot tables UNTOUCHED
+- [x] Redeployed to Vercel production
+- [x] Documented shared database warning in project CLAUDE.md
+- [x] Documented migration protocol in project CLAUDE.md
+- [x] Added incident log to project CLAUDE.md
+- [x] Updated global CLAUDE.md with shared database info
 
 ## Current Task (Hand-off Point)
-Task: Responsive design rollout to share pages complete
-Status: READY FOR DEPLOYMENT
-Next Action: Deploy to Vercel with `vercel --prod`
+Task: Disclaimer feature fix complete
+Status: DEPLOYED AND WORKING
+Next Action: User can create new disclaimers at /autow/disclaimers/create
 
 ## Pending Tasks
-- [ ] Deploy to Vercel production
-- [ ] Test on iPhone PWA to verify responsive scaling works
-- [ ] Roll out responsive classes to staff pages if needed
+- [ ] Recreate customer's disclaimer (original data was lost)
+- [ ] Consider adding database migration CI/CD to prevent future issues
 
 ## Key Decisions Made
-1. Use inline clamp()/min() in styles object: Same pattern as disclaimer page for consistency
-2. Removed embedded media query overrides: Inline responsive values handle scaling automatically
-3. Added flex-wrap to two-column sections: Vehicle report stacks columns on mobile
-4. Grid auto-fit with minmax: Parties section auto-stacks on narrow screens
+1. Database is SHARED between Parts Bot and Booking - documented this clearly
+2. Added MANDATORY migration protocol to CLAUDE.md
+3. Customer data loss was pre-existing - migration was never applied to production
 
 ## Files Modified
 | File | Change |
 |------|--------|
-| app/share/estimate/[token]/page.tsx | Full responsive styles with clamp()/min() |
-| app/share/invoice/[token]/page.tsx | Full responsive styles with clamp()/min() |
-| app/share/vehicle-report/[token]/page.tsx | Full responsive styles with clamp()/min() |
+| CLAUDE.md | Added shared database warning, migration protocol, incident log |
+| ~/.claude/CLAUDE.md | Updated database name to "AUTOW Shared", documented both project tables |
 
 ## Critical Context
-- Vercel auto-deploy is NOT active - must use `vercel --prod` manually
-- All three share pages now use the same responsive pattern as disclaimer page
-- Responsive pattern: font-size uses clamp(min, preferred, max), spacing uses min(fixed, vw)
-- Example: clamp(0.7rem, 3vw, 0.875rem) = min 11px, scales with viewport, max 14px
+- Database Project ID: kctnocfwcomphprybnud (SHARED between Parts Bot + Booking)
+- Parts Bot tables: users, suppliers, subscription_plans, quotes, usage_logs, team_members, magic_tokens
+- Booking tables: bookings, estimates, invoices, line_items, disclaimers, jotter_notes, receipts, vehicle_reports, business_*
+- NEVER modify tables you don't recognize - they belong to the other project
+- Migration files in database/migrations/ MUST be applied to production manually
+
+## Incident Details (2026-01-22)
+- Issue: /api/share/disclaimer/[token] returning 500
+- Customer token: 68c09dc5-e4b6-4a93-983d-9145fe49cc5a
+- Root cause: Migration file existed but never applied to production
+- Data status: Customer's disclaimer data was ALREADY LOST (table empty)
+- Resolution: Added missing columns, feature now works for new disclaimers
 
 ## Resume Instructions
 The new session should:
