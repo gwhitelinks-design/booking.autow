@@ -159,28 +159,28 @@ export default async function SharedEstimatePage({
           <table style={styles.table}>
             <thead>
               <tr>
-                <th style={{ ...styles.th, textAlign: 'left' as const }} className="desc-col">DESCRIPTION</th>
-                <th style={styles.th} className="rate-col">RATE</th>
-                <th style={styles.th} className="qty-col">QTY</th>
-                <th style={{ ...styles.th, textAlign: 'right' as const }} className="amount-col">AMOUNT</th>
+                <th style={{ ...styles.th, ...styles.descCol }} className="desc-col">DESCRIPTION</th>
+                <th style={{ ...styles.th, ...styles.rateCol }} className="rate-col">RATE</th>
+                <th style={{ ...styles.th, ...styles.qtyCol }} className="qty-col">QTY</th>
+                <th style={{ ...styles.th, ...styles.amountCol }} className="amount-col">AMOUNT</th>
               </tr>
             </thead>
             <tbody>
               {estimate.line_items && estimate.line_items.map((item: any, index: number) => (
                 <tr key={index}>
-                  <td style={styles.td} className="desc-col">
+                  <td style={{ ...styles.td, ...styles.descCol }} className="desc-col">
                     <span style={styles.descriptionText}>{item.description}</span>
                     {item.item_type !== 'service' && (
                       <span style={item.item_type === 'discount' ? styles.discountType : styles.itemType}> ({item.item_type})</span>
                     )}
                   </td>
-                  <td style={{ ...styles.td, textAlign: 'center' as const }} className="rate-col">
+                  <td style={{ ...styles.td, ...styles.rateCol, textAlign: 'center' as const }} className="rate-col">
                     £{parseFloat(item.rate.toString()).toFixed(2)}
                   </td>
-                  <td style={{ ...styles.td, textAlign: 'center' as const }} className="qty-col">
+                  <td style={{ ...styles.td, ...styles.qtyCol, textAlign: 'center' as const }} className="qty-col">
                     {item.quantity}
                   </td>
-                  <td style={{ ...styles.td, textAlign: 'right' as const, ...(item.item_type === 'discount' ? { color: '#ff9800' } : {}) }} className="amount-col">
+                  <td style={{ ...styles.td, ...styles.amountCol, textAlign: 'right' as const, ...(item.item_type === 'discount' ? { color: '#ff9800' } : {}) }} className="amount-col">
                     {item.item_type === 'discount' ? '-' : ''}£{parseFloat(item.amount.toString()).toFixed(2)}
                   </td>
                 </tr>
@@ -381,6 +381,23 @@ const styles: { [key: string]: React.CSSProperties } = {
     width: '100%',
     borderCollapse: 'collapse' as const,
     marginBottom: 'min(30px, 6vw)',
+    tableLayout: 'fixed' as const,
+  },
+  descCol: {
+    width: '55%',
+    textAlign: 'left' as const,
+  },
+  rateCol: {
+    width: '15%',
+    textAlign: 'center' as const,
+  },
+  qtyCol: {
+    width: '10%',
+    textAlign: 'center' as const,
+  },
+  amountCol: {
+    width: '20%',
+    textAlign: 'right' as const,
   },
   th: {
     padding: 'min(12px, 3vw) min(8px, 2vw)',
