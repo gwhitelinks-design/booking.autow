@@ -304,8 +304,9 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   docHeader: {
     display: 'flex',
+    flexWrap: 'nowrap' as const,
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     gap: 'min(15px, 4vw)',
     marginBottom: 'min(40px, 8vw)',
     paddingBottom: 'min(20px, 4vw)',
