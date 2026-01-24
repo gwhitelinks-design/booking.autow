@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { autoAddClient } from '@/lib/auto-add-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -97,6 +98,17 @@ export async function POST(request: NextRequest) {
         created_by
       ]
     );
+
+    // Auto-add client to clients table (non-blocking)
+    autoAddClient({
+      name: customer_name,
+      email: customer_email,
+      address: customer_address,
+      phone: customer_phone,
+      vehicle_reg: vehicle_reg,
+      vehicle_model: vehicle_type_model,
+      created_by: 'Vehicle Report'
+    }).catch(err => console.error('Auto-add client failed:', err));
 
     return NextResponse.json({
       message: 'Vehicle report created successfully',

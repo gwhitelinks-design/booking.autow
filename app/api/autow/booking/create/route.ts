@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 import { sendTelegramNotification } from '@/lib/telegram';
+import { autoAddClient } from '@/lib/auto-add-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -88,6 +89,18 @@ export async function POST(request: NextRequest) {
     sendTelegramNotification(bookingData).catch(err =>
       console.error('Telegram notification failed:', err)
     );
+
+    // Auto-add client to clients table (non-blocking)
+    autoAddClient({
+      name: bookingData.customer_name,
+      email: bookingData.customer_email,
+      address: bookingData.location_address,
+      phone: bookingData.customer_phone,
+      vehicle_reg: bookingData.vehicle_reg,
+      vehicle_make: bookingData.vehicle_make,
+      vehicle_model: bookingData.vehicle_model,
+      created_by: 'Booking'
+    }).catch(err => console.error('Auto-add client failed:', err));
 
     return NextResponse.json({
       success: true,

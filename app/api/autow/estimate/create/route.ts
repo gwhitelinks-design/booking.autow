@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { autoAddClient } from '@/lib/auto-add-client';
 
 export async function POST(request: NextRequest) {
   try {
@@ -110,6 +111,19 @@ export async function POST(request: NextRequest) {
         ...updatedResult.rows[0],
         line_items: insertedLineItems
       };
+
+      // Auto-add client to clients table (non-blocking)
+      autoAddClient({
+        name: client_name,
+        email: client_email,
+        address: client_address,
+        phone: client_phone,
+        mobile: client_mobile,
+        vehicle_reg: vehicle_reg,
+        vehicle_make: vehicle_make,
+        vehicle_model: vehicle_model,
+        created_by: 'Estimate'
+      }).catch(err => console.error('Auto-add client failed:', err));
 
       return NextResponse.json({
         message: 'Estimate created successfully',
