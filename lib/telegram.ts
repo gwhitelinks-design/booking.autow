@@ -59,7 +59,7 @@ ${bookingData.notes ? `📝 *Notes:* ${bookingData.notes}` : ''}
   }
 }
 
-export async function sendShareLinkNotification(documentType: 'estimate' | 'invoice' | 'assessment', documentData: any) {
+export async function sendShareLinkNotification(documentType: 'estimate' | 'invoice' | 'assessment' | 'disclaimer' | 'vehicle_report', documentData: any) {
   const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
   const telegramChatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -82,6 +82,44 @@ ${documentData.vehicle_make && documentData.vehicle_model ? `🔧 *Make/Model:* 
 ${documentData.recommendation ? `📊 *Recommendation:* ${documentData.recommendation.toUpperCase()}` : ''}
 
 💷 *Est. Repair Cost:* £${parseFloat(documentData.repair_cost_min || 0).toFixed(0)} - £${parseFloat(documentData.repair_cost_max || 0).toFixed(0)}
+
+⏰ *Viewed:* ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}
+    `.trim();
+  } else if (documentType === 'disclaimer') {
+    // Disclaimer notification
+    message = `
+📜 *DISCLAIMER VIEWED*
+
+👤 *Customer:* ${documentData.customer_name || 'N/A'}
+${documentData.customer_address ? `📍 *Address:* ${documentData.customer_address}` : ''}
+
+🚗 *Vehicle:* ${documentData.vehicle_reg || 'N/A'}
+${documentData.vehicle_make && documentData.vehicle_model ? `🔧 *Make/Model:* ${documentData.vehicle_make} ${documentData.vehicle_model}` : ''}
+
+📋 *Procedure:* ${documentData.procedure_description ? documentData.procedure_description.substring(0, 100) + (documentData.procedure_description.length > 100 ? '...' : '') : 'N/A'}
+
+📊 *Status:* ${documentData.status || 'pending'}
+${documentData.signed_at ? `✍️ *Signed:* Yes` : `⏳ *Signed:* Not yet`}
+
+⏰ *Viewed:* ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}
+    `.trim();
+  } else if (documentType === 'vehicle_report') {
+    // Vehicle Report notification
+    const serviceType = documentData.service_type === 'recovery' ? 'Recovery' : 'Transport';
+    message = `
+🚛 *VEHICLE REPORT VIEWED*
+
+👤 *Customer:* ${documentData.customer_name || 'N/A'}
+${documentData.customer_phone ? `📞 *Phone:* ${documentData.customer_phone}` : ''}
+
+🚗 *Vehicle:* ${documentData.vehicle_reg || 'N/A'}
+${documentData.vehicle_type_model ? `🔧 *Type/Model:* ${documentData.vehicle_type_model}` : ''}
+
+🔧 *Service:* ${serviceType}
+📅 *Date:* ${documentData.report_date ? new Date(documentData.report_date).toLocaleDateString('en-GB') : 'N/A'}
+
+${documentData.pickup_location ? `📍 *Pickup:* ${documentData.pickup_location}` : ''}
+${documentData.delivery_location ? `📍 *Delivery:* ${documentData.delivery_location}` : ''}
 
 ⏰ *Viewed:* ${new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' })}
     `.trim();

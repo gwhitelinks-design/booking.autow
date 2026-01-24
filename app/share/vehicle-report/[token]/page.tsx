@@ -1,4 +1,5 @@
 import pool from '@/lib/db';
+import { sendShareLinkNotification } from '@/lib/telegram';
 import PrintButton from './PrintButton';
 
 interface DamageMarker {
@@ -22,7 +23,14 @@ async function getReportData(token: string) {
       return { report: null };
     }
 
-    return { report: result.rows[0] };
+    const report = result.rows[0];
+
+    // Send Telegram notification (non-blocking)
+    sendShareLinkNotification('vehicle_report', report).catch(err =>
+      console.error('Telegram notification failed:', err)
+    );
+
+    return { report };
   } finally {
     client.release();
   }

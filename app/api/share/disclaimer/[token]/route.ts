@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { sendShareLinkNotification } from '@/lib/telegram';
 
 export async function GET(
   request: NextRequest,
@@ -25,6 +26,11 @@ export async function GET(
       }
 
       const disclaimer = result.rows[0];
+
+      // Send Telegram notification (non-blocking)
+      sendShareLinkNotification('disclaimer', disclaimer).catch(err =>
+        console.error('Telegram notification failed:', err)
+      );
 
       return NextResponse.json({ disclaimer });
 
