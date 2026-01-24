@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { LineItem } from '@/lib/types';
+import { LineItem, Client } from '@/lib/types';
 
 
 interface FormData {
@@ -42,6 +42,11 @@ export default function CreateInvoicePage() {
   const [showVehicleRegModal, setShowVehicleRegModal] = useState(false);
   const [vehicleRegInput, setVehicleRegInput] = useState('');
   const [fetchingNumber, setFetchingNumber] = useState(false);
+
+  // Client selector
+  const [showClientSelector, setShowClientSelector] = useState(false);
+  const [clientSearchQuery, setClientSearchQuery] = useState('');
+  const [matchingClients, setMatchingClients] = useState<Client[]>([]);
 
   const defaultNotes = `We Provide Mobile mechanics and Recovery services,
 we have dedicated ramp spaces for works that are not suitable at roadside etc.
@@ -385,6 +390,53 @@ Company Number: 16952633`;
     }
   };
 
+  // Fetch clients for selector
+  const fetchClientsForSelector = async (search?: string) => {
+    try {
+      const token = localStorage.getItem('autow_token');
+      const url = search
+        ? `/api/autow/client/list?search=${encodeURIComponent(search)}`
+        : '/api/autow/client/list?limit=20';
+
+      const response = await fetch(url, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setMatchingClients(data.clients || []);
+      }
+    } catch (error) {
+      console.error('Error fetching clients:', error);
+    }
+  };
+
+  const handleClientSearch = (value: string) => {
+    setClientSearchQuery(value);
+    fetchClientsForSelector(value);
+  };
+
+  const handleSelectClient = (client: Client) => {
+    setFormData(prev => ({
+      ...prev,
+      client_name: client.name || '',
+      client_email: client.email || '',
+      client_address: client.address || '',
+      client_phone: client.phone || '',
+      client_mobile: client.mobile || '',
+      vehicle_reg: client.vehicle_reg || '',
+      vehicle_make: client.vehicle_make || '',
+      vehicle_model: client.vehicle_model || '',
+    }));
+    setShowClientSelector(false);
+    setClientSearchQuery('');
+  };
+
+  const openClientSelector = () => {
+    setShowClientSelector(true);
+    fetchClientsForSelector();
+  };
+
   const calculateTotals = () => {
     let parts = 0;
     let labor = 0;
@@ -675,13 +727,23 @@ Company Number: 16952633`;
           <div style={styles.formGrid} className="form-grid">
             <div style={styles.formGroup}>
               <label style={styles.label}>Client Name *</label>
-              <input
-                type="text"
-                value={formData.client_name}
-                onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
-                style={styles.input}
-                required
-              />
+              <div style={styles.clientInputRow}>
+                <input
+                  type="text"
+                  value={formData.client_name}
+                  onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
+                  style={{ ...styles.input, flex: 1 }}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={openClientSelector}
+                  style={styles.clientSelectorBtn}
+                  title="Select from clients"
+                >
+                  👥
+                </button>
+              </div>
             </div>
 
             <div style={styles.formGroup}>
@@ -1134,6 +1196,56 @@ Company Number: 16952633`;
               >
                 {fetchingNumber ? 'Loading...' : 'Continue'}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Client Selector Modal */}
+      {showClientSelector && (
+        <div style={styles.clientSelectorOverlay} onClick={() => setShowClientSelector(false)}>
+          <div style={styles.clientSelectorModal} onClick={(e) => e.stopPropagation()}>
+            <div style={styles.clientSelectorHeader}>
+              <h3 style={styles.clientSelectorTitle}>Select Client</h3>
+              <button
+                onClick={() => setShowClientSelector(false)}
+                style={styles.clientSelectorClose}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={styles.clientSelectorSearch}>
+              <input
+                type="text"
+                placeholder="Search clients..."
+                value={clientSearchQuery}
+                onChange={(e) => handleClientSearch(e.target.value)}
+                style={styles.clientSelectorSearchInput}
+                autoFocus
+              />
+            </div>
+
+            <div style={styles.clientSelectorList}>
+              {matchingClients.length === 0 ? (
+                <div style={styles.clientSelectorEmpty}>
+                  {clientSearchQuery ? 'No clients found' : 'Start typing to search...'}
+                </div>
+              ) : (
+                matchingClients.map(client => (
+                  <button
+                    key={client.id}
+                    onClick={() => handleSelectClient(client)}
+                    style={styles.clientSelectorItem}
+                  >
+                    <div style={styles.clientSelectorItemName}>{client.name}</div>
+                    <div style={styles.clientSelectorItemInfo}>
+                      {client.phone && <span>{client.phone}</span>}
+                      {client.vehicle_reg && <span style={styles.clientSelectorItemReg}>{client.vehicle_reg}</span>}
+                    </div>
+                  </button>
+                ))
+              )}
             </div>
           </div>
         </div>
@@ -1600,5 +1712,116 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#888',
     cursor: 'pointer',
     fontSize: '14px',
+  },
+  // Client Selector Styles
+  clientInputRow: {
+    display: 'flex',
+    gap: '10px',
+    alignItems: 'center',
+  },
+  clientSelectorBtn: {
+    padding: '12px 16px',
+    background: 'rgba(0, 188, 212, 0.2)',
+    border: '1px solid rgba(0, 188, 212, 0.4)',
+    borderRadius: '6px',
+    color: '#00bcd4',
+    cursor: 'pointer',
+    fontSize: '18px',
+    flexShrink: 0,
+  },
+  clientSelectorOverlay: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.8)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: '20px',
+  },
+  clientSelectorModal: {
+    background: '#1a1a1a',
+    borderRadius: '12px',
+    maxWidth: '450px',
+    width: '100%',
+    maxHeight: '70vh',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    border: '1px solid rgba(0, 188, 212, 0.3)',
+  },
+  clientSelectorHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '20px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  clientSelectorTitle: {
+    color: '#00bcd4',
+    fontSize: '20px',
+    margin: '0',
+  },
+  clientSelectorClose: {
+    background: 'none',
+    border: 'none',
+    color: '#888',
+    fontSize: '24px',
+    cursor: 'pointer',
+    padding: '0',
+  },
+  clientSelectorSearch: {
+    padding: '15px 20px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  clientSelectorSearchInput: {
+    width: '100%',
+    padding: '12px 15px',
+    background: '#0a0a0a',
+    border: '1px solid rgba(0, 188, 212, 0.3)',
+    borderRadius: '6px',
+    color: '#fff',
+    fontSize: '14px',
+    outline: 'none',
+    boxSizing: 'border-box' as const,
+  },
+  clientSelectorList: {
+    flex: 1,
+    overflow: 'auto',
+    padding: '10px',
+  },
+  clientSelectorEmpty: {
+    color: '#888',
+    textAlign: 'center' as const,
+    padding: '30px 20px',
+  },
+  clientSelectorItem: {
+    width: '100%',
+    padding: '12px 15px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    border: '1px solid rgba(255, 255, 255, 0.1)',
+    borderRadius: '8px',
+    marginBottom: '8px',
+    cursor: 'pointer',
+    textAlign: 'left' as const,
+    transition: 'all 0.2s',
+  },
+  clientSelectorItemName: {
+    color: '#fff',
+    fontSize: '15px',
+    fontWeight: '600' as const,
+    marginBottom: '4px',
+  },
+  clientSelectorItemInfo: {
+    display: 'flex',
+    gap: '10px',
+    fontSize: '13px',
+    color: '#888',
+  },
+  clientSelectorItemReg: {
+    color: '#00bcd4',
+    fontWeight: '600' as const,
   },
 };

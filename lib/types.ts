@@ -480,3 +480,35 @@ export interface DisclaimerFormData {
   vehicle_make?: string;
   vehicle_model?: string;
 }
+
+// ============================================
+// CLIENT TYPES
+// ============================================
+
+export interface Client {
+  id?: number;
+  name: string;
+  email?: string;
+  address?: string;
+  phone?: string;
+  mobile?: string;
+  vehicle_reg?: string;
+  vehicle_make?: string;
+  vehicle_model?: string;
+  notes?: string;
+  created_by: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface ClientFormData {
+  name: string;
+  email?: string;
+  address?: string;
+  phone?: string;
+  mobile?: string;
+  vehicle_reg?: string;
+  vehicle_make?: string;
+  vehicle_model?: string;
+  notes?: string;
+}
