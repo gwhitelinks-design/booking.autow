@@ -135,28 +135,67 @@ Company Number: 16952633`;
     }
   }, [bookingId, vehicleReportId, estimateId]);
 
-  // Handle vehicle reg modal submit
+  // Handle vehicle reg modal submit - also looks up client data
   const handleVehicleRegSubmit = async () => {
     const upperReg = vehicleRegInput.trim().toUpperCase();
     setFetchingNumber(true);
 
     try {
       const token = localStorage.getItem('autow_token');
-      const response = await fetch(
-        `/api/autow/document-number/preview?vehicle_reg=${encodeURIComponent(upperReg)}&type=estimate`,
-        { headers: { 'Authorization': `Bearer ${token}` } }
-      );
 
-      if (response.ok) {
-        const data = await response.json();
+      // Fetch document number and client lookup in parallel
+      const [docResponse, clientResponse] = await Promise.all([
+        fetch(
+          `/api/autow/document-number/preview?vehicle_reg=${encodeURIComponent(upperReg)}&type=estimate`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        ),
+        fetch(
+          `/api/autow/client/search-by-vehicle?vehicle_reg=${encodeURIComponent(upperReg)}`,
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+      ]);
+
+      let estimateNumber = '';
+      if (docResponse.ok) {
+        const docData = await docResponse.json();
+        estimateNumber = docData.document_number;
+      }
+
+      // Check if we found a matching client
+      if (clientResponse.ok) {
+        const clientData = await clientResponse.json();
+        if (clientData.client) {
+          // Auto-populate all client details
+          setFormData(prev => ({
+            ...prev,
+            vehicle_reg: upperReg,
+            estimate_number: estimateNumber,
+            client_name: clientData.client.name || '',
+            client_email: clientData.client.email || '',
+            client_address: clientData.client.address || '',
+            client_phone: clientData.client.phone || '',
+            client_mobile: clientData.client.mobile || '',
+            vehicle_make: clientData.client.vehicle_make || '',
+            vehicle_model: clientData.client.vehicle_model || ''
+          }));
+        } else {
+          // No client found, just set vehicle reg and estimate number
+          setFormData(prev => ({
+            ...prev,
+            vehicle_reg: upperReg,
+            estimate_number: estimateNumber
+          }));
+        }
+      } else {
+        // API failed, just set vehicle reg and estimate number
         setFormData(prev => ({
           ...prev,
           vehicle_reg: upperReg,
-          estimate_number: data.document_number
+          estimate_number: estimateNumber
         }));
       }
     } catch (error) {
-      console.error('Error fetching document number:', error);
+      console.error('Error fetching data:', error);
     } finally {
       setFetchingNumber(false);
       setShowVehicleRegModal(false);
@@ -575,7 +614,7 @@ Company Number: 16952633`;
           <div style={styles.vehicleRegModalContent}>
             <h2 style={styles.vehicleRegModalTitle}>New Estimate</h2>
             <p style={styles.vehicleRegModalSubtitle}>
-              Enter the vehicle registration to generate the estimate number
+              Enter the vehicle registration to generate the estimate number and auto-fill customer details if found
             </p>
 
             <div style={styles.vehicleRegInputGroup}>
