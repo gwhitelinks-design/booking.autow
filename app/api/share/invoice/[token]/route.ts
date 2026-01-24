@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { sendShareLinkNotification } from '@/lib/telegram';
 
+// Disable caching to ensure notification fires on every view
+export const dynamic = 'force-dynamic';
+
 export async function GET(
   request: NextRequest,
   { params }: { params: { token: string } }

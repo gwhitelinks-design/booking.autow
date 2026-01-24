@@ -1,59 +1,50 @@
 # Context Refresh Handoff
-Generated: 2026-01-22T12:00:00Z
-Previous Session: ~10 exchanges
+Generated: 2026-01-23T14:00:00Z
+Previous Session: Continuation from 2026-01-23 email enhancement session
 
 ## Active Project
 Path: D:\Projects-AI\autow-booking
 CLAUDE.md: yes
 
 ## Session Summary
-Fixed critical disclaimer feature 500 error. The disclaimers table existed but was missing columns needed by the API. Customer's disclaimer data was already lost (table was empty). Documented shared database architecture and added mandatory migration protocol to prevent future incidents.
+Brief session - reviewed handoff, confirmed dev server running on port 3001. No new work done this session.
 
-## Completed This Session
-- [x] Diagnosed disclaimer 500 error (missing database columns)
-- [x] Verified correct database (kctnocfwcomphprybnud)
-- [x] Added missing columns: customer_name, customer_address, vehicle_reg, vehicle_make, vehicle_model
-- [x] Created trigger function for updated_at
-- [x] Verified Parts Bot tables UNTOUCHED
-- [x] Redeployed to Vercel production
-- [x] Documented shared database warning in project CLAUDE.md
-- [x] Documented migration protocol in project CLAUDE.md
-- [x] Added incident log to project CLAUDE.md
-- [x] Updated global CLAUDE.md with shared database info
+## Completed Previously (2026-01-23)
+- [x] Enhanced disclaimer emails to include signed document with signature
+- [x] Staff email has customer/vehicle details and "View Signed Document" button
+- [x] Customer email shows their details and signature confirmation
+- [x] Deployed to Vercel production
+
+## Completed Earlier (2026-01-21/22)
+- [x] Responsive CSS system with clamp()/min() for mobile scaling
+- [x] iOS PWA safe area padding for notch/dynamic island
+- [x] App icons and favicon updated to AUTOW branding
+- [x] Disclaimer database columns fixed
+- [x] Shared database documented in CLAUDE.md
+- [x] Migration protocol documented
 
 ## Current Task (Hand-off Point)
-Task: Disclaimer feature fix complete
-Status: DEPLOYED AND WORKING
-Next Action: User can create new disclaimers at /autow/disclaimers/create
+Task: No active task
+Status: Ready for new work
+Next Action: User to specify next task
 
 ## Pending Tasks
-- [ ] Recreate customer's disclaimer (original data was lost)
-- [ ] Consider adding database migration CI/CD to prevent future issues
+- [ ] Roll out responsive classes to other share pages if needed
+- [ ] Final mobile testing across all breakpoints
 
-## Key Decisions Made
-1. Database is SHARED between Parts Bot and Booking - documented this clearly
-2. Added MANDATORY migration protocol to CLAUDE.md
-3. Customer data loss was pre-existing - migration was never applied to production
-
-## Files Modified
-| File | Change |
-|------|--------|
-| CLAUDE.md | Added shared database warning, migration protocol, incident log |
-| ~/.claude/CLAUDE.md | Updated database name to "AUTOW Shared", documented both project tables |
+## Key Files Reference
+| File | Purpose |
+|------|---------|
+| app/globals.css | Responsive CSS variables (clamp/min), safe-area padding |
+| lib/autow-email.ts | Disclaimer email templates with signature embedding |
+| app/share/disclaimer/[token]/page.tsx | Responsive disclaimer share page |
+| CLAUDE.md | Project docs including shared database warning |
 
 ## Critical Context
 - Database Project ID: kctnocfwcomphprybnud (SHARED between Parts Bot + Booking)
-- Parts Bot tables: users, suppliers, subscription_plans, quotes, usage_logs, team_members, magic_tokens
-- Booking tables: bookings, estimates, invoices, line_items, disclaimers, jotter_notes, receipts, vehicle_reports, business_*
-- NEVER modify tables you don't recognize - they belong to the other project
-- Migration files in database/migrations/ MUST be applied to production manually
-
-## Incident Details (2026-01-22)
-- Issue: /api/share/disclaimer/[token] returning 500
-- Customer token: 68c09dc5-e4b6-4a93-983d-9145fe49cc5a
-- Root cause: Migration file existed but never applied to production
-- Data status: Customer's disclaimer data was ALREADY LOST (table empty)
-- Resolution: Added missing columns, feature now works for new disclaimers
+- Dev server: port 3001 (PID 89292)
+- Vercel auto-deploy NOT active - use `vercel --prod` manually
+- Production: https://booking.autow-services.co.uk
 
 ## Resume Instructions
 The new session should:

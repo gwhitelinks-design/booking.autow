@@ -264,6 +264,14 @@ interface DisclaimerEmailData {
   includeDiagnosticPaymentDisclaimer: boolean;
   customerEmail: string;
   signedAt: string;
+  // New fields for complete signed document
+  customerName?: string;
+  customerAddress?: string;
+  vehicleReg?: string;
+  vehicleMake?: string;
+  vehicleModel?: string;
+  customerSignature?: string; // Base64 PNG
+  shareToken?: string;
 }
 
 /**
@@ -282,6 +290,10 @@ export function getDisclaimerStaffEmailHTML(data: DisclaimerEmailData): string {
   if (data.includeDiagnosticPaymentDisclaimer) {
     additionalDisclaimers.push('Diagnostic Payment Disclaimer');
   }
+
+  const viewUrl = data.shareToken
+    ? `https://booking.autow-services.co.uk/share/disclaimer/${data.shareToken}`
+    : '';
 
   return `
 <!DOCTYPE html>
@@ -313,7 +325,7 @@ export function getDisclaimerStaffEmailHTML(data: DisclaimerEmailData): string {
               <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td style="color: #30ff37; font-size: 24px; font-weight: 700; padding-bottom: 20px;">
-                    Disclaimer Signed
+                    ✓ Disclaimer Signed
                   </td>
                 </tr>
                 <tr>
@@ -322,7 +334,53 @@ export function getDisclaimerStaffEmailHTML(data: DisclaimerEmailData): string {
                   </td>
                 </tr>
 
-                <!-- Details Box -->
+                <!-- Customer & Vehicle Details Box -->
+                ${(data.customerName || data.vehicleReg) ? `
+                <tr>
+                  <td style="padding: 20px; background: rgba(33, 150, 243, 0.1); border: 1px solid rgba(33, 150, 243, 0.3); border-radius: 12px; margin-bottom: 15px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="color: #2196f3; font-size: 14px; font-weight: 600; padding-bottom: 10px;">
+                          CUSTOMER & VEHICLE
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            ${data.customerName ? `
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 5px 0; width: 35%;">Customer:</td>
+                              <td style="color: #ffffff; font-size: 14px; font-weight: 600; padding: 5px 0;">${data.customerName}</td>
+                            </tr>
+                            ` : ''}
+                            ${data.customerAddress ? `
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 5px 0; vertical-align: top;">Address:</td>
+                              <td style="color: #ffffff; font-size: 14px; padding: 5px 0;">${data.customerAddress}</td>
+                            </tr>
+                            ` : ''}
+                            ${data.vehicleReg ? `
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 5px 0;">Vehicle Reg:</td>
+                              <td style="color: #30ff37; font-size: 14px; font-weight: 700; padding: 5px 0;">${data.vehicleReg}</td>
+                            </tr>
+                            ` : ''}
+                            ${(data.vehicleMake || data.vehicleModel) ? `
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 5px 0;">Vehicle:</td>
+                              <td style="color: #ffffff; font-size: 14px; padding: 5px 0;">${[data.vehicleMake, data.vehicleModel].filter(Boolean).join(' ')}</td>
+                            </tr>
+                            ` : ''}
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr><td style="height: 15px;"></td></tr>
+                ` : ''}
+
+                <!-- Disclaimer Details Box -->
                 <tr>
                   <td style="padding: 25px; background: rgba(48, 255, 55, 0.05); border: 1px solid rgba(48, 255, 55, 0.2); border-radius: 12px; margin: 20px 0;">
                     <table width="100%" cellpadding="0" cellspacing="0">
@@ -335,7 +393,7 @@ export function getDisclaimerStaffEmailHTML(data: DisclaimerEmailData): string {
                         <td style="padding-top: 15px;">
                           <table width="100%" cellpadding="0" cellspacing="0">
                             <tr>
-                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0; width: 40%;">Reference:</td>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0; width: 35%;">Reference:</td>
                               <td style="color: #30ff37; font-size: 14px; font-weight: 700; padding: 8px 0;">${data.disclaimerNumber}</td>
                             </tr>
                             <tr>
@@ -352,7 +410,7 @@ export function getDisclaimerStaffEmailHTML(data: DisclaimerEmailData): string {
                             </tr>
                             ${additionalDisclaimers.length > 0 ? `
                             <tr>
-                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0; vertical-align: top;">Additional Disclaimers:</td>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 8px 0; vertical-align: top;">Additional:</td>
                               <td style="color: #ff9800; font-size: 14px; padding: 8px 0;">${additionalDisclaimers.join(', ')}</td>
                             </tr>
                             ` : ''}
@@ -362,6 +420,38 @@ export function getDisclaimerStaffEmailHTML(data: DisclaimerEmailData): string {
                     </table>
                   </td>
                 </tr>
+
+                <!-- Signature Box -->
+                ${data.customerSignature ? `
+                <tr><td style="height: 15px;"></td></tr>
+                <tr>
+                  <td style="padding: 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; font-weight: 600; padding-bottom: 10px;">
+                          CUSTOMER SIGNATURE
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="center" style="padding: 15px; background: #ffffff; border-radius: 8px;">
+                          <img src="${data.customerSignature}" alt="Customer Signature" style="max-width: 300px; max-height: 100px;">
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                ` : ''}
+
+                <!-- View Document Button -->
+                ${viewUrl ? `
+                <tr>
+                  <td align="center" style="padding: 25px 0 10px 0;">
+                    <a href="${viewUrl}" style="display: inline-block; background: linear-gradient(135deg, #30ff37 0%, #20cc2a 100%); color: #000000; font-size: 14px; font-weight: 700; text-decoration: none; padding: 14px 30px; border-radius: 10px; box-shadow: 0 4px 16px rgba(48, 255, 55, 0.4);">
+                      View Signed Document
+                    </a>
+                  </td>
+                </tr>
+                ` : ''}
               </table>
             </td>
           </tr>
@@ -460,6 +550,46 @@ export function getDisclaimerCustomerEmailHTML(data: DisclaimerEmailData): strin
                   </td>
                 </tr>
 
+                <!-- Vehicle Details Box (if available) -->
+                ${(data.vehicleReg || data.customerName) ? `
+                <tr>
+                  <td style="padding: 20px; background: rgba(33, 150, 243, 0.1); border: 1px solid rgba(33, 150, 243, 0.3); border-radius: 12px; margin-bottom: 15px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="color: #2196f3; font-size: 14px; font-weight: 600; padding-bottom: 10px;">
+                          YOUR DETAILS
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>
+                          <table width="100%" cellpadding="0" cellspacing="0">
+                            ${data.customerName ? `
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 5px 0; width: 35%;">Name:</td>
+                              <td style="color: #ffffff; font-size: 14px; font-weight: 600; padding: 5px 0;">${data.customerName}</td>
+                            </tr>
+                            ` : ''}
+                            ${data.vehicleReg ? `
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 5px 0;">Vehicle Reg:</td>
+                              <td style="color: #30ff37; font-size: 14px; font-weight: 700; padding: 5px 0;">${data.vehicleReg}</td>
+                            </tr>
+                            ` : ''}
+                            ${(data.vehicleMake || data.vehicleModel) ? `
+                            <tr>
+                              <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; padding: 5px 0;">Vehicle:</td>
+                              <td style="color: #ffffff; font-size: 14px; padding: 5px 0;">${[data.vehicleMake, data.vehicleModel].filter(Boolean).join(' ')}</td>
+                            </tr>
+                            ` : ''}
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr><td style="height: 15px;"></td></tr>
+                ` : ''}
+
                 <!-- Details Box -->
                 <tr>
                   <td style="padding: 25px; background: rgba(48, 255, 55, 0.05); border: 1px solid rgba(48, 255, 55, 0.2); border-radius: 12px; margin: 20px 0;">
@@ -490,6 +620,27 @@ export function getDisclaimerCustomerEmailHTML(data: DisclaimerEmailData): strin
                     </table>
                   </td>
                 </tr>
+
+                <!-- Your Signature -->
+                ${data.customerSignature ? `
+                <tr><td style="height: 15px;"></td></tr>
+                <tr>
+                  <td style="padding: 20px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="color: rgba(255, 255, 255, 0.6); font-size: 14px; font-weight: 600; padding-bottom: 10px;">
+                          YOUR SIGNATURE
+                        </td>
+                      </tr>
+                      <tr>
+                        <td align="center" style="padding: 15px; background: #ffffff; border-radius: 8px;">
+                          <img src="${data.customerSignature}" alt="Your Signature" style="max-width: 300px; max-height: 100px;">
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                ` : ''}
 
                 <!-- Authorization Statement -->
                 <tr>

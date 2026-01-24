@@ -2,6 +2,9 @@ import pool from '@/lib/db';
 import { sendShareLinkNotification } from '@/lib/telegram';
 import PrintButton from './PrintButton';
 
+// Disable caching to ensure notification fires on every view
+export const dynamic = 'force-dynamic';
+
 interface DamageMarker {
   id: string;
   x: number;

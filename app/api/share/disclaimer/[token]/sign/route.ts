@@ -65,7 +65,7 @@ export async function POST(
 
       const signedDisclaimer = updateResult.rows[0];
 
-      // Send emails to both staff and customer
+      // Send emails to both staff and customer with full signed document details
       try {
         await sendDisclaimerEmails({
           disclaimerNumber: signedDisclaimer.disclaimer_number,
@@ -74,6 +74,14 @@ export async function POST(
           includeDiagnosticPaymentDisclaimer: signedDisclaimer.include_diagnostic_payment_disclaimer,
           customerEmail: signedDisclaimer.customer_email,
           signedAt: signedDisclaimer.signed_at,
+          // Include full details for complete signed document in email
+          customerName: signedDisclaimer.customer_name,
+          customerAddress: signedDisclaimer.customer_address,
+          vehicleReg: signedDisclaimer.vehicle_reg,
+          vehicleMake: signedDisclaimer.vehicle_make,
+          vehicleModel: signedDisclaimer.vehicle_model,
+          customerSignature: signedDisclaimer.customer_signature,
+          shareToken: token,
         });
       } catch (emailError) {
         console.error('Error sending disclaimer emails:', emailError);
