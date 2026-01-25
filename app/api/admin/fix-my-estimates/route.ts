@@ -1,19 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
-import { verifyToken } from '@/lib/auth';
+import { getSession, isAdmin } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
+  // Require admin authentication
+  const session = await getSession();
+  if (!session || !isAdmin(session)) {
+    return NextResponse.json(
+      { error: 'Admin access required' },
+      { status: 403 }
+    );
+  }
+
   try {
-    const token = request.headers.get('authorization')?.replace('Bearer ', '');
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const isValid = verifyToken(token);
-    if (!isValid) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
     const client = await pool.connect();
 
     try {

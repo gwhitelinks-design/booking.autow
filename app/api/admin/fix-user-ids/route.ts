@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
+import { getSession, isAdmin } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
+  // Require admin authentication
+  const session = await getSession();
+  if (!session || !isAdmin(session)) {
+    return NextResponse.json(
+      { error: 'Admin access required' },
+      { status: 403 }
+    );
+  }
+
   try {
     const client = await pool.connect();
 

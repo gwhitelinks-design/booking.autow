@@ -1,14 +1,17 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
-export default function LoginPage() {
-  const [username, setUsername] = useState('');
+function LoginForm() {
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect');
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,14 +22,19 @@ export default function LoginPage() {
       const response = await fetch('/api/autow/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ email, password }),
+        credentials: 'include', // Important for cookies
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('autow_token', data.token);
-        router.push('/autow/welcome');
+        // Legacy support: store token in localStorage if returned
+        if (data.token) {
+          localStorage.setItem('autow_token', data.token);
+        }
+        // Redirect to original page or welcome
+        router.push(redirect || '/autow/welcome');
       } else {
         setError(data.error || 'Invalid credentials');
       }
@@ -58,15 +66,16 @@ export default function LoginPage() {
           )}
 
           <div style={styles.formGroup}>
-            <label style={styles.label}>Username</label>
+            <label style={styles.label}>Email</label>
             <input
               type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               required
               style={styles.input}
-              placeholder="Enter your username"
+              placeholder="gavin@autow-services.co.uk"
               disabled={loading}
+              autoComplete="email"
             />
           </div>
 
@@ -80,6 +89,7 @@ export default function LoginPage() {
               style={styles.input}
               placeholder="Enter your password"
               disabled={loading}
+              autoComplete="current-password"
             />
           </div>
 
@@ -91,11 +101,27 @@ export default function LoginPage() {
             }}
             disabled={loading}
           >
-            {loading ? 'Logging in...' : '🔐 Login'}
+            {loading ? 'Logging in...' : 'Login'}
           </button>
+
+          <Link href="/autow/forgot-password" style={styles.forgotLink}>
+            Forgot password?
+          </Link>
         </form>
       </div>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div style={{ minHeight: '100vh', backgroundColor: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: '#fff' }}>Loading...</p>
+      </div>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }
 
@@ -204,5 +230,14 @@ const styles: { [key: string]: React.CSSProperties } = {
   buttonDisabled: {
     opacity: 0.7,
     cursor: 'not-allowed',
+  },
+  forgotLink: {
+    display: 'block',
+    textAlign: 'center' as const,
+    color: '#30ff37',
+    textDecoration: 'none',
+    fontSize: '14px',
+    marginTop: '15px',
+    opacity: 0.8,
   },
 };
