@@ -637,6 +637,13 @@ Company Number: 16952633`;
             <div style={styles.vehicleRegModalButtons}>
               <button
                 type="button"
+                onClick={() => router.push('/autow/estimates')}
+                style={styles.vehicleRegCancelBtn}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
                 onClick={handleSkipVehicleReg}
                 style={styles.vehicleRegSkipBtn}
                 disabled={fetchingNumber}
@@ -1307,6 +1314,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: '#000',
     minHeight: '100vh',
     padding: '20px',
+    paddingTop: 'max(20px, calc(env(safe-area-inset-top) + 15px))',
   },
   // Vehicle Registration Modal Styles
   vehicleRegModalOverlay: {
@@ -1371,7 +1379,19 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   vehicleRegModalButtons: {
     display: 'flex',
-    gap: '15px',
+    gap: '10px',
+    flexWrap: 'wrap' as const,
+  },
+  vehicleRegCancelBtn: {
+    flex: '1 1 100%',
+    padding: '12px 20px',
+    background: 'rgba(244, 67, 54, 0.1)',
+    border: '1px solid rgba(244, 67, 54, 0.3)',
+    borderRadius: '10px',
+    color: '#f44336',
+    fontSize: '14px',
+    cursor: 'pointer',
+    marginBottom: '5px',
   },
   vehicleRegSkipBtn: {
     flex: 1,

@@ -866,87 +866,109 @@ Company Number: 16952633`;
         <div style={styles.section}>
           <h2 style={styles.sectionTitle}>Line Items</h2>
 
-          <div style={styles.lineItemsTable}>
-            <div style={styles.tableHeader}>
-              <div style={{ flex: 3, minWidth: 0 }}>Description</div>
-              <div style={{ flex: 1, minWidth: '80px', flexShrink: 0 }}>Type</div>
-              <div style={{ flex: 1, minWidth: '80px', flexShrink: 0 }}>Rate (£)</div>
-              <div style={{ flex: 1, minWidth: '60px', flexShrink: 0 }}>Qty</div>
-              <div style={{ flex: 1, minWidth: '90px', flexShrink: 0 }}>Amount (£)</div>
-              <div style={{ width: '100px', flexShrink: 0 }}>Actions</div>
-            </div>
-
+          {/* Mobile: Card View */}
+          <div className="mobile-line-items">
             {lineItems.map((item, index) => (
-              <div key={index} style={styles.lineItemRow}>
-                <div style={{ flex: 3, minWidth: 0, overflow: 'hidden' }}>
-                  <textarea
-                    value={item.description}
-                    onChange={(e) => updateLineItem(index, 'description', e.target.value)}
-                    style={{ ...styles.input, minHeight: '50px', width: '100%', resize: 'vertical' as const }}
-                    placeholder="Enter description..."
-                  />
-                </div>
-
-                <div style={{ flex: 1, minWidth: '80px', flexShrink: 0 }}>
-                  <select
-                    value={item.item_type}
-                    onChange={(e) => updateLineItem(index, 'item_type', e.target.value)}
-                    style={styles.input}
-                  >
-                    <option value="service">Service</option>
-                    <option value="part">Part</option>
-                    <option value="labor">Labor</option>
-                    <option value="other">Other</option>
-                    <option value="discount">Discount</option>
-                  </select>
-                </div>
-
-                <div style={{ flex: 1, minWidth: '80px', flexShrink: 0 }}>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={item.rate}
-                    onChange={(e) => updateLineItem(index, 'rate', parseFloat(e.target.value) || 0)}
-                    style={styles.numberInput}
-                  />
-                </div>
-
-                <div style={{ flex: 1, minWidth: '60px', flexShrink: 0 }}>
-                  <input
-                    type="number"
-                    step="0.01"
-                    value={item.quantity}
-                    onChange={(e) => updateLineItem(index, 'quantity', parseFloat(e.target.value) || 0)}
-                    style={styles.numberInput}
-                  />
-                </div>
-
-                <div style={{ flex: 1, minWidth: '90px', flexShrink: 0 }}>
-                  <div style={item.item_type === 'discount' ? styles.amountDisplayDiscount : styles.amountDisplay}>
-                    {item.item_type === 'discount' ? '-' : ''}£{(item.rate * item.quantity).toFixed(2)}
-                  </div>
-                </div>
-
-                <div style={{ width: '100px', display: 'flex', gap: '5px', flexShrink: 0 }}>
-                  <button
-                    type="button"
-                    onClick={() => openEditModal(index)}
-                    style={styles.editButton}
-                    title="Edit item"
-                  >
-                    ✎
-                  </button>
+              <div key={index} style={styles.lineItemCard}>
+                <div style={styles.cardHeader}>
+                  <span style={styles.cardTitle}>
+                    {item.description || 'New Item'}
+                    <span style={item.item_type === 'discount' ? styles.discountBadge : styles.itemTypeBadge}>{item.item_type}</span>
+                  </span>
                   <button
                     type="button"
                     onClick={() => removeLineItem(index)}
-                    style={styles.removeButton}
+                    style={styles.cardRemoveBtn}
                     disabled={lineItems.length === 1}
                   >
                     ✕
                   </button>
                 </div>
+                <div style={styles.cardBody}>
+                  <div style={styles.cardRow}>
+                    <span style={styles.cardLabel}>Rate:</span>
+                    <span>£{item.rate.toFixed(2)}</span>
+                  </div>
+                  <div style={styles.cardRow}>
+                    <span style={styles.cardLabel}>Quantity:</span>
+                    <span>{item.quantity}</span>
+                  </div>
+                  <div style={styles.cardRow}>
+                    <span style={styles.cardLabel}>Amount:</span>
+                    <span style={item.item_type === 'discount' ? styles.cardAmountDiscount : styles.cardAmount}>
+                      {item.item_type === 'discount' ? '-' : ''}£{item.amount.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openEditModal(index)}
+                  style={styles.cardEditBtn}
+                >
+                  ✏️ Edit Item
+                </button>
               </div>
             ))}
+          </div>
+
+          {/* Desktop: Table View */}
+          <div className="desktop-line-items">
+            <div style={styles.lineItemsTable}>
+              <div style={styles.tableHeader}>
+                <div style={{ flex: 3, minWidth: 0 }}>Description</div>
+                <div style={{ flex: 1, minWidth: '70px', flexShrink: 0 }}>Type</div>
+                <div style={{ flex: 1, minWidth: '70px', flexShrink: 0 }}>Rate (£)</div>
+                <div style={{ flex: 1, minWidth: '50px', flexShrink: 0 }}>Qty</div>
+                <div style={{ flex: 1, minWidth: '90px', flexShrink: 0 }}>Amount (£)</div>
+                <div style={{ width: '100px', flexShrink: 0 }}></div>
+              </div>
+
+              {lineItems.map((item, index) => (
+                <div key={index} style={styles.lineItemRow}>
+                  <div style={{ flex: 3, minWidth: 0, overflow: 'hidden' }}>
+                    <div style={styles.descPreview}>
+                      {item.description || 'Click edit to add description'}
+                    </div>
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: '70px', flexShrink: 0 }}>
+                    <span style={item.item_type === 'discount' ? styles.discountBadge : styles.itemTypeBadge}>{item.item_type}</span>
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: '70px', flexShrink: 0 }}>
+                    £{item.rate.toFixed(2)}
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: '50px', flexShrink: 0 }}>
+                    {item.quantity}
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: '90px', flexShrink: 0 }}>
+                    <div style={item.item_type === 'discount' ? styles.amountDisplayDiscount : styles.amountDisplay}>
+                      {item.item_type === 'discount' ? '-' : ''}£{item.amount.toFixed(2)}
+                    </div>
+                  </div>
+
+                  <div style={{ width: '100px', display: 'flex', gap: '5px', flexShrink: 0 }}>
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(index)}
+                      style={styles.editButton}
+                    >
+                      ✏️
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => removeLineItem(index)}
+                      style={styles.removeButton}
+                      disabled={lineItems.length === 1}
+                    >
+                      ✕
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div style={styles.buttonRow}>
@@ -1221,6 +1243,13 @@ Company Number: 16952633`;
             <div style={styles.vehicleRegButtons}>
               <button
                 type="button"
+                onClick={() => router.push('/autow/invoices')}
+                style={styles.vehicleRegCancelBtn}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
                 onClick={handleSkipVehicleReg}
                 style={styles.skipButton}
                 disabled={fetchingNumber}
@@ -1291,6 +1320,24 @@ Company Number: 16952633`;
       )}
 
       <style>{`
+        .mobile-line-items {
+          display: none;
+        }
+
+        .desktop-line-items {
+          display: block;
+        }
+
+        @media (max-width: 768px) {
+          .mobile-line-items {
+            display: block !important;
+          }
+
+          .desktop-line-items {
+            display: none !important;
+          }
+        }
+
         /* Mobile responsive inputs */
         @media (max-width: 768px) {
           input, textarea, select {
@@ -1347,6 +1394,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: '#000',
     minHeight: '100vh',
     padding: '20px',
+    paddingTop: 'max(20px, calc(env(safe-area-inset-top) + 15px))',
     color: '#fff',
   },
   businessHeader: {
@@ -1462,6 +1510,99 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   lineItemsTable: {
     marginBottom: '20px',
+  },
+  // Mobile card styles for line items
+  lineItemCard: {
+    background: '#0a0a0a',
+    border: '1px solid rgba(48, 255, 55, 0.2)',
+    borderRadius: '12px',
+    padding: '15px',
+    marginBottom: '15px',
+  },
+  cardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: '12px',
+    gap: '10px',
+  },
+  cardTitle: {
+    color: '#fff',
+    fontSize: '14px',
+    fontWeight: '600' as const,
+    flex: 1,
+    lineHeight: 1.4,
+    display: 'flex',
+    flexWrap: 'wrap' as const,
+    alignItems: 'center',
+    gap: '8px',
+  },
+  cardRemoveBtn: {
+    background: 'rgba(244, 67, 54, 0.2)',
+    border: '1px solid rgba(244, 67, 54, 0.4)',
+    borderRadius: '6px',
+    color: '#f44336',
+    padding: '6px 10px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    flexShrink: 0,
+  },
+  cardBody: {
+    marginBottom: '12px',
+  },
+  cardRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    padding: '6px 0',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+    color: '#fff',
+    fontSize: '14px',
+  },
+  cardLabel: {
+    color: '#888',
+  },
+  cardAmount: {
+    color: '#30ff37',
+    fontWeight: '700' as const,
+  },
+  cardAmountDiscount: {
+    color: '#ff9800',
+    fontWeight: '700' as const,
+  },
+  cardEditBtn: {
+    width: '100%',
+    padding: '10px',
+    background: 'rgba(48, 255, 55, 0.1)',
+    border: '1px solid rgba(48, 255, 55, 0.3)',
+    borderRadius: '8px',
+    color: '#30ff37',
+    cursor: 'pointer',
+    fontSize: '14px',
+  },
+  itemTypeBadge: {
+    background: 'rgba(48, 255, 55, 0.2)',
+    color: '#30ff37',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    fontSize: '11px',
+    textTransform: 'capitalize' as const,
+  },
+  discountBadge: {
+    background: 'rgba(255, 152, 0, 0.2)',
+    color: '#ff9800',
+    padding: '2px 8px',
+    borderRadius: '4px',
+    fontSize: '11px',
+    textTransform: 'capitalize' as const,
+  },
+  descPreview: {
+    color: '#ccc',
+    fontSize: '14px',
+    padding: '8px',
+    background: '#0a0a0a',
+    borderRadius: '6px',
+    whiteSpace: 'pre-wrap' as const,
+    wordBreak: 'break-word' as const,
   },
   tableHeader: {
     display: 'flex',
@@ -1740,8 +1881,19 @@ const styles: { [key: string]: React.CSSProperties } = {
   vehicleRegButtons: {
     display: 'flex',
     gap: '10px',
-    justifyContent: 'center',
+    flexWrap: 'wrap' as const,
     marginTop: '20px',
+  },
+  vehicleRegCancelBtn: {
+    flex: '1 1 100%',
+    padding: '12px 20px',
+    background: 'rgba(244, 67, 54, 0.1)',
+    border: '1px solid rgba(244, 67, 54, 0.3)',
+    borderRadius: '10px',
+    color: '#f44336',
+    fontSize: '14px',
+    cursor: 'pointer',
+    marginBottom: '5px',
   },
   skipButton: {
     padding: '12px 24px',

@@ -206,8 +206,8 @@ export function VoiceWidget() {
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     position: 'fixed',
-    bottom: '20px',
-    right: '20px',
+    bottom: '10px',
+    right: '10px',
     zIndex: 9999,
     fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
   },
