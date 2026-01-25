@@ -1,0 +1,146 @@
+{
+  "name": "AUTOW Database Daily Backup",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 24,
+              "triggerAtHour": 3
+            }
+          ]
+        }
+      },
+      "id": "d1a2b3c4-5678-90ab-cdef-111111111111",
+      "name": "Daily 3 AM",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://booking.autow-services.co.uk/api/autow/backup/export",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "id": "d1a2b3c4-5678-90ab-cdef-222222222222",
+      "name": "Fetch Backup Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [220, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "AUTOW API Token"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create backup file from API response\nconst timestamp = new Date().toISOString();\nconst date = timestamp.split('T')[0];\nconst data = $input.first().json;\n\n// Add metadata\nconst backup = {\n  backup_timestamp: timestamp,\n  backup_date: date,\n  source: 'AUTOW Booking System',\n  ...data\n};\n\n// Calculate totals\nlet totalRecords = 0;\nif (backup.tables) {\n  for (const table of Object.values(backup.tables)) {\n    totalRecords += table.count || 0;\n  }\n}\nbackup.total_records = totalRecords;\n\nreturn [{\n  json: {\n    filename: `autow-backup-${date}.json`,\n    total_records: totalRecords,\n    tables: backup.tables ? Object.keys(backup.tables) : [],\n    backup_date: date\n  },\n  binary: {\n    data: await this.helpers.prepareBinaryData(\n      Buffer.from(JSON.stringify(backup, null, 2)),\n      `autow-backup-${date}.json`,\n      'application/json'\n    )\n  }\n}];"
+      },
+      "id": "d1a2b3c4-5678-90ab-cdef-333333333333",
+      "name": "Format Backup",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "operation": "upload",
+        "folderId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_FOLDER_ID",
+          "mode": "id"
+        },
+        "name": "={{ $json.filename }}",
+        "options": {}
+      },
+      "id": "d1a2b3c4-5678-90ab-cdef-444444444444",
+      "name": "Upload to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [660, 300],
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Google Drive"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "REPLACE_WITH_CHAT_ID",
+        "text": "=✅ *AUTOW Database Backup Complete*\n\n📅 Date: {{ $json.backup_date }}\n📊 Records: {{ $json.total_records }}\n📁 File: {{ $json.filename }}\n\nTables: {{ $json.tables.join(', ') }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "d1a2b3c4-5678-90ab-cdef-555555555555",
+      "name": "Telegram Success",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [880, 300],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Telegram Bot"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "d1a2b3c4-5678-90ab-cdef-666666666666",
+      "name": "On Error",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [440, 500]
+    },
+    {
+      "parameters": {
+        "chatId": "REPLACE_WITH_CHAT_ID",
+        "text": "=❌ *AUTOW Backup FAILED*\n\n📅 {{ $now.format('yyyy-MM-dd HH:mm') }}\n⚠️ Error: {{ $json.error?.message || 'Unknown error' }}\n\nCheck n8n logs!",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "d1a2b3c4-5678-90ab-cdef-777777777777",
+      "name": "Telegram Error",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [660, 500],
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_WITH_CREDENTIAL_ID",
+          "name": "Telegram Bot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Daily 3 AM": {
+      "main": [[{ "node": "Fetch Backup Data", "type": "main", "index": 0 }]]
+    },
+    "Fetch Backup Data": {
+      "main": [[{ "node": "Format Backup", "type": "main", "index": 0 }]]
+    },
+    "Format Backup": {
+      "main": [[{ "node": "Upload to Drive", "type": "main", "index": 0 }]]
+    },
+    "Upload to Drive": {
+      "main": [[{ "node": "Telegram Success", "type": "main", "index": 0 }]]
+    },
+    "On Error": {
+      "main": [[{ "node": "Telegram Error", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
