@@ -184,6 +184,32 @@ body {
   border-color: rgba(255, 255, 255, 0.25);
 }
 
+/* ===== DARK THEME FORM ELEMENTS ===== */
+/* Ensure all form elements have white text on dark backgrounds */
+select, option {
+  color: #fff !important;
+  background-color: #0a0a0a !important;
+}
+
+select option {
+  color: #fff !important;
+  background-color: #1a1a1a !important;
+}
+
+/* Fix date/time inputs showing black text */
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  color: #fff !important;
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+}
+
 /* ===== iOS SAFARI SPECIFIC FIXES ===== */
 @supports (-webkit-touch-callout: none) {
   /* iOS only styles */
@@ -207,6 +233,12 @@ body {
     -webkit-appearance: none;
     -webkit-border-radius: 0;
     border-radius: 6px;
+  }
+
+  /* iOS select fix - ensure white text */
+  select {
+    color: #fff !important;
+    -webkit-text-fill-color: #fff !important;
   }
 }
 
