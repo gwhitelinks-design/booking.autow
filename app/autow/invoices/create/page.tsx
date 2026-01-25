@@ -887,11 +887,11 @@ Company Number: 16952633`;
                 <div style={styles.cardBody}>
                   <div style={styles.cardRow}>
                     <span style={styles.cardLabel}>Rate:</span>
-                    <span>£{item.rate.toFixed(2)}</span>
+                    <span style={styles.cardValue}>£{item.rate.toFixed(2)}</span>
                   </div>
                   <div style={styles.cardRow}>
                     <span style={styles.cardLabel}>Quantity:</span>
-                    <span>{item.quantity}</span>
+                    <span style={styles.cardValue}>{item.quantity}</span>
                   </div>
                   <div style={styles.cardRow}>
                     <span style={styles.cardLabel}>Amount:</span>
@@ -1555,8 +1555,10 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: 'space-between',
     padding: '6px 0',
     borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
-    color: '#fff',
     fontSize: '14px',
+  },
+  cardValue: {
+    color: '#fff',
   },
   cardLabel: {
     color: '#888',
