@@ -62,6 +62,15 @@ export default function WelcomePage() {
           </button>
 
           <button
+            onClick={() => router.push('/autow/clients')}
+            style={{...styles.optionCard, borderColor: 'rgba(0, 188, 212, 0.4)'}}
+          >
+            <div style={styles.optionIcon}>👥</div>
+            <h2 style={styles.optionTitle}>Clients</h2>
+            <p style={styles.optionDescription}>Manage client database</p>
+          </button>
+
+          <button
             onClick={() => router.push('/autow/booking')}
             style={styles.optionCard}
           >
@@ -140,15 +149,6 @@ export default function WelcomePage() {
             <div style={styles.optionIcon}>📜</div>
             <h2 style={styles.optionTitle}>Disclaimers</h2>
             <p style={styles.optionDescription}>Risk disclaimer forms</p>
-          </button>
-
-          <button
-            onClick={() => router.push('/autow/clients')}
-            style={{...styles.optionCard, borderColor: 'rgba(0, 188, 212, 0.4)'}}
-          >
-            <div style={styles.optionIcon}>👥</div>
-            <h2 style={styles.optionTitle}>Clients</h2>
-            <p style={styles.optionDescription}>Manage client database</p>
           </button>
         </div>
 
