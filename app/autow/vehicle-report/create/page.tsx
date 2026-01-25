@@ -307,6 +307,17 @@ export default function CreateVehicleReportPage() {
     setClientSearchQuery('');
   };
 
+  // Handle time input with auto-formatting (HH:MM)
+  const handleTimeInput = (value: string, setter: (val: string) => void) => {
+    let cleaned = value.replace(/[^\d]/g, ''); // Remove non-digits
+
+    if (cleaned.length >= 2) {
+      cleaned = cleaned.slice(0, 2) + ':' + cleaned.slice(2, 4);
+    }
+
+    setter(cleaned.slice(0, 5)); // Max 5 chars (HH:MM)
+  };
+
   const handleSubmit = async (asDraft: boolean = false) => {
     setError(null);
     setSuccess(null);
@@ -394,16 +405,16 @@ export default function CreateVehicleReportPage() {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
+      <div style={styles.header} className="page-header">
         <div style={styles.headerLeft}>
-          <Image src="/logo.png" alt="AUTOW" width={100} height={40} style={{ objectFit: 'contain' }} />
+          <Image src="/logo.png" alt="AUTOW" width={60} height={24} style={{ objectFit: 'contain' }} className="header-logo" />
           <div>
-            <h1 style={styles.title}>{isEditMode ? 'Edit Vehicle Report' : 'Vehicle Check Report'}</h1>
-            <p style={styles.subtitle}>AUTOW Transport & Recovery</p>
+            <h1 style={styles.title}>{isEditMode ? 'Edit Report' : 'Vehicle Check'}</h1>
+            <p style={styles.subtitle}>AUTOW Transport</p>
           </div>
         </div>
         <button style={styles.backButton} onClick={() => router.push('/autow/vehicle-report')}>
-          ← Back
+          ←
         </button>
       </div>
 
@@ -439,7 +450,7 @@ export default function CreateVehicleReportPage() {
         </div>
 
         {/* Vehicle & Customer Info - Two Columns */}
-        <div style={styles.twoColumns}>
+        <div style={styles.twoColumns} className="two-columns">
           <div style={styles.column}>
             <h3 style={styles.sectionTitle}>Vehicle Information</h3>
             <div style={styles.formGroup}>
@@ -507,21 +518,29 @@ export default function CreateVehicleReportPage() {
             </div>
             <div style={styles.formRow}>
               <div style={styles.halfWidth}>
-                <label style={styles.label}>Time Arrival</label>
+                <label style={styles.label}>Time Arrival (24hr)</label>
                 <input
-                  type="time"
+                  type="text"
                   value={timeArrival}
-                  onChange={(e) => setTimeArrival(e.target.value)}
-                  style={styles.input}
+                  onChange={(e) => handleTimeInput(e.target.value, setTimeArrival)}
+                  placeholder="14:30"
+                  maxLength={5}
+                  inputMode="numeric"
+                  style={styles.timeInput}
+                  className="time-input"
                 />
               </div>
               <div style={styles.halfWidth}>
-                <label style={styles.label}>Time Depart</label>
+                <label style={styles.label}>Time Depart (24hr)</label>
                 <input
-                  type="time"
+                  type="text"
                   value={timeDepart}
-                  onChange={(e) => setTimeDepart(e.target.value)}
-                  style={styles.input}
+                  onChange={(e) => handleTimeInput(e.target.value, setTimeDepart)}
+                  placeholder="15:30"
+                  maxLength={5}
+                  inputMode="numeric"
+                  style={styles.timeInput}
+                  className="time-input"
                 />
               </div>
             </div>
@@ -839,6 +858,75 @@ export default function CreateVehicleReportPage() {
           </div>
         </div>
       )}
+
+      <style>{`
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+          .time-input {
+            font-size: 16px !important;
+            padding: 12px !important;
+            text-align: center !important;
+            letter-spacing: 2px !important;
+          }
+        }
+
+        @media (max-width: 480px) {
+          /* Header */
+          h1 {
+            font-size: 16px !important;
+          }
+
+          /* Section titles */
+          h3 {
+            font-size: 14px !important;
+          }
+
+          /* Labels and text */
+          label {
+            font-size: 12px !important;
+          }
+
+          p {
+            font-size: 12px !important;
+          }
+
+          /* Inputs */
+          input, textarea, select {
+            font-size: 14px !important;
+            padding: 10px !important;
+          }
+
+          /* Buttons */
+          button {
+            font-size: 13px !important;
+            padding: 10px 16px !important;
+          }
+
+          /* Two columns become single column */
+          .two-columns {
+            grid-template-columns: 1fr !important;
+          }
+        }
+
+        @media (max-width: 360px) {
+          h1 {
+            font-size: 14px !important;
+          }
+
+          h3 {
+            font-size: 13px !important;
+          }
+
+          label, p {
+            font-size: 11px !important;
+          }
+
+          input, textarea {
+            font-size: 13px !important;
+            padding: 8px !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }
@@ -849,38 +937,45 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: '#000',
     minHeight: '100vh',
     padding: '20px',
+    paddingTop: 'max(20px, calc(env(safe-area-inset-top) + 15px))',
     color: '#fff',
   },
   header: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: '30px',
-    paddingBottom: '20px',
+    marginBottom: '15px',
+    paddingBottom: '10px',
     borderBottom: '1px solid #333',
+    gap: '10px',
   },
   headerLeft: {
     display: 'flex',
     alignItems: 'center',
-    gap: '20px',
+    gap: '10px',
+    flex: 1,
+    minWidth: 0,
   },
   title: {
     color: '#30ff37',
-    fontSize: '24px',
+    fontSize: '16px',
     margin: '0',
+    whiteSpace: 'nowrap' as const,
   },
   subtitle: {
     color: '#888',
-    fontSize: '14px',
-    margin: '5px 0 0 0',
+    fontSize: '11px',
+    margin: '2px 0 0 0',
   },
   backButton: {
-    padding: '10px 20px',
+    padding: '8px 12px',
     background: 'rgba(255, 255, 255, 0.1)',
     color: '#fff',
     border: '1px solid rgba(255, 255, 255, 0.2)',
-    borderRadius: '8px',
+    borderRadius: '6px',
     cursor: 'pointer',
+    fontSize: '14px',
+    flexShrink: 0,
   },
   form: {
     maxWidth: '1000px',
@@ -951,6 +1046,19 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#fff',
     fontSize: '16px',
     boxSizing: 'border-box' as const,
+  },
+  timeInput: {
+    width: '100%',
+    padding: '12px',
+    background: '#111',
+    border: '1px solid #333',
+    borderRadius: '8px',
+    color: '#fff',
+    fontSize: '16px',
+    boxSizing: 'border-box' as const,
+    textAlign: 'center' as const,
+    letterSpacing: '2px',
+    fontWeight: '600' as const,
   },
   textarea: {
     width: '100%',
