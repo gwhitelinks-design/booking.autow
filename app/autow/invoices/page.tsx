@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Invoice } from '@/lib/types';
+import { PageLoading } from '@/components/common';
 
 interface JobCostPreview {
   invoice: {
@@ -285,11 +286,7 @@ export default function InvoicesPage() {
   };
 
   if (loading) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.loadingText}>Loading invoices...</div>
-      </div>
-    );
+    return <PageLoading text="Loading invoices..." />;
   }
 
   return (

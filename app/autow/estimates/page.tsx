@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Estimate } from '@/lib/types';
+import { PageLoading } from '@/components/common';
 
 export default function EstimatesPage() {
   const router = useRouter();
@@ -83,11 +84,7 @@ export default function EstimatesPage() {
   };
 
   if (loading) {
-    return (
-      <div style={styles.container}>
-        <div style={styles.loadingText}>Loading estimates...</div>
-      </div>
-    );
+    return <PageLoading text="Loading estimates..." />;
   }
 
   return (

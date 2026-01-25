@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { Booking } from '@/lib/types';
+import { PageLoading } from '@/components/common';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -279,11 +280,7 @@ export default function DashboardPage() {
   );
 
   if (loading) {
-    return (
-      <div style={styles.container}>
-        <div style={{ color: '#30ff37', fontSize: '24px', textAlign: 'center' }}>Loading...</div>
-      </div>
-    );
+    return <PageLoading text="Loading bookings..." />;
   }
 
   return (

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { VoiceWrapper } from '@/components/voice-assistant/VoiceWrapper';
+import { AutowErrorBoundary } from '@/components/common/AutowErrorBoundary';
 
 export const metadata: Metadata = {
   title: 'AUTOW Booking System',
@@ -11,5 +12,9 @@ export default function AutowLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <VoiceWrapper>{children}</VoiceWrapper>;
+  return (
+    <AutowErrorBoundary>
+      <VoiceWrapper>{children}</VoiceWrapper>
+    </AutowErrorBoundary>
+  );
 }
