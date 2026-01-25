@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 /**
  * GET /api/autow/backup/export
  * 

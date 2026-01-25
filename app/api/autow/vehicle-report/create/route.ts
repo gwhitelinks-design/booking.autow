@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { autoAddClient } from '@/lib/auto-add-client';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');

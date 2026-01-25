@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 // Preview the next document number without creating a record
 // This is used to show the user what number will be assigned
 export async function GET(request: NextRequest) {

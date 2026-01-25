@@ -4,6 +4,8 @@ import { buildSystemPrompt, getPageConfig } from '@/lib/voice/system-prompt';
 import { parseCommands } from '@/lib/voice/command-parser';
 import { generateSpeech, prepareTextForSpeech } from '@/lib/voice/tts';
 
+export const dynamic = 'force-dynamic';
+
 // Verify authentication
 function verifyToken(request: NextRequest): boolean {
   const authHeader = request.headers.get('Authorization');

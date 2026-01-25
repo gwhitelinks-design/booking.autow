@@ -3,6 +3,8 @@ import pool from '@/lib/db';
 import { deleteReceiptImage as deleteFromSupabase } from '@/lib/supabase-storage';
 import { deleteFile as deleteFromGoogleDrive } from '@/lib/google-drive';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');

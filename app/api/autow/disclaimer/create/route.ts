@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { randomUUID } from 'crypto';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const token = request.headers.get('authorization')?.replace('Bearer ', '');

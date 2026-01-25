@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { query } from '@/lib/db';
 import { verifyToken } from '@/lib/auth';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const rawAuth = request.headers.get('authorization');

@@ -4,6 +4,8 @@ import { randomUUID } from 'crypto';
 import { createInvoiceFolder, uploadInvoicePdf } from '@/lib/google-drive';
 import { generateInvoicePdf } from '@/lib/pdf-generator';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const authHeader = request.headers.get('authorization');

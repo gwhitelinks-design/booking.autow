@@ -4,6 +4,8 @@ import { verifyToken } from '@/lib/auth';
 import { sendTelegramNotification } from '@/lib/telegram';
 import { autoAddClient } from '@/lib/auto-add-client';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const rawAuth = request.headers.get('authorization');

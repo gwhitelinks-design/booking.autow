@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 import { google } from 'googleapis';
 
+export const dynamic = 'force-dynamic';
+
 // Helper to get Drive client for folder deletion
 function getDriveClient() {
   const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;

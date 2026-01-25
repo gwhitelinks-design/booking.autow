@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import pool from '@/lib/db';
 
+export const dynamic = 'force-dynamic';
+
 // HMRC Mileage Rates 2025/26
 const RATE_FIRST_10K = 0.45;
 const RATE_AFTER_10K = 0.25;
