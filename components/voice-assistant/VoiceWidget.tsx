@@ -111,7 +111,7 @@ export function VoiceWidget() {
                   onClick={toggleMute}
                   style={{
                     ...styles.headerButton,
-                    color: isMuted ? '#f44336' : '#888',
+                    color: isMuted ? '#f44336' : '#aaa',
                   }}
                   title={isMuted ? 'Unmute' : 'Mute'}
                 >
@@ -258,7 +258,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   statusText: {
     fontSize: '14px',
-    color: '#888',
+    color: '#aaa',
   },
   headerActions: {
     display: 'flex',
@@ -274,7 +274,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: 'none',
     borderRadius: '8px',
     cursor: 'pointer',
-    color: '#888',
+    color: '#aaa',
     transition: 'all 0.2s',
   },
   errorBanner: {

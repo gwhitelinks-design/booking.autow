@@ -88,7 +88,7 @@ function ResetPasswordForm() {
       marginBottom: '10px',
     } as React.CSSProperties,
     subtitle: {
-      color: '#888',
+      color: '#aaa',
       fontSize: '14px',
       marginBottom: '30px',
     } as React.CSSProperties,
@@ -102,7 +102,7 @@ function ResetPasswordForm() {
     } as React.CSSProperties,
     label: {
       display: 'block',
-      color: '#888',
+      color: '#aaa',
       fontSize: '14px',
       marginBottom: '8px',
     } as React.CSSProperties,

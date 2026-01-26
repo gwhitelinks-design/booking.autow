@@ -963,7 +963,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     whiteSpace: 'nowrap' as const,
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '11px',
     margin: '2px 0 0 0',
   },
@@ -1033,7 +1033,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   label: {
     display: 'block',
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     marginBottom: '5px',
   },
@@ -1073,7 +1073,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     boxSizing: 'border-box' as const,
   },
   disclaimer: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     lineHeight: '1.5',
     marginBottom: '15px',
@@ -1148,7 +1148,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     zIndex: 10,
   },
   hint: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     textAlign: 'center' as const,
     marginBottom: '10px',
@@ -1231,7 +1231,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '8px',
   },
   signatureDate: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     marginTop: '10px',
   },
@@ -1303,7 +1303,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textAlign: 'center' as const,
   },
   modalHint: {
-    color: '#888',
+    color: '#aaa',
     textAlign: 'center' as const,
     marginBottom: '20px',
   },
@@ -1427,7 +1427,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '4px',
   },
   clientItemDetails: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
   },
   clientSelectorCloseBtn: {

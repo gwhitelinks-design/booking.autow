@@ -599,7 +599,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     lineHeight: '1.6',
   },
   hint: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     marginTop: '12px',
     margin: '12px 0 0 0',
@@ -659,7 +659,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#f44336',
   },
   canvasStatus: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     marginLeft: 'auto',
   },
@@ -755,7 +755,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   dataLabel: {
     display: 'block',
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
@@ -768,7 +768,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: '600' as const,
   },
   confidence: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     textAlign: 'right' as const,
     marginBottom: '24px',
@@ -845,7 +845,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: '700' as const,
     cursor: 'pointer',
     background: 'rgba(255, 255, 255, 0.05)',
-    color: '#888',
+    color: '#aaa',
     minHeight: '44px',
     WebkitTapHighlightColor: 'transparent',
     WebkitAppearance: 'none' as const,

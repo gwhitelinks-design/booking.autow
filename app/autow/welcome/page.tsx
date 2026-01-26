@@ -210,7 +210,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '16px',
     margin: '0',
   },
@@ -247,7 +247,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 10px 0',
   },
   optionDescription: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     margin: '0',
   },

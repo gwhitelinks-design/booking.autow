@@ -211,7 +211,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     margin: 0,
   },
   headerButtons: {
@@ -257,7 +257,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#30ff37',
   },
   statLabel: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '0.85em',
     textTransform: 'uppercase',
     letterSpacing: '1px',
@@ -270,7 +270,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   emptyState: {
     textAlign: 'center',
     padding: '60px 20px',
-    color: '#888',
+    color: '#aaa',
   },
   card: {
     background: '#111',
@@ -308,7 +308,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '15px',
   },
   vehicleDetails: {
-    color: '#888',
+    color: '#aaa',
     marginLeft: '10px',
     fontSize: '0.9em',
   },
@@ -322,7 +322,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderBottom: '1px solid #222',
   },
   detailLabel: {
-    color: '#888',
+    color: '#aaa',
   },
   damageSummary: {
     display: 'flex',

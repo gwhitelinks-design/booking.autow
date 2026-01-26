@@ -261,7 +261,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     margin: '0',
   },
@@ -296,7 +296,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   statLabel: {
     fontSize: '12px',
-    color: '#888',
+    color: '#aaa',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
   },
@@ -325,7 +325,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 10px 0',
   },
   hubDescription: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     margin: '0 0 16px 0',
     lineHeight: 1.5,
@@ -364,7 +364,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '8px',
   },
   infoLabel: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
   },
   infoValue: {

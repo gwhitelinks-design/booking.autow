@@ -7,7 +7,16 @@ const sslConfig = process.env.DATABASE_URL?.includes('supabase') || process.env.
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: sslConfig
+  ssl: sslConfig,
+  // Connection pool settings
+  max: 20,                        // Maximum connections in pool
+  idleTimeoutMillis: 30000,       // Close idle connections after 30s
+  connectionTimeoutMillis: 10000, // Fail if can't connect within 10s
+});
+
+// Handle pool errors to prevent crashes
+pool.on('error', (err) => {
+  console.error('Unexpected database pool error:', err);
 });
 
 export const query = async (text: string, params?: any[]) => {

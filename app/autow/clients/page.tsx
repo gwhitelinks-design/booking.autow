@@ -498,7 +498,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '16px',
     margin: '0',
   },
@@ -582,7 +582,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '14px',
   },
   label: {
-    color: '#888',
+    color: '#aaa',
     minWidth: '70px',
   },
   value: {
@@ -646,7 +646,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '60px 20px',
   },
   emptyText: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '18px',
     marginBottom: '20px',
   },
@@ -693,7 +693,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   modalClose: {
     background: 'none',
     border: 'none',
-    color: '#888',
+    color: '#aaa',
     fontSize: '24px',
     cursor: 'pointer',
     padding: '0',
@@ -718,7 +718,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   formLabel: {
     display: 'block',
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     marginBottom: '6px',
   },

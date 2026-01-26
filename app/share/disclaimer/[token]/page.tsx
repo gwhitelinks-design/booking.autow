@@ -552,7 +552,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   infoLabel: {
     display: 'block',
-    color: '#888',
+    color: '#aaa',
     fontSize: 'clamp(0.5rem, 2.5vw, 0.75rem)',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
@@ -647,7 +647,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: 'min(6px, 1.5vw)',
   },
   fieldHint: {
-    color: '#888',
+    color: '#aaa',
     fontSize: 'clamp(0.55rem, 2.5vw, 0.75rem)',
     marginTop: 'min(4px, 1vw)',
   },
@@ -735,7 +735,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: 'clamp(1rem, 4vw, 1.25rem)',
   },
   modalHint: {
-    color: '#888',
+    color: '#aaa',
     textAlign: 'center' as const,
     marginBottom: 'min(20px, 4vw)',
     fontSize: 'clamp(0.75rem, 2.5vw, 0.9rem)',

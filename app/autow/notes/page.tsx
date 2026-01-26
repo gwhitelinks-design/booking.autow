@@ -255,7 +255,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '16px',
     margin: '0',
   },
@@ -297,7 +297,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   filterButton: {
     padding: '8px 16px',
     background: 'rgba(255, 255, 255, 0.05)',
-    color: '#888',
+    color: '#aaa',
     border: '1px solid rgba(255, 255, 255, 0.1)',
     borderRadius: '6px',
     fontSize: '14px',
@@ -337,7 +337,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0',
   },
   noteDate: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     margin: '10px 0 0 0',
   },
@@ -357,7 +357,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '10px',
   },
   label: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
   },
   value: {
@@ -394,7 +394,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '60px 20px',
   },
   emptyText: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '18px',
     marginBottom: '20px',
   },

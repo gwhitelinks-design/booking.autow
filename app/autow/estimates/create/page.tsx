@@ -1346,7 +1346,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 10px 0',
   },
   vehicleRegModalSubtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     margin: '0 0 30px 0',
   },
@@ -1355,7 +1355,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '30px',
   },
   vehicleRegLabel: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
     textTransform: 'uppercase' as const,
     letterSpacing: '1px',
@@ -1399,7 +1399,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(255, 255, 255, 0.1)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '10px',
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     cursor: 'pointer',
   },
@@ -1440,7 +1440,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textTransform: 'uppercase' as const,
   },
   businessDetails: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     margin: '0',
     lineHeight: 1.6,
@@ -1494,7 +1494,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column' as const,
   },
   label: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     marginBottom: '8px',
     fontWeight: '600' as const,
@@ -1524,7 +1524,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '6px',
     marginBottom: '10px',
     fontSize: '12px',
-    color: '#888',
+    color: '#aaa',
     fontWeight: '700' as const,
   },
   lineItemRow: {
@@ -1580,7 +1580,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '13px',
   },
   cardLabel: {
-    color: '#888',
+    color: '#aaa',
   },
   cardValue: {
     color: '#fff',
@@ -1714,7 +1714,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     justifyContent: 'space-between',
     marginBottom: '8px',
     fontSize: '14px',
-    color: '#888',
+    color: '#aaa',
   },
   discountRow: {
     display: 'flex',
@@ -1733,7 +1733,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(255, 255, 255, 0.1)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '6px',
-    color: '#888',
+    color: '#aaa',
     cursor: 'pointer',
     fontSize: '14px',
     transition: 'all 0.2s',
@@ -1757,7 +1757,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '6px',
     marginBottom: '10px',
     fontSize: '14px',
-    color: '#888',
+    color: '#aaa',
   },
   discountAmountValue: {
     fontSize: '20px',
@@ -1859,7 +1859,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   modalClose: {
     background: 'none',
     border: 'none',
-    color: '#888',
+    color: '#aaa',
     fontSize: '24px',
     cursor: 'pointer',
     padding: '0',
@@ -1969,7 +1969,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   clientSelectorClose: {
     background: 'none',
     border: 'none',
-    color: '#888',
+    color: '#aaa',
     fontSize: '24px',
     cursor: 'pointer',
     padding: '0',
@@ -1995,7 +1995,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '10px',
   },
   clientSelectorEmpty: {
-    color: '#888',
+    color: '#aaa',
     textAlign: 'center' as const,
     padding: '30px 20px',
   },
@@ -2020,7 +2020,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     gap: '10px',
     fontSize: '13px',
-    color: '#888',
+    color: '#aaa',
   },
   clientSelectorItemReg: {
     color: '#00bcd4',

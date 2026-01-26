@@ -44,7 +44,7 @@ const styles = {
   } as React.CSSProperties,
   sectionTitle: {
     fontSize: '16px',
-    color: '#888',
+    color: '#aaa',
     marginBottom: '15px',
     textTransform: 'uppercase' as const,
     letterSpacing: '1px',
@@ -123,7 +123,7 @@ const styles = {
   } as React.CSSProperties,
   label: {
     fontSize: '14px',
-    color: '#888',
+    color: '#aaa',
     display: 'flex',
     alignItems: 'center',
     gap: '8px',
@@ -276,7 +276,7 @@ const styles = {
     fontWeight: 'bold',
   } as React.CSSProperties,
   manualEntryNote: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
     fontStyle: 'italic',
   } as React.CSSProperties,

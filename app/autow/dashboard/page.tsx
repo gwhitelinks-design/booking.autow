@@ -457,7 +457,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     margin: '0',
   },
@@ -551,7 +551,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '8px',
   },
   statLabel: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
@@ -711,7 +711,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   emptyState: {
     textAlign: 'center' as const,
     padding: '60px 20px',
-    color: '#888',
+    color: '#aaa',
     fontSize: '18px',
   },
 };

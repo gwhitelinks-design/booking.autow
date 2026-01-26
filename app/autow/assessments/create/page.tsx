@@ -149,7 +149,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '25px',
   },
   description: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '16px',
     marginBottom: '25px',
   },
@@ -212,7 +212,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 auto 10px',
   },
   stepText: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
   },
   stepArrow: {

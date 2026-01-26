@@ -370,7 +370,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     padding: '60px 20px',
   },
   emptyText: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '18px',
     marginBottom: '20px',
   },
@@ -434,11 +434,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '13px',
   },
   infoLabel: {
-    color: '#888',
+    color: '#aaa',
     marginRight: '4px',
   },
   vehicleDetail: {
-    color: '#888',
+    color: '#aaa',
   },
   procedure: {
     color: '#ccc',
@@ -447,7 +447,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 10px 0',
   },
   customerEmail: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     margin: '0 0 10px 0',
   },
@@ -480,7 +480,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   actionsButton: {
     padding: '8px 12px',
     background: 'transparent',
-    color: '#888',
+    color: '#aaa',
     border: 'none',
     borderRadius: '6px',
     cursor: 'pointer',

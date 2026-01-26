@@ -612,7 +612,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 4px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     margin: '0',
   },
@@ -646,7 +646,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   summaryLabel: {
     fontSize: '11px',
-    color: '#888',
+    color: '#aaa',
     textTransform: 'uppercase' as const,
     marginTop: '4px',
   },
@@ -685,7 +685,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column' as const,
   },
   label: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
     marginBottom: '6px',
     textTransform: 'uppercase' as const,
@@ -789,7 +789,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textAlign: 'left' as const,
     padding: '12px 10px',
     background: '#0a0a0a',
-    color: '#888',
+    color: '#aaa',
     fontSize: '11px',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
@@ -870,7 +870,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '8px',
   },
   mobileCardDate: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
   },
   mobileCardVehicle: {

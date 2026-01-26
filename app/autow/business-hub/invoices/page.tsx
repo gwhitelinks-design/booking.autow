@@ -319,7 +319,7 @@ export default function InvoicesSummaryPage() {
       fontSize: '14px',
     },
     mobileCardVehicle: {
-      color: '#888',
+      color: '#aaa',
       fontSize: '12px',
       marginTop: '4px',
     },
@@ -329,7 +329,7 @@ export default function InvoicesSummaryPage() {
       alignItems: 'center',
     },
     mobileCardDate: {
-      color: '#888',
+      color: '#aaa',
       fontSize: '12px',
     },
     mobileCardMethod: {

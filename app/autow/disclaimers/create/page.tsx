@@ -386,7 +386,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   previewText: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     margin: '2px 0',
   },
@@ -416,7 +416,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#ff4444',
   },
   hint: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     margin: '-10px 0 10px 0',
   },
@@ -431,7 +431,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   fieldLabel: {
     display: 'block',
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     marginBottom: '5px',
   },
@@ -488,7 +488,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '5px',
   },
   checkboxDescription: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     margin: 0,
     lineHeight: '1.4',
@@ -551,7 +551,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 10px 0',
   },
   successSubtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '16px',
     margin: '0 0 30px 0',
   },
@@ -561,7 +561,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   shareLinkLabel: {
     display: 'block',
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     marginBottom: '10px',
   },

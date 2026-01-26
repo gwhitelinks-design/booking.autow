@@ -61,7 +61,7 @@
   --color-card: #1a1a1a;
   --color-border: #333;
   --color-text: #fff;
-  --color-text-muted: #888;
+  --color-text-muted: #aaa;
 }
 
 /* ===== BASE RESET ===== */
@@ -953,7 +953,7 @@ img, video, canvas, svg {
 .resp-info-label {
   display: block;
   font-size: var(--font-tiny);
-  color: #888;
+  color: #aaa;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: var(--gap-xs);

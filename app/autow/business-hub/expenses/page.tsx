@@ -618,7 +618,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 4px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     margin: '0',
   },
@@ -652,7 +652,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   summaryLabel: {
     fontSize: '11px',
-    color: '#888',
+    color: '#aaa',
     textTransform: 'uppercase' as const,
     marginTop: '4px',
   },
@@ -695,7 +695,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column' as const,
   },
   label: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '11px',
     marginBottom: '6px',
     textTransform: 'uppercase' as const,
@@ -745,7 +745,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(255, 255, 255, 0.1)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
     borderRadius: '8px',
-    color: '#888',
+    color: '#aaa',
     cursor: 'pointer',
     fontSize: '14px',
   },
@@ -773,7 +773,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textAlign: 'left' as const,
     padding: '12px 10px',
     background: '#0a0a0a',
-    color: '#888',
+    color: '#aaa',
     fontSize: '11px',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
@@ -832,7 +832,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   generalBadge: {
     background: 'rgba(128, 128, 128, 0.15)',
-    color: '#888',
+    color: '#aaa',
     padding: '3px 8px',
     borderRadius: '4px',
     fontSize: '10px',
@@ -885,7 +885,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   mobileCardMeta: {
     display: 'flex',
     justifyContent: 'space-between',
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
   },
   mobileCardFooter: {

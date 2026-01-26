@@ -382,7 +382,7 @@ export default function ReceiptsSummaryPage() {
       marginBottom: '10px',
     },
     mobileCardDesc: {
-      color: '#888',
+      color: '#aaa',
       fontSize: '12px',
       marginTop: '4px',
     },
@@ -392,7 +392,7 @@ export default function ReceiptsSummaryPage() {
       alignItems: 'center',
     },
     mobileCardDate: {
-      color: '#888',
+      color: '#aaa',
       fontSize: '12px',
     },
   };
@@ -402,7 +402,7 @@ export default function ReceiptsSummaryPage() {
       case 'processed':
         return { ...styles.badge, backgroundColor: 'rgba(48, 255, 55, 0.2)', color: '#30ff37' };
       case 'archived':
-        return { ...styles.badge, backgroundColor: 'rgba(128, 128, 128, 0.2)', color: '#888' };
+        return { ...styles.badge, backgroundColor: 'rgba(128, 128, 128, 0.2)', color: '#aaa' };
       default:
         return { ...styles.badge, backgroundColor: 'rgba(255, 200, 0, 0.2)', color: '#ffc800' };
     }

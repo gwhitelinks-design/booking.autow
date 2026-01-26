@@ -164,7 +164,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   emptySubtext: {
     fontSize: '14px',
-    color: '#888',
+    color: '#aaa',
     margin: '0 0 16px 0',
     lineHeight: '1.5',
   },

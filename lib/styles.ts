@@ -24,7 +24,7 @@ export const colors = {
   
   // Text
   textPrimary: '#ffffff',
-  textSecondary: '#888888',
+  textSecondary: '#aaaaaa',
   textMuted: '#666666',
   
   // Status colors

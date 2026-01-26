@@ -231,7 +231,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     margin: 0,
     fontSize: '18px',
   },
@@ -283,7 +283,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   vehicleDetails: {
-    color: '#888',
+    color: '#aaa',
     margin: 0,
   },
   detailsGrid: {
@@ -300,7 +300,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '5px',
   },
   detailLabel: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '0.85em',
     textTransform: 'uppercase',
     letterSpacing: '0.5px',
@@ -338,7 +338,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: 700,
   },
   damageLabel: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '0.8em',
     textTransform: 'uppercase',
   },
@@ -386,7 +386,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     marginBottom: '10px',
   },
   errorText: {
-    color: '#888',
+    color: '#aaa',
     marginBottom: '20px',
   },
 };

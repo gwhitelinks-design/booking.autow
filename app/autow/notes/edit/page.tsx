@@ -297,7 +297,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     margin: '0',
   },
@@ -352,7 +352,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     flexDirection: 'column' as const,
   },
   label: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
     textTransform: 'uppercase' as const,
     marginBottom: '8px',

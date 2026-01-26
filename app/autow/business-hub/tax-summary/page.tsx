@@ -601,7 +601,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     margin: '0',
   },
@@ -627,7 +627,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   periodBtn: {
     background: 'rgba(255, 255, 255, 0.05)',
     border: '1px solid rgba(255, 255, 255, 0.2)',
-    color: '#888',
+    color: '#aaa',
     padding: '10px 20px',
     borderRadius: '8px',
     cursor: 'pointer',
@@ -640,7 +640,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     color: '#00c8ff',
   },
   periodInfo: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
   },
   dateRange: {
@@ -755,7 +755,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     minWidth: '180px',
   },
   summaryLabel: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
     textTransform: 'uppercase' as const,
     letterSpacing: '1px',
@@ -807,7 +807,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   statLabel: {
     fontSize: '12px',
-    color: '#888',
+    color: '#aaa',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
   },
@@ -883,7 +883,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     justifyContent: 'space-between',
     padding: '6px 0',
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
   },
   weekRowTotal: {
@@ -914,7 +914,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     textAlign: 'center' as const,
   },
   vatLabel: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
     marginBottom: '10px',
     textTransform: 'uppercase' as const,
@@ -971,7 +971,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   closeBtn: {
     background: 'none',
     border: 'none',
-    color: '#888',
+    color: '#aaa',
     fontSize: '28px',
     cursor: 'pointer',
     padding: '0 8px',
@@ -988,7 +988,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   th: {
     textAlign: 'left' as const,
     padding: '12px',
-    color: '#888',
+    color: '#aaa',
     fontSize: '11px',
     textTransform: 'uppercase' as const,
     borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
@@ -1037,7 +1037,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '12px',
   },
   infoItem: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
     lineHeight: 1.6,
     padding: '12px',
@@ -1077,7 +1077,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
   },
   mobileCardDate: {

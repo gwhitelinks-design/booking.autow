@@ -73,7 +73,7 @@ const styles = {
   } as React.CSSProperties,
   statLabel: {
     fontSize: '12px',
-    color: '#888',
+    color: '#aaa',
     textTransform: 'uppercase' as const,
     letterSpacing: '1px',
   } as React.CSSProperties,
@@ -146,7 +146,7 @@ const styles = {
   } as React.CSSProperties,
   receiptDate: {
     fontSize: '14px',
-    color: '#888',
+    color: '#aaa',
     marginBottom: '15px',
   } as React.CSSProperties,
   receiptAmount: {
@@ -157,7 +157,7 @@ const styles = {
   } as React.CSSProperties,
   receiptDescription: {
     fontSize: '14px',
-    color: '#888',
+    color: '#aaa',
     marginBottom: '15px',
     fontStyle: 'italic',
   } as React.CSSProperties,
@@ -205,7 +205,7 @@ const styles = {
   loading: {
     textAlign: 'center' as const,
     padding: '60px 20px',
-    color: '#888',
+    color: '#aaa',
   } as React.CSSProperties,
   modal: {
     position: 'fixed' as const,
@@ -235,7 +235,7 @@ const styles = {
   } as React.CSSProperties,
   modalText: {
     fontSize: '14px',
-    color: '#888',
+    color: '#aaa',
     marginBottom: '25px',
   } as React.CSSProperties,
   modalButtons: {

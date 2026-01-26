@@ -429,7 +429,7 @@ export default function ViewInvoicePage() {
             {/* Image capture section */}
             {!expenseImageData ? (
               <div style={styles.captureSection}>
-                <p style={{ color: '#888', marginBottom: '20px' }}>
+                <p style={{ color: '#aaa', marginBottom: '20px' }}>
                   Capture or upload a supplier invoice/receipt to auto-extract data
                 </p>
                 <div style={styles.captureButtons}>
@@ -868,7 +868,7 @@ export default function ViewInvoicePage() {
       {/* Add Expense Button when no expenses */}
       {expenses.length === 0 && (
         <div style={styles.noExpensesSection} className="no-print">
-          <p style={{ color: '#888', marginBottom: '15px' }}>No expenses linked to this invoice</p>
+          <p style={{ color: '#aaa', marginBottom: '15px' }}>No expenses linked to this invoice</p>
           <button
             onClick={() => { resetExpenseForm(); setShowExpenseModal(true); }}
             style={styles.addFirstExpenseBtn}
@@ -1414,7 +1414,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   expenseModalClose: {
     background: 'transparent',
     border: 'none',
-    color: '#888',
+    color: '#aaa',
     fontSize: '24px',
     cursor: 'pointer',
     padding: '5px',
@@ -1547,7 +1547,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '6px',
   },
   formLabel: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
     textTransform: 'uppercase' as const,
     letterSpacing: '0.5px',
@@ -1632,7 +1632,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   expensesSectionSubtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     margin: '0 0 20px 0',
   },
@@ -1660,11 +1660,11 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontWeight: '600' as const,
   },
   expenseRef: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
   },
   expenseDate: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '13px',
   },
   expenseDescription: {

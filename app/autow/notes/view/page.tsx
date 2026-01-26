@@ -185,7 +185,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0 0 5px 0',
   },
   subtitle: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     margin: '0',
   },
@@ -244,7 +244,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     gap: '8px',
   },
   label: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '12px',
     textTransform: 'uppercase' as const,
   },
@@ -260,7 +260,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     margin: '0',
   },
   rawInput: {
-    color: '#888',
+    color: '#aaa',
     fontSize: '14px',
     fontStyle: 'italic' as const,
     background: 'rgba(0, 0, 0, 0.3)',
