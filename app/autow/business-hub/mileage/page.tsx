@@ -11,7 +11,10 @@ interface MileageEntry {
   destination: string;
   purpose: string;
   miles: number;
+  rate_applied?: number;
   claim_amount: number;
+  notes?: string;
+  invoice_id?: number | null;
   created_at: string;
 }
 
@@ -79,6 +82,23 @@ export default function MileagePage() {
     loading: false,
     error: '',
   });
+
+  // Edit modal state
+  const [editingEntry, setEditingEntry] = useState<MileageEntry | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    date: '',
+    vehicle: 'ford_ranger',
+    start_location: '',
+    destination: '',
+    purpose: '',
+    miles: '',
+    notes: '',
+    invoice_id: '',
+  });
+  const [updating, setUpdating] = useState(false);
+
+  // Export state
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('autow_token');
@@ -230,6 +250,93 @@ export default function MileagePage() {
       }
     } catch (error) {
       console.error('Error deleting mileage:', error);
+    }
+  };
+
+  const handleEdit = (entry: MileageEntry) => {
+    setEditingEntry(entry);
+    setEditFormData({
+      date: entry.date.split('T')[0],
+      vehicle: entry.vehicle,
+      start_location: entry.start_location,
+      destination: entry.destination,
+      purpose: entry.purpose || '',
+      miles: String(entry.miles),
+      notes: entry.notes || '',
+      invoice_id: entry.invoice_id ? String(entry.invoice_id) : '',
+    });
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!editingEntry) return;
+
+    if (!editFormData.miles || parseFloat(editFormData.miles) <= 0) {
+      alert('Please enter valid miles');
+      return;
+    }
+
+    setUpdating(true);
+
+    try {
+      const token = localStorage.getItem('autow_token');
+
+      const response = await fetch('/api/autow/mileage/update', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          id: editingEntry.id,
+          ...editFormData,
+          miles: parseFloat(editFormData.miles),
+          invoice_id: editFormData.invoice_id ? parseInt(editFormData.invoice_id) : null,
+        })
+      });
+
+      if (response.ok) {
+        setEditingEntry(null);
+        fetchMileage();
+      } else {
+        const error = await response.json();
+        alert(`Error: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Error updating mileage:', error);
+      alert('Failed to update mileage entry');
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      setExporting(true);
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/business-hub/export?type=mileage&format=csv', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `autow-mileage-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(downloadUrl);
+      } else {
+        alert('Export failed');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Export failed');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -485,7 +592,16 @@ export default function MileagePage() {
 
       {/* Mileage Log Table */}
       <div style={styles.section}>
-        <h2 style={styles.sectionTitle}>📋 Mileage Log ({entries.length})</h2>
+        <div style={styles.sectionHeader}>
+          <h2 style={styles.sectionTitle}>📋 Mileage Log ({entries.length})</h2>
+          <button
+            onClick={handleExportCSV}
+            style={styles.exportBtn}
+            disabled={exporting || entries.length === 0}
+          >
+            {exporting ? 'Exporting...' : 'Export CSV'}
+          </button>
+        </div>
 
         {/* Desktop Table */}
         <div style={styles.tableWrapper} className="desktop-table">
@@ -518,12 +634,20 @@ export default function MileagePage() {
                     <td style={styles.tdMiles}>{parseFloat(String(entry.miles)).toFixed(1)}</td>
                     <td style={styles.tdClaim}>£{parseFloat(String(entry.claim_amount)).toFixed(2)}</td>
                     <td style={styles.td}>
-                      <button
-                        onClick={() => handleDelete(entry.id)}
-                        style={styles.deleteBtn}
-                      >
-                        🗑️
-                      </button>
+                      <div style={styles.actionButtons}>
+                        <button
+                          onClick={() => handleEdit(entry)}
+                          style={styles.editBtn}
+                        >
+                          ✎
+                        </button>
+                        <button
+                          onClick={() => handleDelete(entry.id)}
+                          style={styles.deleteBtn}
+                        >
+                          🗑️
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -549,13 +673,127 @@ export default function MileagePage() {
                 <div style={styles.mobileCardFooter}>
                   <span style={styles.mobileCardDate}>{formatDate(entry.date)}</span>
                   <span style={styles.mobileCardVehicle}>{getVehicleLabel(entry.vehicle)}</span>
-                  <button onClick={() => handleDelete(entry.id)} style={styles.deleteBtn}>🗑️</button>
+                  <div style={styles.actionButtons}>
+                    <button onClick={() => handleEdit(entry)} style={styles.editBtn}>✎</button>
+                    <button onClick={() => handleDelete(entry.id)} style={styles.deleteBtn}>🗑️</button>
+                  </div>
                 </div>
               </div>
             ))
           )}
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editingEntry && (
+        <div style={styles.modal}>
+          <div style={styles.modalContent}>
+            <div style={styles.modalHeader}>
+              <h3 style={styles.modalTitle}>Edit Mileage Entry</h3>
+              <button onClick={() => setEditingEntry(null)} style={styles.closeBtn}>×</button>
+            </div>
+            <form onSubmit={handleUpdate} style={styles.modalBody}>
+              <div style={styles.editFormGrid}>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Date *</label>
+                  <input
+                    type="date"
+                    value={editFormData.date}
+                    onChange={(e) => setEditFormData({ ...editFormData, date: e.target.value })}
+                    style={styles.input}
+                    required
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Vehicle *</label>
+                  <select
+                    value={editFormData.vehicle}
+                    onChange={(e) => setEditFormData({ ...editFormData, vehicle: e.target.value })}
+                    style={styles.input}
+                    required
+                  >
+                    {VEHICLES.map(v => (
+                      <option key={v.value} value={v.value}>{v.label}</option>
+                    ))}
+                  </select>
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Start Location *</label>
+                  <input
+                    type="text"
+                    value={editFormData.start_location}
+                    onChange={(e) => setEditFormData({ ...editFormData, start_location: e.target.value })}
+                    style={styles.input}
+                    required
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Destination *</label>
+                  <input
+                    type="text"
+                    value={editFormData.destination}
+                    onChange={(e) => setEditFormData({ ...editFormData, destination: e.target.value })}
+                    style={styles.input}
+                    required
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Purpose</label>
+                  <input
+                    type="text"
+                    value={editFormData.purpose}
+                    onChange={(e) => setEditFormData({ ...editFormData, purpose: e.target.value })}
+                    style={styles.input}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Miles *</label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    value={editFormData.miles}
+                    onChange={(e) => setEditFormData({ ...editFormData, miles: e.target.value })}
+                    style={styles.numberInput}
+                    required
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Notes</label>
+                  <input
+                    type="text"
+                    value={editFormData.notes}
+                    onChange={(e) => setEditFormData({ ...editFormData, notes: e.target.value })}
+                    style={styles.input}
+                  />
+                </div>
+                <div style={styles.formGroup}>
+                  <label style={styles.label}>Link to Invoice</label>
+                  <select
+                    value={editFormData.invoice_id}
+                    onChange={(e) => setEditFormData({ ...editFormData, invoice_id: e.target.value })}
+                    style={styles.invoiceSelect}
+                  >
+                    <option value="">No invoice</option>
+                    {invoices.map(inv => (
+                      <option key={inv.id} value={inv.id}>
+                        {inv.invoice_number} - {inv.client_name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              <div style={styles.modalActions}>
+                <button type="button" onClick={() => setEditingEntry(null)} style={styles.cancelBtn}>
+                  Cancel
+                </button>
+                <button type="submit" style={styles.updateBtn} disabled={updating}>
+                  {updating ? 'Updating...' : 'Update Entry'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Styles */}
       <style>{`
@@ -878,5 +1116,115 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '11px',
     flex: 1,
     textAlign: 'center' as const,
+  },
+  sectionHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: '16px',
+    flexWrap: 'wrap' as const,
+    gap: '12px',
+  },
+  exportBtn: {
+    background: 'rgba(0, 200, 255, 0.2)',
+    border: '1px solid rgba(0, 200, 255, 0.4)',
+    color: '#00c8ff',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '600' as const,
+  },
+  actionButtons: {
+    display: 'flex',
+    gap: '8px',
+  },
+  editBtn: {
+    background: 'rgba(0, 200, 255, 0.2)',
+    border: '1px solid rgba(0, 200, 255, 0.4)',
+    borderRadius: '6px',
+    padding: '6px 10px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    color: '#00c8ff',
+  },
+  modal: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.85)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px',
+    zIndex: 1000,
+  },
+  modalContent: {
+    background: '#1a1a1a',
+    borderRadius: '16px',
+    width: '100%',
+    maxWidth: '600px',
+    maxHeight: '90vh',
+    overflow: 'hidden',
+    border: '1px solid rgba(0, 200, 255, 0.3)',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '20px 24px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  modalTitle: {
+    color: '#00c8ff',
+    fontSize: '20px',
+    margin: 0,
+  },
+  closeBtn: {
+    background: 'none',
+    border: 'none',
+    color: '#aaa',
+    fontSize: '28px',
+    cursor: 'pointer',
+    padding: '0 8px',
+  },
+  modalBody: {
+    padding: '20px 24px',
+    overflowY: 'auto' as const,
+    maxHeight: 'calc(90vh - 140px)',
+  },
+  editFormGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, 1fr)',
+    gap: '16px',
+    marginBottom: '20px',
+  },
+  modalActions: {
+    display: 'flex',
+    gap: '12px',
+    justifyContent: 'flex-end',
+    paddingTop: '16px',
+    borderTop: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  cancelBtn: {
+    padding: '12px 24px',
+    background: 'rgba(255, 255, 255, 0.1)',
+    border: '1px solid rgba(255, 255, 255, 0.2)',
+    borderRadius: '8px',
+    color: '#aaa',
+    cursor: 'pointer',
+    fontSize: '14px',
+  },
+  updateBtn: {
+    padding: '12px 24px',
+    background: '#30ff37',
+    border: 'none',
+    borderRadius: '8px',
+    color: '#000',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '700' as const,
   },
 };

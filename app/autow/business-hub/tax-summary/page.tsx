@@ -53,6 +53,9 @@ export default function TaxSummaryPage() {
   const [customEnd, setCustomEnd] = useState('');
   const [data, setData] = useState<TaxSummary | null>(null);
   const [showDetails, setShowDetails] = useState<'invoices' | 'expenses' | 'mileage' | null>(null);
+  const [vatYear, setVatYear] = useState(new Date().getFullYear());
+  const [selectedVatQuarter, setSelectedVatQuarter] = useState<number | null>(null);
+  const [exporting, setExporting] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('autow_token');
@@ -61,7 +64,7 @@ export default function TaxSummaryPage() {
       return;
     }
     fetchTaxSummary();
-  }, [router, period]);
+  }, [router, period, customStart, customEnd]);
 
   const fetchTaxSummary = async () => {
     try {
@@ -108,7 +111,107 @@ export default function TaxSummaryPage() {
       case 'quarter': return 'This Quarter';
       case 'year': return 'This Tax Year';
       case 'custom': return 'Custom Range';
+      case 'vat-quarter': return `VAT Q${selectedVatQuarter} ${vatYear}`;
       default: return 'This Month';
+    }
+  };
+
+  // VAT Quarter calculation - standard UK quarters
+  const getVatQuarterDates = (quarter: number, year: number): { start: string; end: string } => {
+    const quarters: { [key: number]: { startMonth: number; endMonth: number } } = {
+      1: { startMonth: 0, endMonth: 2 },   // Jan-Mar
+      2: { startMonth: 3, endMonth: 5 },   // Apr-Jun
+      3: { startMonth: 6, endMonth: 8 },   // Jul-Sep
+      4: { startMonth: 9, endMonth: 11 },  // Oct-Dec
+    };
+
+    const { startMonth, endMonth } = quarters[quarter];
+    const startDate = new Date(year, startMonth, 1);
+    const endDate = new Date(year, endMonth + 1, 0); // Last day of end month
+
+    return {
+      start: startDate.toISOString().split('T')[0],
+      end: endDate.toISOString().split('T')[0],
+    };
+  };
+
+  const handleVatQuarterSelect = (quarter: number) => {
+    setSelectedVatQuarter(quarter);
+    setPeriod('custom');
+    const { start, end } = getVatQuarterDates(quarter, vatYear);
+    setCustomStart(start);
+    setCustomEnd(end);
+  };
+
+  // Export functions
+  const handleExportCSV = async () => {
+    try {
+      setExporting(true);
+      const token = localStorage.getItem('autow_token');
+      let url = `/api/autow/business-hub/export?type=tax-summary&format=csv&period=${period}`;
+
+      if (customStart && customEnd) {
+        url += `&startDate=${customStart}&endDate=${customEnd}`;
+      }
+
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `autow-tax-summary-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(downloadUrl);
+      } else {
+        alert('Export failed');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Export failed');
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      setExporting(true);
+      const token = localStorage.getItem('autow_token');
+      let url = `/api/autow/business-hub/export?type=tax-summary&format=pdf&period=${period}`;
+
+      if (customStart && customEnd) {
+        url += `&startDate=${customStart}&endDate=${customEnd}`;
+      }
+
+      const response = await fetch(url, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `autow-tax-summary-${new Date().toISOString().split('T')[0]}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(downloadUrl);
+      } else {
+        const error = await response.json();
+        alert(`Export failed: ${error.details || error.error}`);
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Export failed');
+    } finally {
+      setExporting(false);
     }
   };
 
@@ -139,23 +242,70 @@ export default function TaxSummaryPage() {
           {['week', 'month', 'quarter', 'year'].map((p) => (
             <button
               key={p}
-              onClick={() => setPeriod(p)}
+              onClick={() => { setPeriod(p); setSelectedVatQuarter(null); }}
               style={{
                 ...styles.periodBtn,
-                ...(period === p ? styles.periodBtnActive : {})
+                ...(period === p && !selectedVatQuarter ? styles.periodBtnActive : {})
               }}
             >
               {p === 'week' ? 'Week' : p === 'month' ? 'Month' : p === 'quarter' ? 'Quarter' : 'Tax Year'}
             </button>
           ))}
         </div>
+
+        {/* VAT Quarter Selector */}
+        <div style={styles.vatQuarterSection}>
+          <span style={styles.vatQuarterLabel}>VAT Quarter:</span>
+          <select
+            value={vatYear}
+            onChange={(e) => setVatYear(parseInt(e.target.value))}
+            style={styles.yearSelect}
+          >
+            {[2024, 2025, 2026, 2027].map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+          <div style={styles.vatQuarterButtons}>
+            {[1, 2, 3, 4].map((q) => (
+              <button
+                key={q}
+                onClick={() => handleVatQuarterSelect(q)}
+                style={{
+                  ...styles.vatQuarterBtn,
+                  ...(selectedVatQuarter === q ? styles.vatQuarterBtnActive : {})
+                }}
+              >
+                Q{q}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div style={styles.periodInfo}>
-          Showing: <strong>{getPeriodLabel()}</strong>
+          Showing: <strong>{selectedVatQuarter ? `VAT Q${selectedVatQuarter} ${vatYear}` : getPeriodLabel()}</strong>
           {data?.dateRange?.start && (
             <span style={styles.dateRange}>
               ({formatDate(data.dateRange.start)} - {formatDate(data.dateRange.end)})
             </span>
           )}
+        </div>
+
+        {/* Export Buttons */}
+        <div style={styles.exportButtons}>
+          <button
+            onClick={handleExportCSV}
+            style={styles.exportBtnCyan}
+            disabled={exporting || !data}
+          >
+            {exporting ? 'Exporting...' : 'Export CSV'}
+          </button>
+          <button
+            onClick={handleExportPDF}
+            style={styles.exportBtnGreen}
+            disabled={exporting || !data}
+          >
+            {exporting ? 'Exporting...' : 'Export PDF'}
+          </button>
         </div>
       </div>
 
@@ -638,6 +788,72 @@ const styles: { [key: string]: React.CSSProperties } = {
     background: 'rgba(0, 200, 255, 0.2)',
     borderColor: '#00c8ff',
     color: '#00c8ff',
+  },
+  vatQuarterSection: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    marginBottom: '12px',
+    flexWrap: 'wrap' as const,
+  },
+  vatQuarterLabel: {
+    color: '#ffa500',
+    fontSize: '14px',
+    fontWeight: '600' as const,
+  },
+  yearSelect: {
+    background: '#0a0a0a',
+    border: '1px solid rgba(255, 165, 0, 0.3)',
+    color: '#fff',
+    padding: '8px 12px',
+    borderRadius: '6px',
+    fontSize: '14px',
+    cursor: 'pointer',
+  },
+  vatQuarterButtons: {
+    display: 'flex',
+    gap: '8px',
+  },
+  vatQuarterBtn: {
+    background: 'rgba(255, 165, 0, 0.1)',
+    border: '1px solid rgba(255, 165, 0, 0.3)',
+    color: '#ffa500',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '600' as const,
+    transition: 'all 0.2s',
+  },
+  vatQuarterBtnActive: {
+    background: 'rgba(255, 165, 0, 0.3)',
+    borderColor: '#ffa500',
+    color: '#fff',
+  },
+  exportButtons: {
+    display: 'flex',
+    gap: '10px',
+    marginTop: '16px',
+  },
+  exportBtnCyan: {
+    background: 'rgba(0, 200, 255, 0.2)',
+    border: '1px solid rgba(0, 200, 255, 0.4)',
+    color: '#00c8ff',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '600' as const,
+  },
+  exportBtnGreen: {
+    background: 'rgba(48, 255, 55, 0.2)',
+    border: '1px solid rgba(48, 255, 55, 0.4)',
+    color: '#30ff37',
+    padding: '10px 20px',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '600' as const,
   },
   periodInfo: {
     color: '#aaa',

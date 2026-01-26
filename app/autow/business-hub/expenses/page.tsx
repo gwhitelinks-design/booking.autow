@@ -62,6 +62,7 @@ export default function ExpensesPage() {
     vat: 0,
     taxDeductible: 0,
   });
+  const [exporting, setExporting] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -254,6 +255,35 @@ export default function ExpensesPage() {
   const getInvoiceLabel = (invoiceId: number) => {
     const invoice = invoices.find(inv => inv.id === invoiceId);
     return invoice ? `${invoice.invoice_number} - ${invoice.client_name}` : '-';
+  };
+
+  const handleExportCSV = async () => {
+    try {
+      setExporting(true);
+      const token = localStorage.getItem('autow_token');
+      const response = await fetch('/api/autow/business-hub/export?type=expenses&format=csv', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = downloadUrl;
+        a.download = `autow-expenses-${new Date().toISOString().split('T')[0]}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        window.URL.revokeObjectURL(downloadUrl);
+      } else {
+        alert('Export failed');
+      }
+    } catch (error) {
+      console.error('Export error:', error);
+      alert('Export failed');
+    } finally {
+      setExporting(false);
+    }
   };
 
   if (loading) {
@@ -461,16 +491,25 @@ export default function ExpensesPage() {
       <div style={styles.section}>
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>📋 Expenses ({expenses.length})</h2>
-          <select
-            value={filterCategory}
-            onChange={(e) => setFilterCategory(e.target.value)}
-            style={styles.filterSelect}
-          >
-            <option value="">All Categories</option>
-            {Object.keys(EXPENSE_CATEGORIES).map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
+          <div style={styles.headerActions}>
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              style={styles.filterSelect}
+            >
+              <option value="">All Categories</option>
+              {Object.keys(EXPENSE_CATEGORIES).map(cat => (
+                <option key={cat} value={cat}>{cat}</option>
+              ))}
+            </select>
+            <button
+              onClick={handleExportCSV}
+              style={styles.exportBtn}
+              disabled={exporting || expenses.length === 0}
+            >
+              {exporting ? 'Exporting...' : 'Export CSV'}
+            </button>
+          </div>
         </div>
 
         {/* Desktop Table */}
@@ -683,6 +722,22 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '6px',
     color: '#fff',
     fontSize: '13px',
+  },
+  headerActions: {
+    display: 'flex',
+    gap: '12px',
+    alignItems: 'center',
+    flexWrap: 'wrap' as const,
+  },
+  exportBtn: {
+    background: 'rgba(0, 200, 255, 0.2)',
+    border: '1px solid rgba(0, 200, 255, 0.4)',
+    color: '#00c8ff',
+    padding: '8px 16px',
+    borderRadius: '6px',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '600' as const,
   },
   formGrid: {
     display: 'grid',

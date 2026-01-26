@@ -132,24 +132,15 @@ export async function GET(request: NextRequest) {
     const totalDeductions = taxDeductibleExpenses + totalMileageClaim;
     const grossProfit = netRevenue - totalDeductions;
 
-    // Corporation tax calculation
-    let taxRate: number;
-    let taxBracket: string;
+    // Corporation tax calculation using HMRC 2025/26 rates
     const periodMultiplier = period === 'week' ? 52 : period === 'month' ? 12 : period === 'quarter' ? 4 : 1;
     const annualizedProfit = grossProfit * periodMultiplier;
 
-    if (annualizedProfit <= 50000) {
-      taxRate = 0.19;
-      taxBracket = 'Small Profits Rate (19%)';
-    } else if (annualizedProfit <= 250000) {
-      taxRate = 0.25;
-      taxBracket = 'Marginal Relief (19-25%)';
-    } else {
-      taxRate = 0.25;
-      taxBracket = 'Main Rate (25%)';
-    }
+    // Calculate corporation tax using proper Marginal Relief formula
+    const { tax: annualTax, rate: taxRate, bracket: taxBracket } = calculateCorporationTax(annualizedProfit);
 
-    const estimatedTax = grossProfit > 0 ? grossProfit * taxRate : 0;
+    // Scale tax back to period
+    const estimatedTax = grossProfit > 0 ? annualTax / periodMultiplier : 0;
     const takeHome = grossProfit - estimatedTax;
 
     // Group expenses by category
@@ -296,4 +287,49 @@ function formatWeekRange(weekStart: Date): string {
 
   const format = (d: Date) => d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
   return `${format(weekStart)} - ${format(weekEnd)}`;
+}
+
+/**
+ * Calculate Corporation Tax using HMRC 2025/26 rates with Marginal Relief
+ *
+ * Rates:
+ * - £0 - £50,000: 19% (Small Profits Rate)
+ * - £50,001 - £250,000: Marginal Relief applies
+ * - Over £250,000: 25% (Main Rate)
+ *
+ * Marginal Relief Formula:
+ * Tax = Profits × 25% - ((250,000 - Profits) × 3/200)
+ */
+function calculateCorporationTax(profit: number): { tax: number; rate: number; bracket: string } {
+  if (profit <= 0) {
+    return { tax: 0, rate: 0, bracket: 'No Profit' };
+  }
+
+  if (profit <= 50000) {
+    // Small Profits Rate: 19%
+    return {
+      tax: profit * 0.19,
+      rate: 19,
+      bracket: 'Small Profits Rate (19%)'
+    };
+  } else if (profit <= 250000) {
+    // Marginal Relief: Tax = Profits × 25% - ((250,000 - Profits) × 3/200)
+    const mainTax = profit * 0.25;
+    const marginalRelief = ((250000 - profit) * 3) / 200;
+    const tax = mainTax - marginalRelief;
+    const effectiveRate = (tax / profit) * 100;
+
+    return {
+      tax,
+      rate: Math.round(effectiveRate * 10) / 10, // Round to 1 decimal
+      bracket: `Marginal Relief (${effectiveRate.toFixed(1)}%)`
+    };
+  } else {
+    // Main Rate: 25%
+    return {
+      tax: profit * 0.25,
+      rate: 25,
+      bracket: 'Main Rate (25%)'
+    };
+  }
 }

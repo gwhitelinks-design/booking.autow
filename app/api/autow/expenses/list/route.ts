@@ -15,13 +15,30 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const category = searchParams.get('category');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
 
     let query = 'SELECT * FROM business_expenses';
     const params: string[] = [];
+    const conditions: string[] = [];
 
     if (category && category !== 'all') {
-      query += ' WHERE category = $1';
+      conditions.push(`category = $${params.length + 1}`);
       params.push(category);
+    }
+
+    if (startDate) {
+      conditions.push(`date >= $${params.length + 1}`);
+      params.push(startDate);
+    }
+
+    if (endDate) {
+      conditions.push(`date <= $${params.length + 1}`);
+      params.push(endDate);
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
     }
 
     query += ' ORDER BY date DESC, id DESC';
