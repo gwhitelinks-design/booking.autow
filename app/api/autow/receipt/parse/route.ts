@@ -68,7 +68,7 @@ If you cannot read a field clearly, set it to null. The confidence score should 
               type: 'image_url',
               image_url: {
                 url: imageData,
-                detail: 'high'
+                detail: 'low'
               }
             }
           ]

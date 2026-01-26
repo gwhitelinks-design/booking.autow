@@ -79,7 +79,7 @@ If you cannot read a field clearly, set string fields to null and number fields 
               type: 'image_url',
               image_url: {
                 url: imageData,
-                detail: 'high'
+                detail: 'low'
               }
             }
           ]

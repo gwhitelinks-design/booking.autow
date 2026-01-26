@@ -51,7 +51,7 @@ export async function POST(request: NextRequest): Promise<NextResponse<OCRRespon
             },
             {
               type: 'image_url',
-              image_url: { url: imageData, detail: 'high' }
+              image_url: { url: imageData, detail: 'low' }
             }
           ]
         }
