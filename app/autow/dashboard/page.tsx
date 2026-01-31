@@ -435,6 +435,8 @@ const styles: { [key: string]: React.CSSProperties } = {
     border: '1px solid rgba(255, 255, 255, 0.12)',
     display: 'flex',
     alignItems: 'center',
+    position: 'relative' as const,
+    zIndex: 100,
     justifyContent: 'space-between',
     flexWrap: 'wrap' as const,
     gap: '20px',
@@ -479,6 +481,7 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   navMenuContainer: {
     position: 'relative' as const,
+    zIndex: 1000,
   },
   hamburgerBtn: {
     background: 'rgba(255, 255, 255, 0.1)',
@@ -501,7 +504,7 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '12px',
     padding: '8px 0',
     minWidth: '200px',
-    zIndex: 100,
+    zIndex: 1001,
     boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
   },
   navMenuItem: {

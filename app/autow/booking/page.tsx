@@ -30,6 +30,12 @@ export default function BookingPage() {
   const [bookedBy, setBookedBy] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
+  // Client lookup state
+  const [showClientModal, setShowClientModal] = useState(false);
+  const [clientSearch, setClientSearch] = useState('');
+  const [clients, setClients] = useState<any[]>([]);
+  const [loadingClients, setLoadingClients] = useState(false);
+
   const searchParams = useSearchParams();
   const fromJotter = searchParams.get('from_jotter') === 'true';
   const fromNote = searchParams.get('from_note') === 'true';
@@ -132,6 +138,51 @@ export default function BookingPage() {
     window.addEventListener('voice-submit-form', handleVoiceSubmit);
     return () => window.removeEventListener('voice-submit-form', handleVoiceSubmit);
   }, [submitting]);
+
+  // Fetch clients for lookup
+  const fetchClients = useCallback(async (search: string) => {
+    setLoadingClients(true);
+    try {
+      const token = localStorage.getItem('autow_token');
+      const res = await fetch(`/api/autow/client/list?search=${encodeURIComponent(search)}&limit=20`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setClients(data.clients || []);
+    } catch (err) {
+      console.error('Failed to fetch clients:', err);
+      setClients([]);
+    } finally {
+      setLoadingClients(false);
+    }
+  }, []);
+
+  // Search clients when modal opens or search changes
+  useEffect(() => {
+    if (showClientModal) {
+      const debounce = setTimeout(() => {
+        fetchClients(clientSearch);
+      }, 300);
+      return () => clearTimeout(debounce);
+    }
+  }, [showClientModal, clientSearch, fetchClients]);
+
+  // Select a client and fill form
+  const selectClient = (client: any) => {
+    setFormData(prev => ({
+      ...prev,
+      customer_name: client.name || '',
+      customer_phone: client.phone || client.mobile || '',
+      customer_email: client.email || '',
+      vehicle_reg: client.vehicle_reg || '',
+      vehicle_make: client.vehicle_make || '',
+      vehicle_model: client.vehicle_model || '',
+      location_address: client.address || '',
+      notes: client.notes ? (prev.notes ? prev.notes + '\n' + client.notes : client.notes) : prev.notes,
+    }));
+    setShowClientModal(false);
+    setClientSearch('');
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -286,16 +337,72 @@ export default function BookingPage() {
 
           <div style={styles.formGroup}>
             <label style={styles.label}>Customer Name *</label>
-            <input
-              type="text"
-              name="customer_name"
-              value={formData.customer_name}
-              onChange={handleChange}
-              required
-              placeholder="John Smith"
-              style={styles.input}
-            />
+            <div style={styles.inputWithButton}>
+              <input
+                type="text"
+                name="customer_name"
+                value={formData.customer_name}
+                onChange={handleChange}
+                required
+                placeholder="John Smith"
+                style={{ ...styles.input, flex: 1 }}
+              />
+              <button
+                type="button"
+                onClick={() => setShowClientModal(true)}
+                style={styles.clientBtn}
+              >
+                👤 Clients
+              </button>
+            </div>
           </div>
+
+          {/* Client Lookup Modal */}
+          {showClientModal && (
+            <div style={styles.modalOverlay} onClick={() => setShowClientModal(false)}>
+              <div style={styles.modal} onClick={e => e.stopPropagation()}>
+                <div style={styles.modalHeader}>
+                  <h3 style={styles.modalTitle}>Select Client</h3>
+                  <button
+                    onClick={() => setShowClientModal(false)}
+                    style={styles.modalClose}
+                  >
+                    ✕
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  value={clientSearch}
+                  onChange={e => setClientSearch(e.target.value)}
+                  placeholder="Search by name, phone, or reg..."
+                  style={styles.searchInput}
+                  autoFocus
+                />
+                <div style={styles.clientList}>
+                  {loadingClients ? (
+                    <div style={styles.clientLoading}>Loading...</div>
+                  ) : clients.length === 0 ? (
+                    <div style={styles.clientEmpty}>No clients found</div>
+                  ) : (
+                    clients.map(client => (
+                      <div
+                        key={client.id}
+                        style={styles.clientItem}
+                        onClick={() => selectClient(client)}
+                      >
+                        <div style={styles.clientName}>{client.name}</div>
+                        <div style={styles.clientDetails}>
+                          {client.phone && <span>{client.phone}</span>}
+                          {client.vehicle_reg && <span> • {client.vehicle_reg}</span>}
+                          {client.vehicle_make && <span> • {client.vehicle_make} {client.vehicle_model}</span>}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
 
           <div style={styles.formGroup}>
             <label style={styles.label}>Phone Number *</label>
@@ -645,5 +752,108 @@ const styles: { [key: string]: React.CSSProperties } = {
   btnDisabled: {
     opacity: 0.7,
     cursor: 'not-allowed',
+  },
+  inputWithButton: {
+    display: 'flex',
+    gap: '10px',
+  },
+  clientBtn: {
+    padding: '14px 16px',
+    border: '2px solid rgba(48, 255, 55, 0.3)',
+    borderRadius: '12px',
+    fontSize: '14px',
+    fontWeight: '600' as const,
+    cursor: 'pointer',
+    background: 'rgba(48, 255, 55, 0.1)',
+    color: '#30ff37',
+    whiteSpace: 'nowrap' as const,
+    transition: 'all 0.3s',
+  },
+  modalOverlay: {
+    position: 'fixed' as const,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'rgba(0, 0, 0, 0.8)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 1000,
+    padding: '20px',
+  },
+  modal: {
+    background: '#1a1a1a',
+    borderRadius: '16px',
+    width: '100%',
+    maxWidth: '500px',
+    maxHeight: '80vh',
+    display: 'flex',
+    flexDirection: 'column' as const,
+    border: '1px solid rgba(48, 255, 55, 0.2)',
+    boxShadow: '0 25px 50px rgba(0, 0, 0, 0.5)',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '20px',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+  },
+  modalTitle: {
+    color: '#30ff37',
+    margin: 0,
+    fontSize: '18px',
+  },
+  modalClose: {
+    background: 'transparent',
+    border: 'none',
+    color: '#888',
+    fontSize: '20px',
+    cursor: 'pointer',
+    padding: '5px',
+  },
+  searchInput: {
+    margin: '15px 20px',
+    padding: '14px',
+    border: '2px solid rgba(48, 255, 55, 0.2)',
+    borderRadius: '12px',
+    fontSize: '15px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    color: '#fff',
+  },
+  clientList: {
+    flex: 1,
+    overflowY: 'auto' as const,
+    padding: '0 10px 10px',
+  },
+  clientLoading: {
+    color: '#888',
+    textAlign: 'center' as const,
+    padding: '30px',
+  },
+  clientEmpty: {
+    color: '#888',
+    textAlign: 'center' as const,
+    padding: '30px',
+  },
+  clientItem: {
+    padding: '15px',
+    margin: '5px 10px',
+    borderRadius: '10px',
+    background: 'rgba(255, 255, 255, 0.05)',
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+    border: '1px solid transparent',
+  },
+  clientName: {
+    color: '#fff',
+    fontWeight: '600' as const,
+    fontSize: '15px',
+    marginBottom: '4px',
+  },
+  clientDetails: {
+    color: '#888',
+    fontSize: '13px',
   },
 };

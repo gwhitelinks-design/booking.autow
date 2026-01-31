@@ -29,32 +29,51 @@ export async function autoAddClient(data: ClientData): Promise<void> {
   const upperVehicleReg = vehicle_reg?.trim().toUpperCase() || null;
 
   try {
-    // Check if client already exists (by name AND phone, or by name AND vehicle_reg)
-    const existingCheck = await pool.query(
-      `SELECT id FROM clients
-       WHERE LOWER(TRIM(name)) = LOWER($1)
-       AND (
-         ($2 IS NOT NULL AND phone = $2)
-         OR ($3 IS NOT NULL AND UPPER(REPLACE(vehicle_reg, ' ', '')) = UPPER(REPLACE($3, ' ', '')))
-       )
-       LIMIT 1`,
-      [trimmedName, phone || null, upperVehicleReg]
-    );
+    // Check if client already exists
+    // Need to handle null parameters carefully for PostgreSQL type inference
+    let existingClient = false;
 
-    if (existingCheck.rows.length > 0) {
-      // Client already exists, skip
-      return;
+    // Check by name + phone if phone is provided
+    if (phone) {
+      const phoneCheck = await pool.query(
+        `SELECT id FROM clients
+         WHERE LOWER(TRIM(name)) = LOWER($1) AND phone = $2
+         LIMIT 1`,
+        [trimmedName, phone]
+      );
+      if (phoneCheck.rows.length > 0) {
+        existingClient = true;
+      }
     }
 
-    // Also check just by name if no phone or vehicle_reg match was attempted
-    if (!phone && !upperVehicleReg) {
+    // Check by name + vehicle_reg if vehicle_reg is provided (and not already found)
+    if (!existingClient && upperVehicleReg) {
+      const regCheck = await pool.query(
+        `SELECT id FROM clients
+         WHERE LOWER(TRIM(name)) = LOWER($1)
+         AND UPPER(REPLACE(vehicle_reg, ' ', '')) = UPPER(REPLACE($2, ' ', ''))
+         LIMIT 1`,
+        [trimmedName, upperVehicleReg]
+      );
+      if (regCheck.rows.length > 0) {
+        existingClient = true;
+      }
+    }
+
+    // If no phone or vehicle_reg, check by name only
+    if (!existingClient && !phone && !upperVehicleReg) {
       const nameCheck = await pool.query(
         `SELECT id FROM clients WHERE LOWER(TRIM(name)) = LOWER($1) LIMIT 1`,
         [trimmedName]
       );
       if (nameCheck.rows.length > 0) {
-        return;
+        existingClient = true;
       }
+    }
+
+    if (existingClient) {
+      // Client already exists, skip
+      return;
     }
 
     // Insert new client
