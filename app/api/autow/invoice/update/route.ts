@@ -33,7 +33,10 @@ export async function POST(request: NextRequest) {
         'client_name', 'client_email', 'client_address', 'client_phone',
         'client_mobile', 'client_fax', 'vehicle_make', 'vehicle_model',
         'vehicle_reg', 'notes', 'due_date', 'vat_rate', 'status',
-        'payment_method', 'payment_date', 'payment_reference', 'signature_data'
+        'payment_method', 'payment_date', 'payment_reference', 'signature_data',
+        // Business details overrides
+        'business_name', 'business_email', 'business_address', 'business_phone',
+        'business_website', 'business_workshop_location'
       ];
 
       for (const field of allowedFields) {

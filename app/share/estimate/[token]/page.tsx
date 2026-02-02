@@ -88,7 +88,8 @@ export default async function SharedEstimatePage({
     }
   });
 
-  const settings = businessSettings || {
+  // Use document-level overrides if set, otherwise fall back to business_settings or defaults
+  const defaults = {
     business_name: 'AUTOW SERVICES LTD',
     email: 'info@autow-services.co.uk',
     address: 'Alverton, Penzance, TR18 4QB',
@@ -96,6 +97,16 @@ export default async function SharedEstimatePage({
     phone: '07352968276',
     website: 'https://www.autow-services.co.uk',
     owner: 'Business owner name'
+  };
+
+  const settings = {
+    business_name: estimate.business_name || businessSettings?.business_name || defaults.business_name,
+    email: estimate.business_email || businessSettings?.email || defaults.email,
+    address: estimate.business_address || businessSettings?.address || defaults.address,
+    workshop_location: estimate.business_workshop_location || businessSettings?.workshop_location || defaults.workshop_location,
+    phone: estimate.business_phone || businessSettings?.phone || defaults.phone,
+    website: estimate.business_website || businessSettings?.website || defaults.website,
+    owner: businessSettings?.owner || defaults.owner
   };
 
   return (

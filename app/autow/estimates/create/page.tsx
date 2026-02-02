@@ -17,6 +17,13 @@ interface FormData {
   vehicle_reg: string;
   notes: string;
   vat_rate: number;
+  // Business details overrides (editable per-document)
+  business_name: string;
+  business_email: string;
+  business_address: string;
+  business_phone: string;
+  business_website: string;
+  business_workshop_location: string;
 }
 
 export default function CreateEstimatePage() {
@@ -45,6 +52,9 @@ export default function CreateEstimatePage() {
   const [clientSearchQuery, setClientSearchQuery] = useState('');
   const [matchingClients, setMatchingClients] = useState<Client[]>([]);
 
+  // Business details section toggle
+  const [showBusinessDetails, setShowBusinessDetails] = useState(false);
+
   const defaultNotes = `We Provide Mobile mechanics and Recovery services,
 we have dedicated ramp spaces for works that are not suitable at roadside etc.
 
@@ -68,6 +78,16 @@ A/N: 29892012
 
 Company Number: 16952633`;
 
+  // Default business details
+  const defaultBusinessDetails = {
+    business_name: 'AUTOW SERVICES LTD',
+    business_email: 'info@autow-services.co.uk',
+    business_address: 'Alverton, Penzance, TR18 4QB',
+    business_phone: '07352968276',
+    business_website: 'https://www.autow-services.co.uk',
+    business_workshop_location: 'WORKSHOP LOCATION PENZANCE'
+  };
+
   const [formData, setFormData] = useState<FormData>({
     estimate_number: '',
     estimate_date: new Date().toISOString().split('T')[0],
@@ -80,7 +100,8 @@ Company Number: 16952633`;
     vehicle_model: '',
     vehicle_reg: '',
     notes: defaultNotes,
-    vat_rate: 0
+    vat_rate: 0,
+    ...defaultBusinessDetails
   });
 
   const [lineItems, setLineItems] = useState<LineItem[]>([
@@ -256,7 +277,8 @@ Company Number: 16952633`;
           vehicle_model: booking.vehicle_model || '',
           vehicle_reg: vehicleReg,
           notes: `Service: ${booking.service_type}\n\nIssue: ${booking.issue_description}${booking.notes ? `\n\nNotes: ${booking.notes}` : ''}\n\n---\n\n${defaultNotes}`,
-          vat_rate: 0
+          vat_rate: 0,
+          ...defaultBusinessDetails
         });
 
         // Fetch the auto-generated estimate number based on vehicle reg
@@ -294,7 +316,8 @@ Company Number: 16952633`;
           vehicle_model: report.vehicle_type_model || '',
           vehicle_reg: vehicleReg,
           notes: defaultNotes,
-          vat_rate: 0
+          vat_rate: 0,
+          ...defaultBusinessDetails
         });
 
         // Fetch the auto-generated estimate number based on vehicle reg
@@ -331,8 +354,21 @@ Company Number: 16952633`;
           vehicle_model: estimate.vehicle_model || '',
           vehicle_reg: estimate.vehicle_reg || '',
           notes: estimate.notes || '',
-          vat_rate: estimate.vat_rate || 0
+          vat_rate: estimate.vat_rate || 0,
+          // Business details overrides
+          business_name: estimate.business_name || defaultBusinessDetails.business_name,
+          business_email: estimate.business_email || defaultBusinessDetails.business_email,
+          business_address: estimate.business_address || defaultBusinessDetails.business_address,
+          business_phone: estimate.business_phone || defaultBusinessDetails.business_phone,
+          business_website: estimate.business_website || defaultBusinessDetails.business_website,
+          business_workshop_location: estimate.business_workshop_location || defaultBusinessDetails.business_workshop_location
         });
+
+        // Show business details section if any were customized
+        if (estimate.business_name || estimate.business_email || estimate.business_address ||
+            estimate.business_phone || estimate.business_website || estimate.business_workshop_location) {
+          setShowBusinessDetails(true);
+        }
 
         if (estimate.line_items && estimate.line_items.length > 0) {
           setLineItems(estimate.line_items.map((item: any, index: number) => ({
@@ -674,7 +710,7 @@ Company Number: 16952633`;
         </button>
       </div>
 
-      {/* Business Header */}
+      {/* Business Header - Click to Edit */}
       <div style={styles.businessHeader}>
         <img
           src="https://autow-services.co.uk/logo.png"
@@ -682,16 +718,94 @@ Company Number: 16952633`;
           style={styles.headerLogo}
         />
         <div style={styles.businessInfo}>
-          <h2 style={styles.businessName}>AUTOW SERVICES LTD</h2>
+          <h2 style={styles.businessName}>{formData.business_name}</h2>
           <p style={styles.businessDetails}>
-            Email: info@autow-services.co.uk | Phone: 07352968276
+            Email: {formData.business_email} | Phone: {formData.business_phone}
             <br />
-            Address: Alverton, Penzance, TR18 4QB | WORKSHOP LOCATION PENZANCE
+            Address: {formData.business_address} | {formData.business_workshop_location}
             <br />
-            Website: https://www.autow-services.co.uk
+            Website: {formData.business_website}
           </p>
+          <button
+            type="button"
+            onClick={() => setShowBusinessDetails(!showBusinessDetails)}
+            style={styles.editBusinessBtn}
+          >
+            {showBusinessDetails ? '▼ Hide Edit' : '✏️ Edit Business Details'}
+          </button>
         </div>
       </div>
+
+      {/* Editable Business Details Section */}
+      {showBusinessDetails && (
+        <div style={styles.section}>
+          <h2 style={styles.sectionTitle}>Business Details (From)</h2>
+          <p style={styles.sectionSubtitle}>Customize the business details shown on this document</p>
+          <div style={styles.formGrid} className="form-grid">
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Business Name</label>
+              <input
+                type="text"
+                value={formData.business_name}
+                onChange={(e) => setFormData({ ...formData, business_name: e.target.value })}
+                style={styles.input}
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Email</label>
+              <input
+                type="email"
+                value={formData.business_email}
+                onChange={(e) => setFormData({ ...formData, business_email: e.target.value })}
+                style={styles.input}
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Phone</label>
+              <input
+                type="tel"
+                value={formData.business_phone}
+                onChange={(e) => setFormData({ ...formData, business_phone: e.target.value })}
+                style={styles.input}
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Website</label>
+              <input
+                type="text"
+                value={formData.business_website}
+                onChange={(e) => setFormData({ ...formData, business_website: e.target.value })}
+                style={styles.input}
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Address</label>
+              <input
+                type="text"
+                value={formData.business_address}
+                onChange={(e) => setFormData({ ...formData, business_address: e.target.value })}
+                style={styles.input}
+              />
+            </div>
+            <div style={styles.formGroup}>
+              <label style={styles.label}>Workshop Location</label>
+              <input
+                type="text"
+                value={formData.business_workshop_location}
+                onChange={(e) => setFormData({ ...formData, business_workshop_location: e.target.value })}
+                style={styles.input}
+              />
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setFormData({ ...formData, ...defaultBusinessDetails })}
+            style={styles.resetBusinessBtn}
+          >
+            Reset to Defaults
+          </button>
+        </div>
+      )}
 
       <form onSubmit={handleSubmit} style={styles.form}>
         {/* Estimate Details */}
@@ -1444,6 +1558,33 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '13px',
     margin: '0',
     lineHeight: 1.6,
+  },
+  editBusinessBtn: {
+    marginTop: '12px',
+    padding: '8px 16px',
+    background: 'rgba(0, 188, 212, 0.1)',
+    border: '1px solid rgba(0, 188, 212, 0.3)',
+    borderRadius: '6px',
+    color: '#00bcd4',
+    cursor: 'pointer',
+    fontSize: '13px',
+    fontWeight: '600' as const,
+  },
+  sectionSubtitle: {
+    color: '#888',
+    fontSize: '13px',
+    marginBottom: '20px',
+    marginTop: '-10px',
+  },
+  resetBusinessBtn: {
+    marginTop: '15px',
+    padding: '10px 20px',
+    background: 'rgba(255, 152, 0, 0.1)',
+    border: '1px solid rgba(255, 152, 0, 0.3)',
+    borderRadius: '6px',
+    color: '#ff9800',
+    cursor: 'pointer',
+    fontSize: '13px',
   },
   header: {
     display: 'flex',

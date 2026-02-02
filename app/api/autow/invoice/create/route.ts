@@ -30,7 +30,14 @@ export async function POST(request: NextRequest) {
       vat_rate = 20.00,
       estimate_id,
       booking_id,
-      line_items = []
+      line_items = [],
+      // Business details overrides
+      business_name,
+      business_email,
+      business_address,
+      business_phone,
+      business_website,
+      business_workshop_location
     } = body;
 
     // Validation
@@ -63,15 +70,20 @@ export async function POST(request: NextRequest) {
           invoice_number, sequence_number, client_name, client_email, client_address,
           client_phone, client_mobile, client_fax,
           vehicle_make, vehicle_model, vehicle_reg,
-          notes, due_date, vat_rate, estimate_id, booking_id, created_by, status
+          notes, due_date, vat_rate, estimate_id, booking_id, created_by, status,
+          business_name, business_email, business_address, business_phone,
+          business_website, business_workshop_location
         ) VALUES (
-          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, 'pending'
+          $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, 'pending',
+          $18, $19, $20, $21, $22, $23
         ) RETURNING *`,
         [
           invoice_number, sequence_number, client_name, client_email, client_address,
           client_phone, client_mobile, client_fax,
           vehicle_make, vehicle_model, vehicle_reg,
-          notes, due_date, vat_rate, estimate_id, booking_id, created_by
+          notes, due_date, vat_rate, estimate_id, booking_id, created_by,
+          business_name || null, business_email || null, business_address || null,
+          business_phone || null, business_website || null, business_workshop_location || null
         ]
       );
 
