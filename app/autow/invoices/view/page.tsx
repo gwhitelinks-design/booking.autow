@@ -892,6 +892,16 @@ export default function ViewInvoicePage() {
           }
           body {
             background: white !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          .document {
+            max-width: 100% !important;
+            width: 100% !important;
+            margin: 0 !important;
+            padding: 40px !important;
+            border-radius: 0 !important;
+            box-shadow: none !important;
           }
         }
 
