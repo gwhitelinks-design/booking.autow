@@ -352,14 +352,15 @@ export default function ViewInvoicePage() {
     }
   });
 
-  const settings = businessSettings || {
-    business_name: 'AUTOW SERVICES LTD',
-    email: 'info@autow-services.co.uk',
-    address: 'Alverton, Penzance, TR18 4QB',
-    workshop_location: 'WORKSHOP LOCATION PENZANCE',
-    phone: '07352968276',
-    website: 'https://www.autow-services.co.uk',
-    owner: 'Business owner name'
+  // Use document-level overrides first, then business_settings, then defaults
+  const settings = {
+    business_name: invoice.business_name || businessSettings?.business_name || 'AUTOW SERVICES LTD',
+    email: invoice.business_email || businessSettings?.email || 'info@autow-services.co.uk',
+    address: invoice.business_address || businessSettings?.address || 'Alverton, Penzance, TR18 4QB',
+    workshop_location: invoice.business_workshop_location || businessSettings?.workshop_location || 'WORKSHOP LOCATION PENZANCE',
+    phone: invoice.business_phone || businessSettings?.phone || '07352968276',
+    website: invoice.business_website || businessSettings?.website || 'https://www.autow-services.co.uk',
+    owner: businessSettings?.owner || 'Business owner name'
   };
 
   return (

@@ -101,6 +101,14 @@ export interface Estimate {
   notes?: string;
   signature_data?: string;
 
+  // Business Details Overrides
+  business_name?: string;
+  business_email?: string;
+  business_address?: string;
+  business_phone?: string;
+  business_website?: string;
+  business_workshop_location?: string;
+
   // Relationships
   booking_id?: number;
   invoice_id?: number;
@@ -159,6 +167,14 @@ export interface Invoice {
   // Additional Info
   notes?: string;
   signature_data?: string;
+
+  // Business Details Overrides
+  business_name?: string;
+  business_email?: string;
+  business_address?: string;
+  business_phone?: string;
+  business_website?: string;
+  business_workshop_location?: string;
 
   // Relationships
   estimate_id?: number;
