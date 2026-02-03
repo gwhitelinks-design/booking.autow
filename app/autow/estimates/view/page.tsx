@@ -132,7 +132,7 @@ export default function ViewEstimatePage() {
   };
 
   return (
-    <div style={styles.container}>
+    <div style={styles.container} className="print-container">
       {/* Action Buttons (don't print) */}
       <div style={styles.actionBar} className="no-print action-bar">
         <button onClick={() => router.push('/autow/estimates')} style={styles.backBtn}>
@@ -315,18 +315,31 @@ export default function ViewEstimatePage() {
           .no-print {
             display: none !important;
           }
-          body {
+          html, body {
             background: white !important;
+            background-color: white !important;
             margin: 0 !important;
             padding: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
           }
           .document {
             max-width: 100% !important;
             width: 100% !important;
             margin: 0 !important;
-            padding: 40px !important;
+            padding: 30px 40px !important;
             border-radius: 0 !important;
             box-shadow: none !important;
+            border: none !important;
+            outline: none !important;
+            background: white !important;
+            background-color: white !important;
+          }
+          .print-container {
+            background: white !important;
+            background-color: white !important;
+            padding: 0 !important;
+            min-height: auto !important;
           }
         }
 
